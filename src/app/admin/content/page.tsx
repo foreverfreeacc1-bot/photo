@@ -17,11 +17,11 @@ export default async function ContentPage() {
   for (const key of Object.keys(CONTENT_DEFAULTS.ru)) {
     values[key] = { ru: CONTENT_DEFAULTS.ru[key], en: CONTENT_DEFAULTS.en[key] ?? '' }
   }
-  for (const row of data ?? []) {
+  const rows = (data ?? []) as { key: string; locale: string; value: string }[]
+  for (const row of rows) {
     if (!values[row.key]) values[row.key] = { ru: '', en: '' }
-    if (row.locale === 'ru' || row.locale === 'en') {
-      values[row.key][row.locale] = row.value
-    }
+    if (row.locale === 'ru') values[row.key].ru = row.value
+    else if (row.locale === 'en') values[row.key].en = row.value
   }
 
   return (
