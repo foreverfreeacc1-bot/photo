@@ -19,13 +19,15 @@ export default function Sidebar({
   const pathname = usePathname()
   const router = useRouter()
 
-  const items: NavItem[] = [
-    { href: '/admin', label: 'Обзор' },
-    { href: '/admin/content', label: SECTION_LABELS.content, section: 'content' },
-    { href: '/admin/photos', label: SECTION_LABELS.photos, section: 'photos' },
-    { href: '/admin/users', label: SECTION_LABELS.users, section: 'users' },
-    { href: '/admin/roles', label: SECTION_LABELS.roles, section: 'roles' },
-  ].filter((i) => !i.section || allowed.includes(i.section))
+  const items: NavItem[] = (
+    [
+      { href: '/admin', label: 'Обзор' },
+      { href: '/admin/content', label: SECTION_LABELS.content, section: 'content' },
+      { href: '/admin/photos', label: SECTION_LABELS.photos, section: 'photos' },
+      { href: '/admin/users', label: SECTION_LABELS.users, section: 'users' },
+      { href: '/admin/roles', label: SECTION_LABELS.roles, section: 'roles' },
+    ] as NavItem[]
+  ).filter((i) => !i.section || allowed.includes(i.section))
 
   async function logout() {
     const supabase = createClient()
