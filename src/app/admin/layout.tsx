@@ -11,8 +11,9 @@ export default async function AdminLayout({
 }) {
   const session = await getAdminSession()
 
-  // Нет сессии -> сюда доходит только /admin/login, потому что middleware
-  // заворачивает все остальные /admin/* на логин. Рендерим логин без оболочки.
+  // No session -> only the login route can reach here, because middleware
+  // redirects every other /admin/* request to /admin/login. Render the login
+  // page (children) without the admin shell.
   if (!session) {
     return <>{children}</>
   }

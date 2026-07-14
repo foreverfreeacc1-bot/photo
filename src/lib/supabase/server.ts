@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSbClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 // Server-side Supabase client bound to the request cookies (RLS enforced).
@@ -30,7 +31,6 @@ export function createClient() {
 // Service-role client. SERVER ONLY. Bypasses RLS — use only for trusted admin
 // operations after you have verified the caller's permissions.
 export function createAdminClient() {
-  const { createClient: createSbClient } = require('@supabase/supabase-js')
   return createSbClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
