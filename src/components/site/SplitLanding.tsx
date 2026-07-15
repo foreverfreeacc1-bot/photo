@@ -52,23 +52,25 @@ export default function SplitLanding({
 
   return (
     <main className="relative min-h-[100svh] w-full flex flex-col md:flex-row">
-      {/* Fixed top bar: brand (left) + language switch (right), no menu */}
-      <div className="pointer-events-none fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-6 md:px-10 py-6 text-white mix-blend-difference">
-        <span className="text-[16px] font-medium tracking-tight">{siteName}</span>
-        <div className="pointer-events-auto flex items-center gap-2 mono text-[12px]">
+      {/* Fixed top bar: brand (left) + white language switch (right), no menu */}
+      <div className="pointer-events-none fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-6 md:px-10 py-6 text-white">
+        <span className="text-[26px] md:text-[34px] font-semibold tracking-tight">
+          {siteName}
+        </span>
+        <div className="pointer-events-auto flex items-center gap-2 mono text-[13px] text-white">
           <button
             type="button"
             onClick={() => setLang('ru')}
-            className={`transition-opacity ${lang === 'ru' ? 'opacity-100' : 'opacity-45 hover:opacity-80'}`}
+            className={`transition-opacity ${lang === 'ru' ? 'opacity-100' : 'opacity-50 hover:opacity-80'}`}
             aria-pressed={lang === 'ru'}
           >
             RU
           </button>
-          <span className="opacity-30">/</span>
+          <span className="opacity-40">/</span>
           <button
             type="button"
             onClick={() => setLang('en')}
-            className={`transition-opacity ${lang === 'en' ? 'opacity-100' : 'opacity-45 hover:opacity-80'}`}
+            className={`transition-opacity ${lang === 'en' ? 'opacity-100' : 'opacity-50 hover:opacity-80'}`}
             aria-pressed={lang === 'en'}
           >
             EN
@@ -98,8 +100,8 @@ export default function SplitLanding({
             }}
           />
 
-          {/* Centered content block */}
-          <div className="relative z-10 flex h-full min-h-[50svh] md:min-h-[100svh] flex-col items-center justify-center text-center px-6 text-white">
+          {/* Content: horizontally centered, pushed toward the lower part */}
+          <div className="relative z-10 flex h-full min-h-[50svh] md:min-h-[100svh] flex-col items-center justify-end text-center px-6 pb-[16vh] md:pb-[18vh] text-white">
             <h2
               className="font-medium leading-[0.9] tracking-tight"
               style={{ fontSize: 'clamp(3.5rem, 12vw, 9rem)' }}
