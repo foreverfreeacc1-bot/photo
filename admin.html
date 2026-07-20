@@ -171,7 +171,9 @@ function showLogin(){$('#app').classList.add('hidden');$('#login').classList.rem
 $('#lbtn').onclick=function(){api('login',{method:'POST',json:{u:$('#lu').value,p:$('#lp').value}}).then(function(j){CSRF=j.csrf;return refresh();}).then(showApp).catch(function(e){$('#lerr').textContent=e.message;});};
 $('#lp').addEventListener('keydown',function(e){if(e.key==='Enter')$('#lbtn').click();});
 $('#logout').onclick=function(){api('logout',{method:'POST'}).then(function(){location.reload();}).catch(function(){location.reload();});};
-refresh().then(showApp).catch(showLogin);
+showLogin();
+refresh().then(showApp).catch(function(e){if(!e||e.status===undefined){$('#lerr').textContent='Сервер недоступен. Админка работает только на задеплоенном сайте (Vercel) — не открывайте файл локально. Проверьте, что в репозитории есть api/router.js и vercel.json.';}});
+})();
 </script>
 </body>
 </html>
