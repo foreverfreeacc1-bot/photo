@@ -153,10 +153,11 @@ module.exports = async function handler(req, res) {
 
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
-    if (!SB_URL || !SB_KEY || !SECRET || !PASS_HASH || !ADMIN_USER) {
+    const missEnv = [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY], ['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]].filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
+    if (missEnv.length) {
       if (p === 'content') return send(res, 200, { texts: [] });
-      console.error('CMS: не заданы переменные окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_USER, ADMIN_PASSWORD_HASH, SESSION_SECRET)');
-      return send(res, 500, { error: 'Server error' });
+      console.error('CMS missing env: ' + missEnv.join(', '));
+      return send(res, 500, { error: 'Не заданы переменные окружения в Vercel: ' + missEnv.join(', ') + '. Добавьте их в Project → Settings → Environment Variables и сделайте Redeploy.' });
     }
 
     /* публичный контент для сайта */
@@ -211,7 +212,7 @@ module.exports = async function handler(req, res) {
       if (!ext) return send(res, 400, { error: 'Только JPG, PNG или WebP' });
       const name = crypto.randomUUID() + '.' + ext;
       const r = await sb('POST', BUCKET + '/cms/' + name, buf, ext === 'jpg' ? 'image/jpeg' : 'image/' + ext);
-      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Server error' }); }
+      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
       console.error('CMS upload ' + name + ' ip=' + ip);
       return send(res, 200, { url: PUB_BASE + name, name: name });
     }
@@ -299,7 +300,7 @@ module.exports = async function handler(req, res) {
     return send(res, 404, { error: 'Not found' });
   } catch (e) {
     console.error('CMS error:', (e && e.stack) || e);
-    return send(res, 500, { error: 'Server error' });
+    return send(res, 500, { error: 'Ошибка сервера: ' + ((e && e.message) || 'unknown') });
   }
 };
 
