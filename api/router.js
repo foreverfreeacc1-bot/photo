@@ -10,11 +10,12 @@
 const crypto = require('crypto');
 
 const SB_URL = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
-const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SB_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const BUCKET = process.env.PHOTOS_BUCKET || process.env.NEXT_PUBLIC_PHOTOS_BUCKET || 'photos';
-const ADMIN_USER = process.env.ADMIN_USER || '';
-const PASS_HASH = process.env.ADMIN_PASSWORD_HASH || '';
-const SECRET = process.env.SESSION_SECRET || '';
+const ADMIN_USER = String(process.env.ADMIN_USER || '').trim();
+const PASS_HASH = String(process.env.ADMIN_PASSWORD_HASH || '').trim();
+/* SESSION_SECRET необязателен: если не задан, секрет выводится из ADMIN_PASSWORD_HASH + ключа Supabase */
+const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + SB_KEY).digest('hex') : '');
 const TTL = 12 * 60 * 60 * 1000;
 const PUB_BASE = SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
 
@@ -153,10 +154,11 @@ module.exports = async function handler(req, res) {
 
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
-    if (!SB_URL || !SB_KEY || !SECRET || !PASS_HASH || !ADMIN_USER) {
+    const missEnv = [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY], ['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]].filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
+    if (missEnv.length) {
       if (p === 'content') return send(res, 200, { texts: [] });
-      console.error('CMS: не заданы переменные окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_USER, ADMIN_PASSWORD_HASH, SESSION_SECRET)');
-      return send(res, 500, { error: 'Server error' });
+      console.error('CMS missing env: ' + missEnv.join(', '));
+      return send(res, 500, { error: 'Не заданы переменные окружения в Vercel: ' + missEnv.join(', ') + '. Добавьте их в Project → Settings → Environment Variables и сделайте Redeploy.' });
     }
 
     /* публичный контент для сайта */
@@ -187,6 +189,19 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { ok: true });
     }
 
+    /* вход по magic-ссылке */
+    if (p === 'mlogin' && method === 'POST') {
+      if (tooMany(ip)) return send(res, 429, { error: 'Слишком много попыток. Подождите 15 минут.' });
+      const j = await readBody(req);
+      const t = String(j.t || '').split('.');
+      const okT = t.length === 2 && /^\d+$/.test(t[0]) && Number(t[0]) > Date.now() && safeEq(t[1], hmac('magic.' + t[0]));
+      if (!okT) { fail(ip); console.error('CMS magic FAIL ip=' + ip); return send(res, 401, { error: 'Ссылка недействительна или устарела' }); }
+      const tok = makeSession();
+      res.setHeader('Set-Cookie', 'cms_s=' + tok + '; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=' + Math.floor(TTL / 1000));
+      console.error('CMS magic login OK ip=' + ip);
+      return send(res, 200, { ok: true, csrf: csrfOf(tok.split('.')[0]) });
+    }
+
     /* далее — только с валидной сессией */
     const sess = getSession(req);
     if (!sess) return send(res, 401, { error: 'Не авторизован' });
@@ -200,6 +215,12 @@ module.exports = async function handler(req, res) {
       return send(res, 403, { error: 'Сессия устарела, обновите страницу' });
     }
 
+    /* генерация magic-ссылки для входа (действует 15 минут) */
+    if (p === 'magic' && method === 'POST') {
+      const exp = Date.now() + 15 * 60 * 1000;
+      return send(res, 200, { token: exp + '.' + hmac('magic.' + exp), ttlMin: 15 });
+    }
+
     /* загрузка фото (JSON: { type, data: base64 }) */
     if (p === 'upload' && method === 'POST') {
       const j = await readBody(req);
@@ -211,7 +232,7 @@ module.exports = async function handler(req, res) {
       if (!ext) return send(res, 400, { error: 'Только JPG, PNG или WebP' });
       const name = crypto.randomUUID() + '.' + ext;
       const r = await sb('POST', BUCKET + '/cms/' + name, buf, ext === 'jpg' ? 'image/jpeg' : 'image/' + ext);
-      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Server error' }); }
+      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
       console.error('CMS upload ' + name + ' ip=' + ip);
       return send(res, 200, { url: PUB_BASE + name, name: name });
     }
@@ -299,7 +320,7 @@ module.exports = async function handler(req, res) {
     return send(res, 404, { error: 'Not found' });
   } catch (e) {
     console.error('CMS error:', (e && e.stack) || e);
-    return send(res, 500, { error: 'Server error' });
+    return send(res, 500, { error: 'Ошибка сервера: ' + ((e && e.message) || 'unknown') });
   }
 };
 
