@@ -1378,6 +1378,14 @@ lb.addEventListener('touchend',function(e){
   tS.pin.on=false;img.classList.remove('nofx');
   if(scale<1.01){tx=0;ty=0;scale=1;zoomed=false;img.classList.remove('grab');apply();}
   else setZoomCls();
+  // Pinch ended — block any spurious click / swipe-close
+  _pvTouchClose=true;setTimeout(function(){_pvTouchClose=false;},450);
+  // Reset 1-finger baseline to current touch so distance is ~0 on last finger lift
+  if(e.changedTouches&&e.changedTouches.length>0){
+   tS.x0=e.changedTouches[0].clientX;
+   tS.y0=e.changedTouches[0].clientY;
+  }
+  tS.moved=false;tS.tapT=0;tS.panning=zoomed;
   return;
  }
  if(e.touches.length===0&&e.changedTouches.length>0){
@@ -1393,7 +1401,8 @@ lb.addEventListener('touchend',function(e){
    tS.tapT=now;
   }else if(!tS.panning){
    tS.tapT=0;
-   if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>60){
+   // Close only on clear 1-finger swipe (threshold raised to 80px to avoid accidental close)
+   if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>80){
     e.preventDefault();
     var dir=dy>0?1:-1;
     img.style.transition='transform .32s cubic-bezier(.4,0,.2,1),opacity .28s ease';
