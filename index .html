@@ -436,19 +436,19 @@ body.pv-open{overflow:hidden;}
 #secview.open ~ #igNote,body:has(#secview.open) #igNote{opacity:0 !important;transition:opacity .3s ease;}
 .ftr-ignote{margin-top:0;text-align:center;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:.03em;line-height:1.6;color:rgba(17,17,17,.7);}
 #svFooter .ftr-mailrow{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.sv-grid .wkc{aspect-ratio:auto;border-radius:4px;overflow:hidden;background:#fff;cursor:default;box-shadow:0 2px 12px rgba(0,0,0,.07);}
-.wkc{overflow:hidden;}
+.wk-grid{grid-template-columns:1fr !important;max-width:none;width:calc(100% - 28px);margin-left:14px;margin-right:14px;}.sv-grid .wkc{aspect-ratio:auto;border-radius:12px;overflow:hidden;background:#fff;cursor:default;border:1px solid rgba(17,17,17,.12);box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);}
+.wkc{overflow:hidden;border-radius:12px;}
 .wkc::after{display:none;}
-.wkimg{position:relative;display:block;aspect-ratio:2/3;overflow:hidden;background:#e7e4de;flex-shrink:0;}
+.wkimg{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:#e7e4de;flex-shrink:0;}
 .wkimg::after{display:none;}
-.wk-info{display:flex;flex-direction:column;padding:16px 16px 14px;background:#fff;position:relative;}
-.wkcap{display:block;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;line-height:1.5;color:#111;text-transform:uppercase;margin-bottom:10px;}
-.wk-feats{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:4px;}
-.wk-feats li{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;font-weight:400;letter-spacing:.03em;color:#666;line-height:1.45;}
-.wkprice{display:block;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#111;letter-spacing:.02em;margin-bottom:12px;}
-.wkgo{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#111;color:#f2f0ec;flex-shrink:0;align-self:flex-start;}
-.wkgo svg{width:16px;height:16px;display:block;}
-@media (max-width:640px){.wkcap{font-size:10px;letter-spacing:.08em;}.wkprice{font-size:14px;}.wkgo{width:30px;height:30px;}.wkgo svg{width:13px;#igNote{font-size:7px;bottom:4px;}}
+.wk-info{display:flex;flex-direction:column;padding:16px 18px 14px;background:#fff;position:relative;}
+.wkcap{display:block;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;line-height:1.2;color:#111;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
+.wk-feats{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:4px;}
+.wk-feats li{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;letter-spacing:.02em;color:#666;line-height:1.5;}
+.wkprice{display:block;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#111;letter-spacing:.02em;margin-bottom:10px;}
+.wkgo{display:inline-flex;align-items:center;justify-content:center;width:80px;height:36px;background:#111;color:#f2f0ec;flex-shrink:0;align-self:flex-start;}
+.wkgo svg{width:22px;height:22px;display:block;}
+@media (max-width:640px){.wkcap{font-size:13px;letter-spacing:.06em;}.wkprice{font-size:17px;}.wkgo{display:inline-flex;align-items:center;justify-content:center;width:80px;height:36px;background:#111;color:#f2f0ec;flex-shrink:0;align-self:flex-start;}.wkgo svg{width:22px;height:22px;display:block;}}#igNote{font-size:7px;bottom:4px;}
 .rdm{max-width:896px;margin:8px auto 0;width:100%;}
 .rdm-card{background:#fff;border:1px solid rgba(17,17,17,.12);border-radius:14px;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);transition:box-shadow .3s ease;}
 .rdm-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);}
@@ -469,7 +469,7 @@ body.pv-open{overflow:hidden;}
 .rdm-badge:not(.on){background:transparent;color:#111;border-color:rgba(17,17,17,.3);}
 .rdm-item h4{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;color:#111;margin:6px 0 0;}
 .rdm-item p{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(17,17,17,.55);margin-top:4px;line-height:1.5;}
-@media(max-width:640px){.rdm-title{font-size:24px;}.rdm-head{padding:18px 14px 0;}.rdm-body{padding:18px 10px;}.rdm-item h4{font-size:11px;}.rdm-item p{font-size:9px;}.rdm-badge{font-size:9px;padding:3px 7px;}.rdm-btn-wrap{flex-wrap:nowrap;gap:10px;padding-left:10px;padding-right:10px;}.rdm-btn{font-size:11px;padding:0 14px;height:40px;letter-spacing:.02em;}}
+@media(max-width:640px){.rdm-title{font-size:24px;}.rdm-head{padding:18px 14px 0;}.rdm-body{padding:18px 10px;}.rdm-item h4{font-size:11px;}.rdm-item p{font-size:9px;}.rdm-badge{font-size:9px;padding:3px 7px;}.rdm-btn-wrap{flex-wrap:nowrap;gap:6px;padding-left:6px;padding-right:6px;}.rdm-btn{font-size:9px;padding:0 8px;height:34px;letter-spacing:.01em;white-space:nowrap;flex:1 1 0;min-width:0;}}
 .ct-note{grid-column:1/-1;justify-self:start;max-width:640px;margin-top:18px;text-align:left;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7;color:rgba(17,17,17,.6);}
 @media(max-width:640px){.ct-note{font-size:11px;margin-top:8px;}}
 .hw{display:flex;width:100%;align-items:center;justify-content:center;padding:8px 24px 8px;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;}
@@ -589,13 +589,22 @@ body.sec-open #navSec.anim{animation:navSecIn .7s cubic-bezier(.22,1,.36,1) both
   letter-spacing: .02em;
   text-align: center;
 }
+.rdm-heading-sub {
+  font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(11px,1.1vw,13px);
+  font-weight: 400;
+  color: #666;
+  letter-spacing: .04em;
+  text-align: center;
+  margin-top: 4px;
+}
 .rdm-btn-wrap {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   padding: clamp(24px,4vw,40px) 0 clamp(16px,3vw,28px);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .rdm-btn {
   display: inline-flex;
@@ -1078,7 +1087,7 @@ function aboutHtml(e){
  m+='</ol></div></section>';
  return m;
 }
-function stagesHtml(e){var T=e?['Shooting Stages','From request to finished photos']:['Этапы съемки','От заявки до готовых кадров'];var IT=e?[['Step 1','Request','We discuss the idea, format and shoot date','done'],['Step 2','Preparation','References, looks and location','in-progress'],['Step 3','The Shoot','Easy atmosphere and posing guidance','upcoming'],['Step 4','Result','Retouching and an online gallery','upcoming']]:[['Шаг 1','Заявка','Обсуждаем идею, формат и дату съёмки','done'],['Шаг 2','Подготовка','Референсы, образы и локация','in-progress'],['Шаг 3','Съёмка','Лёгкая атмосфера и помощь с позированием','upcoming'],['Шаг 4','Результат','Ретушь и онлайн-галерея готовых кадров','upcoming']];var h='<div class="rdm-heading">'+'<div class="rdm-heading-circle">'+'<svg class="rdm-heading-ic" viewBox="0 0 24 24" fill="currentColor"><path d="M20 5h-2.586l-1.707-1.707A1 1 0 0 0 15 3H9a1 1 0 0 0-.707.293L6.586 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm-8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>'+'</div>'+'</div>'+'<section class="rdm"><div class="rdm-card"><div class="rdm-body"><div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">';IT.forEach(function(c,i){var on=false;h+='<div class="rdm-item rdm-seq rdm-seq-'+(i+1)+'" style="animation-delay:'+(i*0.15)+'s"><span class="rdm-dot"><i></i></span><span class="rdm-badge">'+c[0]+'</span><h4>'+c[1]+'</h4><p>'+c[2]+'</p></div>';});return h+'</div></div></div></div>'+'<div class="rdm-btn-wrap">'+'<button class="rdm-btn rdm-btn--white" onclick="openSec(\'pf\')">'+(e?'View Portfolio':'Посмотреть портфолио')+'</button>'+'<button class="rdm-btn rdm-btn--black" onclick="openSec(\'ct\')">'+(e?'Schedule a Shoot':'Запланировать съёмку')+'</button></div></section>';}
+function stagesHtml(e){var T=e?['Shooting Stages','From request to finished photos']:['Этапы съемки','От заявки до готовых кадров'];var IT=e?[['Step 1','Request','We discuss the idea, format and shoot date','done'],['Step 2','Preparation','References, looks and location','in-progress'],['Step 3','The Shoot','Easy atmosphere and posing guidance','upcoming'],['Step 4','Result','Retouching and an online gallery','upcoming']]:[['Шаг 1','Заявка','Обсуждаем идею, формат и дату съёмки','done'],['Шаг 2','Подготовка','Референсы, образы и локация','in-progress'],['Шаг 3','Съёмка','Лёгкая атмосфера и помощь с позированием','upcoming'],['Шаг 4','Результат','Ретушь и онлайн-галерея готовых кадров','upcoming']];var h='<div class="rdm-heading"><span class="rdm-heading-txt">'+T[0]+'</span><span class="rdm-heading-sub">'+T[1]+'</span></div>'+'<section class="rdm"><div class="rdm-card"><div class="rdm-body"><div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">';IT.forEach(function(c,i){var on=false;h+='<div class="rdm-item rdm-seq rdm-seq-'+(i+1)+'" style="animation-delay:'+(i*0.15)+'s"><span class="rdm-dot"><i></i></span><span class="rdm-badge">'+c[0]+'</span><h4>'+c[1]+'</h4><p>'+c[2]+'</p></div>';});return h+'</div></div></div></div>'+'<div class="rdm-btn-wrap">'+'<button class="rdm-btn rdm-btn--white" onclick="openSec(\'pf\')">'+(e?'View Portfolio':'Посмотреть портфолио')+'</button>'+'<button class="rdm-btn rdm-btn--black" onclick="openSec(\'ct\')">'+(e?'Schedule a Shoot':'Запланировать съёмку')+'</button></div></section>';}
 function build(k){
  var e=isEn();
  if(back){var bl0=back.querySelector('.sv-bl');if(bl0)bl0.textContent=e?'RETURN':'ВЕРНУТЬСЯ';}
@@ -1094,8 +1103,8 @@ function build(k){
  }
  var d=SECS[k];if(!d)return;
  if(k==='pf'&&curCol!==null){buildCol(d,e);return;}
- if(k==='pf'||k==='wk'){ttl.innerHTML='<span class="sv-plq">'+d.title+'</span><span class="sv-sub">'+(k==='pf'?(e?'Best projects and favorite shots':'Лучшие проекты и любимые кадры'):(e?'Collaboration details and service pricing':'Детали сотрудничества и стоимость услуг'))+'</span>';}else{ttl.textContent=d.title;}grid.className='sv-grid';
- grid.innerHTML=(k==='pf'?'<p class="sv-intro">'+(e?'Selected works across different photography genres — from individual portraits to commercial shoots':'Избранные работы из разных направлений фотографии — от индивидуальных портретов до коммерческих съёмок')+'</p>':'')+d.items.map(function(it,i){if(k==='wk'){var feats=(e?(it[5]||[]):(it[4]||[]));var featsHtml=feats.length?'<ul class="wk-feats">'+feats.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul>':'';var titleLines=(e?it[1]:it[0]).split('\n');var titleHtml=titleLines.join('<br>');return '<div class="scard wkc" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s">'+'<span class="wkimg"><span class="simg"></span></span>'+'<div class="wk-info">'+  '<span class="wkcap">'+titleHtml+'</span>'+featsHtml+(it[2]?'<span class="wkprice">'+(e?it[3]:it[2])+'</span>':'')+'<span class="wkgo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>'+'</div>'+'</div>';}return '<div class="scard" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s"><span class="simg"></span><span class="snum">0'+(i+1)+'</span><span class="scap">'+(k==='pf'?(e?it[1]:it[0]).replace(/ /g,'<br>'):(e?it[1]:it[0]))+'</span>'+(k==='wk'&&it[2]?'<span class="sprice">'+(e?it[3]:it[2])+'</span>':'')+(k==='pf'?'<span class="s-go">'+(e?'VIEW':'СМОТРЕТЬ')+'</span>':'')+'</div>';}).join('');
+ if(k==='pf'||k==='wk'){ttl.innerHTML='<span class="sv-plq">'+d.title+'</span><span class="sv-sub">'+(k==='pf'?(e?'Best projects and favorite shots':'Лучшие проекты и любимые кадры'):(e?'Collaboration details and service pricing':'Детали сотрудничества и стоимость услуг'))+'</span>';}else{ttl.textContent=d.title;}grid.className='sv-grid'+(k==='wk'?' wk-grid':'');
+ grid.innerHTML=(k==='pf'?'<p class="sv-intro">'+(e?'Selected works across different photography genres — from individual portraits to commercial shoots':'Избранные работы из разных направлений фотографии — от индивидуальных портретов до коммерческих съёмок')+'</p>':'')+d.items.map(function(it,i){if(k==='wk'){var feats=(e?(it[5]||[]):(it[4]||[]));var featsHtml=feats.length?'<ul class="wk-feats">'+feats.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul>':'';var titleLines=(e?it[1]:it[0]).split('\n');var titleHtml=titleLines.join(' ');return '<div class="scard wkc" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s">'+'<span class="wkimg"><span class="simg"></span></span>'+'<div class="wk-info">'+  '<span class="wkcap">'+titleHtml+'</span>'+featsHtml+(it[2]?'<span class="wkprice">'+(e?it[3]:it[2])+'</span>':'')+'<span class="wkgo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>'+'</div>'+'</div>';}return '<div class="scard" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s"><span class="simg"></span><span class="snum">0'+(i+1)+'</span><span class="scap">'+(k==='pf'?(e?it[1]:it[0]).replace(/ /g,'<br>'):(e?it[1]:it[0]))+'</span>'+(k==='wk'&&it[2]?'<span class="sprice">'+(e?it[3]:it[2])+'</span>':'')+(k==='pf'?'<span class="s-go">'+(e?'VIEW':'СМОТРЕТЬ')+'</span>':'')+'</div>';}).join('');
  grid.querySelectorAll('.simg').forEach(function(el,i){if(k==='pf'&&COLPH[i]&&COLPH[i].length){el.style.backgroundImage='url("'+COLPH[i][0]+'")';return;}if(k==='wk'&&WKPH[i]){el.style.backgroundImage='url("'+WKPH[i]+'")';return;}if(!pool.length)return;var pi=(d.off+i)%pool.length;el.style.backgroundImage='url("'+pool[pi]+'")';if(poolPos&&poolPos[pi])el.style.backgroundPosition=poolPos[pi];});
  if(k==='pf'){Array.prototype.forEach.call(grid.querySelectorAll('.scard'),function(c,ci){c.addEventListener('click',function(){openCol(ci);});});}
  if(info){if(k==='wk'){info.innerHTML=stagesHtml(e);info.hidden=false;}else if(k==='pf'){info.innerHTML=(e?'<div class="col-scroll-sep"><span class="col-scroll-hint">Scroll to see more</span><span class="col-scroll-line"></span></div>':'<div class="col-scroll-sep"><span class="col-scroll-hint">Листайте<br>ниже</span><span class="col-scroll-line"></span></div>')+'<div class="col-about-reveal" id="colAboutReveal">'+aboutHtml(e)+'</div>';info.hidden=false;(function(){var svEl=document.getElementById('secview');var charsEl=document.getElementById('scrollChars');if(!charsEl||!svEl)return;var txt=isEn()?'SCROLL DOWN':'ЛИСТАЙ ВНИЗ';var chars=txt.split('');var ci=Math.floor(chars.length/2);chars.forEach(function(c,i){var s=document.createElement('span');s.className='col-scroll-char';s.textContent=c===' '?' ':c;if(c===' ')s.style.width='0.35em';s.dataset.dist=String(i-ci);charsEl.appendChild(s);});var revEl=document.getElementById('colAboutReveal');var sepEl=document.getElementById('colScrollSep');function upd(){if(!sepEl)return;var scrolled=svEl.scrollTop;var svH=svEl.clientHeight;var prog=Math.min(1,Math.max(0,(scrolled-(sepEl.offsetTop-svH))/(svH*0.55)));if(revEl){var op=Math.min(1,Math.max(0,(prog-0.1)/0.7));var ty=Math.round(60*(1-prog)*10)/10;revEl.style.opacity=op;revEl.style.transform='translateY('+ty+'px)';}}svEl.addEventListener('scroll',upd,{passive:true});upd();})();}else{info.hidden=true;info.innerHTML='';}}
