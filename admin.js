@@ -594,9 +594,14 @@
     frame.className = 'preview-frame ' + device;
     var nav = '<div class="pv-nav"><b>Alisa Miterova</b><span>PORTFOLIO&nbsp;&nbsp;&nbsp; WORK&nbsp;&nbsp;&nbsp; КОНТАКТЫ</span></div>';
     if (active === 'loader') {
-      frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-loader"><div><div class="pv-reel">' +
-        draft.loader.images.slice(0, 3).map(function (x) { return '<img src="' + esc(x.url) + '" alt="">'; }).join('') +
-        '</div><h2>' + esc(draft.loader.title.ru || 'Алиса Митерова') + '</h2><p>' + esc(draft.loader.subtitle.ru || 'Фотограф · Москва') + '</p></div></section></div>';
+      frame.innerHTML = '<div class="pv-loading">Загружаем настоящий лоадер…</div>';
+      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+        if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
+        try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
+        frame.innerHTML = '<iframe class="pv-iframe" src="/?cmsPreview=1&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
+      }).catch(function (error) {
+        frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
+      });
     }
     if (active === 'home') {
       var left = imageForHome('L'), right = imageForHome('R');

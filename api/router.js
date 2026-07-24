@@ -15,10 +15,17 @@ const SB_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const BUCKET = process.env.PHOTOS_BUCKET || process.env.NEXT_PUBLIC_PHOTOS_BUCKET || 'photos';
 const ADMIN_USER = String(process.env.ADMIN_USER || '').trim();
 const PASS_HASH = String(process.env.ADMIN_PASSWORD_HASH || '').trim();
-/* SESSION_SECRET необязателен: если не задан, секрет выводится из ADMIN_PASSWORD_HASH + ключа Supabase */
-const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + SB_KEY).digest('hex') : '');
+/* Cloudflare R2 (S3-совместимое хранилище). Если заданы все R2_* переменные — используется R2, иначе Supabase. */
+const R2_ACCOUNT_ID = String(process.env.R2_ACCOUNT_ID || '').trim();
+const R2_ACCESS_KEY_ID = String(process.env.R2_ACCESS_KEY_ID || '').trim();
+const R2_SECRET_ACCESS_KEY = String(process.env.R2_SECRET_ACCESS_KEY || '').trim();
+const R2_BUCKET = String(process.env.R2_BUCKET || 'photos').trim();
+const R2_PUBLIC_BASE_URL = String(process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE || '').trim().replace(/\/+$/, '');
+const USE_R2 = !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_PUBLIC_BASE_URL);
+/* SESSION_SECRET необязателен: если не задан, секрет выводится из ADMIN_PASSWORD_HASH + ключа хранилища */
+const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + (SB_KEY || R2_SECRET_ACCESS_KEY)).digest('hex') : '');
 const TTL = 12 * 60 * 60 * 1000;
-const PUB_BASE = SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
+const PUB_BASE = USE_R2 ? R2_PUBLIC_BASE_URL + '/cms/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
 
 /* ---------- слоты редактируемых текстов (белый список — защита от IDOR) ---------- */
 const SLOTS = [
@@ -137,21 +144,53 @@ function sanitizeAdmin(v) {
   return out;
 }
 
-/* ---------- Supabase Storage ---------- */
+/* ---------- Хранилище: Supabase Storage или Cloudflare R2 ---------- */
 async function sb(method, path, body, type) {
   const headers = { Authorization: 'Bearer ' + SB_KEY, apikey: SB_KEY };
   if (type) { headers['Content-Type'] = type; headers['x-upsert'] = 'true'; }
   return fetch(SB_URL + '/storage/v1/object/' + path, { method: method, headers: headers, body: body });
 }
+
+/* Cloudflare R2 через S3 REST API с подписью AWS Signature V4 (без SDK) */
+function hmacRaw(key, s) { return crypto.createHmac('sha256', key).update(s, 'utf8').digest(); }
+async function r2(method, key, body, type) {
+  const host = R2_ACCOUNT_ID + '.r2.cloudflarestorage.com';
+  const uri = '/' + R2_BUCKET + '/' + key;
+  const amzDate = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const shortDate = amzDate.slice(0, 8);
+  const payloadHash = crypto.createHash('sha256').update(body || '').digest('hex');
+  const headers = { host: host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': amzDate };
+  if (type) headers['content-type'] = type;
+  const signedNames = Object.keys(headers).sort();
+  const canonical = [method, uri, '', signedNames.map(function (h) { return h + ':' + headers[h]; }).join('\n') + '\n', signedNames.join(';'), payloadHash].join('\n');
+  const scope = shortDate + '/auto/s3/aws4_request';
+  const toSign = ['AWS4-HMAC-SHA256', amzDate, scope, crypto.createHash('sha256').update(canonical, 'utf8').digest('hex')].join('\n');
+  let k = hmacRaw('AWS4' + R2_SECRET_ACCESS_KEY, shortDate);
+  k = hmacRaw(k, 'auto'); k = hmacRaw(k, 's3'); k = hmacRaw(k, 'aws4_request');
+  const signature = crypto.createHmac('sha256', k).update(toSign, 'utf8').digest('hex');
+  const out = {
+    Authorization: 'AWS4-HMAC-SHA256 Credential=' + R2_ACCESS_KEY_ID + '/' + scope + ', SignedHeaders=' + signedNames.join(';') + ', Signature=' + signature,
+    'x-amz-content-sha256': payloadHash,
+    'x-amz-date': amzDate
+  };
+  if (type) out['content-type'] = type;
+  return fetch('https://' + host + uri, { method: method, headers: out, body: body });
+}
+
+/* Единая точка доступа к хранилищу: key вида "cms/имя-файла" */
+async function store(method, key, body, type) {
+  if (USE_R2) return r2(method === 'POST' ? 'PUT' : method, key, body, type);
+  return sb(method === 'PUT' ? 'POST' : method, BUCKET + '/' + key, body, type);
+}
 async function readContent() {
   try {
-    const r = await sb('GET', BUCKET + '/cms/content.json');
+    const r = await store('GET', 'cms/content.json');
     if (r.ok) return Object.assign(defaults(), JSON.parse(await r.text()));
   } catch (e) { console.error('CMS content read:', e && e.message); }
   return defaults();
 }
 async function writeContentJson(c) {
-  const r = await sb('POST', BUCKET + '/cms/content.json', JSON.stringify(c), 'application/json');
+  const r = await store('PUT', 'cms/content.json', JSON.stringify(c), 'application/json');
   if (!r.ok) throw new Error('storage write ' + r.status);
 }
 
@@ -290,7 +329,9 @@ module.exports = async function handler(req, res) {
 
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
-    const missEnv = [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY], ['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]].filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
+    const r2Vars = [['R2_ACCOUNT_ID', R2_ACCOUNT_ID], ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID], ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY], ['R2_PUBLIC_BASE_URL', R2_PUBLIC_BASE_URL]];
+    const storageVars = USE_R2 ? [] : (r2Vars.some(function (x) { return x[1]; }) ? r2Vars : [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY]]);
+    const missEnv = storageVars.concat([['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]]).filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
     if (missEnv.length) {
       if (p === 'content') return send(res, 200, { texts: [] });
       console.error('CMS missing env: ' + missEnv.join(', '));
@@ -375,8 +416,8 @@ module.exports = async function handler(req, res) {
         return send(res, 400, { error: 'Этот формат не удалось открыть. Попробуйте JPG, PNG, WebP, TIFF, GIF или AVIF.' });
       }
       const name = crypto.randomUUID() + '.avif';
-      const r = await sb('POST', BUCKET + '/cms/' + name, converted, 'image/avif');
-      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
+      const r = await store('PUT', 'cms/' + name, converted, 'image/avif');
+      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: USE_R2 ? 'Ошибка хранилища R2 (' + r.status + '). Проверьте R2_* переменные и имя бакета.' : 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
       console.error('CMS upload ' + name + ' source=' + clean(j.name, 100) + ' ip=' + ip);
       return send(res, 200, { url: PUB_BASE + name, name: name });
     }
@@ -385,9 +426,17 @@ module.exports = async function handler(req, res) {
     if (p === 'upload' && method === 'DELETE') {
       const name = String((req.query && req.query.name) || url.searchParams.get('name') || '');
       if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
-      await sb('DELETE', BUCKET + '/cms/' + name).catch(function () {});
+      await store('DELETE', 'cms/' + name).catch(function () {});
       console.error('CMS delete ' + name + ' ip=' + ip);
       return send(res, 200, { ok: true });
+    }
+
+    /* предпросмотр: публичный контент с учётом черновика, ничего не сохраняет */
+    if (p === 'preview-content' && method === 'POST') {
+      const j = await readBody(req);
+      const c = await readContent();
+      c.admin = sanitizeAdmin(j);
+      return send(res, 200, { ok: true, content: publicContent(c, req) });
     }
 
     /* новая панель: единая атомарная публикация черновика */

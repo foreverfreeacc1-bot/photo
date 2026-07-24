@@ -227,3 +227,20 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
   .pv-steps{grid-template-columns:1fr 1fr}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* ─── Форма входа (как в предыдущей версии) ─── */
+.lg-card{width:min(100%,380px);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:48px 36px 36px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.lg-logo{margin-bottom:28px;color:var(--ink)}
+.lg-h{margin:0 0 6px;font-family:var(--sans);font-size:22px;font-weight:600;letter-spacing:0}
+.lg-sub{margin:0 0 28px;color:var(--muted);font-size:12px;letter-spacing:.06em}
+.lg-form{width:100%;display:flex;flex-direction:column;gap:10px}
+.lg-form input{width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:11px 14px;font:inherit;font-size:13px;transition:border-color .2s}
+.lg-form input:focus{border-color:#a09c96;box-shadow:0 0 0 3px rgba(10,10,10,.06)}
+.lg-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:12px 18px;font:inherit;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer;margin-top:2px;transition:opacity .2s}
+.lg-btn:hover{opacity:.85}
+.lg-err{min-height:16px;margin:12px 0 0;color:var(--red);font-size:11px;letter-spacing:.04em}
+
+/* ─── Настоящий предпросмотр в iframe ─── */
+.preview-frame .pv-iframe{width:100%;height:100%;border:0;display:block;background:#fff}
+.pv-loading{display:grid;place-items:center;height:100%;min-height:240px;color:var(--muted);font-size:12px;padding:20px;text-align:center}
