@@ -68,7 +68,8 @@ function cleanImage(v) {
   return {
     id: (typeof v.id === 'string' && /^[a-f0-9-]{36}$/.test(v.id)) ? v.id : crypto.randomUUID(),
     url: u,
-    name: clean(v.name, 100)
+    name: clean(v.name, 100),
+    size: (typeof v.size === 'number' && isFinite(v.size) && v.size > 0) ? Math.min(Math.round(v.size), 99000000) : 0
   };
 }
 function cleanImages(v, limit) {
@@ -84,6 +85,7 @@ function sanitizeAdmin(v) {
     loader: {
       title: cleanLangPair(loader.title, 120),
       subtitle: cleanLangPair(loader.subtitle, 300),
+      subtitle2: cleanLangPair(loader.subtitle2, 300),
       images: cleanImages(loader.images, 4)
     },
     home: {},
@@ -192,7 +194,14 @@ async function readContent() {
     if (r.ok) {
       let raw = await r.text();
       if (USE_R2 && R2_PUBLIC_BASE_URL) raw = raw.split(R2_PUBLIC_BASE_URL + '/cms/').join('/api/img/');
-      return Object.assign(defaults(), JSON.parse(raw));
+      const c = Object.assign(defaults(), JSON.parse(raw));
+      /* миграция: прежние заглушки панели не должны перекрывать родной анимированный текст сайта */
+      if (c.admin && c.admin.loader) {
+        const lo = c.admin.loader;
+        if (lo.title && lo.title.ru === 'Алиса Митерова' && lo.title.en === 'Alisa Miterova') lo.title = { ru: '', en: '' };
+        if (lo.subtitle && lo.subtitle.ru === 'Фотограф · Москва' && lo.subtitle.en === 'Photographer · Moscow') lo.subtitle = { ru: '', en: '' };
+      }
+      return c;
     }
   } catch (e) { console.error('CMS content read:', e && e.message); }
   return defaults();
@@ -254,9 +263,10 @@ function publicContent(c, req) {
   (c.custom || []).forEach(function (x) { texts.push({ sel: x.sel, ru: x.ru || '', en: x.en || '', rep: 0 }); });
   const out = { texts: texts };
   if (rich && (rich.loader.subtitle.ru || rich.loader.subtitle.en)) {
+    const sub2 = rich.loader.subtitle2 || { ru: '', en: '' };
     out.rsub = {
-      ru: [rich.loader.subtitle.ru || '', ''],
-      en: [rich.loader.subtitle.en || '', '']
+      ru: [rich.loader.subtitle.ru || '', sub2.ru || ''],
+      en: [rich.loader.subtitle.en || '', sub2.en || '']
     };
   } else if (c.rsub) out.rsub = c.rsub;
   if (c.title) out.title = c.title;
@@ -439,7 +449,7 @@ module.exports = async function handler(req, res) {
       const r = await store('PUT', 'cms/' + name, converted, 'image/avif');
       if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: USE_R2 ? 'Ошибка хранилища R2 (' + r.status + '). Проверьте R2_* переменные и имя бакета.' : 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
       console.error('CMS upload ' + name + ' source=' + clean(j.name, 100) + ' ip=' + ip);
-      return send(res, 200, { url: PUB_BASE + name, name: name });
+      return send(res, 200, { url: PUB_BASE + name, name: name, size: converted.length });
     }
 
     /* удаление фото */

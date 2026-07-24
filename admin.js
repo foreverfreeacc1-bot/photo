@@ -28,7 +28,7 @@
 
   function emptyContent() {
     return {
-      loader: { title: { ru: 'Алиса Митерова', en: 'Alisa Miterova' }, subtitle: { ru: 'Фотограф · Москва', en: 'Photographer · Moscow' }, images: [] },
+      loader: { title: { ru: '', en: '' }, subtitle: { ru: '', en: '' }, subtitle2: { ru: '', en: '' }, images: [] },
       home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null } },
       portfolio: { about: { ru: '', en: '' }, albums: [] },
       work: { cards: [], stages: [] },
@@ -86,6 +86,9 @@
     var base = emptyContent();
     c = c || {};
     if (c.loader) base.loader = Object.assign(base.loader, c.loader);
+    if (!base.loader.subtitle2) base.loader.subtitle2 = { ru: '', en: '' };
+    if (base.loader.title && base.loader.title.ru === 'Алиса Митерова' && base.loader.title.en === 'Alisa Miterova') base.loader.title = { ru: '', en: '' };
+    if (base.loader.subtitle && base.loader.subtitle.ru === 'Фотограф · Москва' && base.loader.subtitle.en === 'Photographer · Moscow') base.loader.subtitle = { ru: '', en: '' };
     if (c.home) {
       ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
         base.home[mode] = Object.assign(base.home[mode], c.home[mode] || {});
@@ -243,12 +246,20 @@
     });
   }
 
+  function fmtSize(n) {
+    n = Number(n) || 0;
+    if (!n) return '';
+    return n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
+  }
+
   function mediaTile(image, index, coverIndex) {
+    var size = fmtSize(image.size);
     return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + '">' +
-      '<img src="' + esc(image.url) + '" alt="Загруженная фотография">' +
+      '<img src="' + esc(image.url) + '" alt="' + esc(image.name || 'Загруженная фотография') + '">' +
+      '<button class="tile-del" type="button" data-remove="' + index + '" title="Удалить" aria-label="Удалить">&minus;</button>' +
+      '<div class="tile-meta"><span class="tile-name" title="' + esc(image.name || '') + '">' + esc(image.name || 'Без названия') + '</span>' + (size ? '<span class="tile-size">' + size + '</span>' : '') + '</div>' +
       '<div class="media-actions">' +
       '<button class="media-action" type="button" data-cover="' + index + '">Превью</button>' +
-      '<button class="media-action" type="button" data-remove="' + index + '">Удалить</button>' +
       '</div></article>';
   }
 
@@ -274,11 +285,22 @@
     });
     if (!list.length) return Promise.reject(new Error('Перетащите фотографии, а не другие файлы.'));
     var results = [];
+    var total = list.length;
+    var savedTiles = null;
+    function busyTiles(text) {
+      if (!savedTiles) { savedTiles = []; $$('.upload-tile button').forEach(function (b) { savedTiles.push([b, b.innerHTML]); b.disabled = true; }); }
+      savedTiles.forEach(function (pair) { pair[0].innerHTML = '<b class="tile-spin">◌</b>' + text; });
+    }
+    function unbusyTiles() {
+      if (savedTiles) savedTiles.forEach(function (pair) { pair[0].innerHTML = pair[1]; pair[0].disabled = false; });
+      savedTiles = null;
+    }
     var chain = Promise.resolve();
-    list.forEach(function (file) {
+    list.forEach(function (file, fi) {
       chain = chain.then(function () {
         if (file.size > 4 * 1024 * 1024) throw new Error('Файл больше 4 МБ. Выберите версию поменьше.');
-        toast('Подготавливаю ' + file.name);
+        busyTiles('Конвертирую и загружаю ' + (fi + 1) + ' из ' + total + '…');
+        toast('Загружаю «' + file.name + '» — ' + (fi + 1) + ' из ' + total);
         return new Promise(function (resolve, reject) {
           var reader = new FileReader();
           reader.onload = function () { resolve(String(reader.result).split(',')[1] || ''); };
@@ -290,11 +312,11 @@
           }
           return api('upload', { method: 'POST', json: { name: file.name, type: file.type, data: data } });
         }).then(function (result) {
-          results.push({ id: uid(), url: result.url, name: result.name });
+          results.push({ id: uid(), url: result.url, name: file.name, size: result.size || file.size || 0 });
         });
       });
     });
-    return chain.then(function () { return results; });
+    return chain.then(function () { unbusyTiles(); return results; }, function (e) { unbusyTiles(); throw e; });
   }
 
   function bindDropZone(element, onImages, maxFiles) {
@@ -330,15 +352,17 @@
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Короткая фраза читается лучше. Пустое поле оставит стандартный текст.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Пустые поля оставляют родной текст сайта с анимацией. Заполняйте только то, что хотите заменить.</p></div></div>' +
       '<div class="field-grid">' +
-      field('Заголовок', data.title.ru, 'title.ru', 'input', 'Алиса Митерова') +
-      field('Подзаголовок', data.subtitle.ru, 'subtitle.ru', 'input', 'Фотограф · Москва') +
-      '</div><div class="divider"></div><div class="field-grid">' +
+      field('Заголовок', data.title.ru, 'title.ru', 'input', 'Алиса Митерова (родной текст)') +
       field('Title · English', data.title.en, 'title.en', 'input', 'Alisa Miterova') +
-      field('Subtitle · English', data.subtitle.en, 'subtitle.en', 'input', 'Photographer · Moscow') +
+      '</div><div class="divider"></div><div class="field-grid">' +
+      field('Подзаголовок · строка 1', data.subtitle.ru, 'subtitle.ru', 'input', 'Профессиональный фотограф из Москвы…') +
+      field('Подзаголовок · строка 2', data.subtitle2.ru, 'subtitle2.ru', 'input', 'Индивидуальный подход, внимание к деталям…') +
+      field('Subtitle · line 1', data.subtitle.en, 'subtitle.en', 'input', 'Professional photographer from Moscow…') +
+      field('Subtitle · line 2', data.subtitle2.en, 'subtitle2.en', 'input', 'Individual approach, attention to detail…') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Они будут мягко сменять друг друга. Используйте от 1 до 4 вертикальных кадров.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       uploadTile('Добавить фотографии', true) + '</div></div>';
     bindFields(editor, data);
