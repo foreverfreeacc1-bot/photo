@@ -949,7 +949,10 @@ if(mlTok){
     else if(!e||e.status===undefined){
       $(' #lerr').textContent='Сервер недоступен. Откройте на задеплоенном сайте.';
       showLogin();
-    } else {showApp();}
+    } else {
+      $(' #lerr').textContent=(e&&e.message)||('Ошибка сервера '+(e&&e.status?e.status:''));
+      showLogin();
+    }
   });
 }
 
