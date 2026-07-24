@@ -21,11 +21,12 @@ const R2_ACCESS_KEY_ID = String(process.env.R2_ACCESS_KEY_ID || '').trim();
 const R2_SECRET_ACCESS_KEY = String(process.env.R2_SECRET_ACCESS_KEY || '').trim();
 const R2_BUCKET = String(process.env.R2_BUCKET || 'photos').trim();
 const R2_PUBLIC_BASE_URL = String(process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE || '').trim().replace(/\/+$/, '');
-const USE_R2 = !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_PUBLIC_BASE_URL);
+const USE_R2 = !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY);
 /* SESSION_SECRET необязателен: если не задан, секрет выводится из ADMIN_PASSWORD_HASH + ключа хранилища */
 const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + (SB_KEY || R2_SECRET_ACCESS_KEY)).digest('hex') : '');
 const TTL = 12 * 60 * 60 * 1000;
-const PUB_BASE = USE_R2 ? R2_PUBLIC_BASE_URL + '/cms/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
+/* Фото отдаются через собственный домен (/api/img/...) — публичный доступ R2 не нужен */
+const PUB_BASE = USE_R2 ? '/api/img/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
 
 /* ---------- слоты редактируемых текстов (белый список — защита от IDOR) ---------- */
 const SLOTS = [
@@ -53,6 +54,8 @@ function clean(s, max) { return String(s == null ? '' : s).replace(/[\u0000-\u00
 function cleanSel(s) { s = clean(s, 120); return /^[-a-zA-Z0-9 .#_>:,()\[\]="']+$/.test(s) ? s : ''; }
 function validPos(p) { return typeof p === 'string' && /^\d{1,3}% \d{1,3}%$/.test(p); }
 function validUploadUrl(u) { return typeof u === 'string' && u.indexOf(PUB_BASE) === 0 && /^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(u.slice(PUB_BASE.length)); }
+function normUploadUrl(u) { if (typeof u !== 'string') return u; if (USE_R2 && R2_PUBLIC_BASE_URL && u.indexOf(R2_PUBLIC_BASE_URL + '/cms/') === 0) return '/api/img/' + u.slice((R2_PUBLIC_BASE_URL + '/cms/').length); return u; }
+function fileNames(o) { const m = (JSON.stringify(o) || '').match(/[a-f0-9-]{36}\.(?:jpg|png|webp|avif)/g); return new Set(m || []); }
 function validHref(h) { return typeof h === 'string' && h.length <= 300 && /^(https?:\/\/|tel:|mailto:)[^\s"'<>]+$/i.test(h); }
 function defaults() { return { texts: {}, custom: [], rsub: null, title: null, covers: {}, gallery: [], secs: null, contacts: [], admin: null }; }
 
@@ -60,10 +63,11 @@ function cleanLangPair(v, max) {
   return { ru: clean(v && v.ru, max), en: clean(v && v.en, max) };
 }
 function cleanImage(v) {
-  if (!v || !validUploadUrl(v.url)) return null;
+  const u = v ? normUploadUrl(v.url) : null;
+  if (!v || !validUploadUrl(u)) return null;
   return {
     id: (typeof v.id === 'string' && /^[a-f0-9-]{36}$/.test(v.id)) ? v.id : crypto.randomUUID(),
-    url: v.url,
+    url: u,
     name: clean(v.name, 100)
   };
 }
@@ -185,7 +189,11 @@ async function store(method, key, body, type) {
 async function readContent() {
   try {
     const r = await store('GET', 'cms/content.json');
-    if (r.ok) return Object.assign(defaults(), JSON.parse(await r.text()));
+    if (r.ok) {
+      let raw = await r.text();
+      if (USE_R2 && R2_PUBLIC_BASE_URL) raw = raw.split(R2_PUBLIC_BASE_URL + '/cms/').join('/api/img/');
+      return Object.assign(defaults(), JSON.parse(raw));
+    }
   } catch (e) { console.error('CMS content read:', e && e.message); }
   return defaults();
 }
@@ -329,7 +337,7 @@ module.exports = async function handler(req, res) {
 
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
-    const r2Vars = [['R2_ACCOUNT_ID', R2_ACCOUNT_ID], ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID], ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY], ['R2_PUBLIC_BASE_URL', R2_PUBLIC_BASE_URL]];
+    const r2Vars = [['R2_ACCOUNT_ID', R2_ACCOUNT_ID], ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID], ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY]];
     const storageVars = USE_R2 ? [] : (r2Vars.some(function (x) { return x[1]; }) ? r2Vars : [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY]]);
     const missEnv = storageVars.concat([['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]]).filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
     if (missEnv.length) {
@@ -339,6 +347,18 @@ module.exports = async function handler(req, res) {
     }
 
     /* публичный контент для сайта */
+    if (p.indexOf('img/') === 0 && method === 'GET') {
+      const name = p.slice(4);
+      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 404, { error: 'Not found' });
+      const r = await store('GET', 'cms/' + name);
+      if (!r || !r.ok) return send(res, 404, { error: 'Not found' });
+      const buf = Buffer.from(await r.arrayBuffer());
+      res.statusCode = 200;
+      res.setHeader('Content-Type', name.slice(-5) === '.avif' ? 'image/avif' : name.slice(-5) === '.webp' ? 'image/webp' : name.slice(-4) === '.png' ? 'image/png' : 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+      return res.end(buf);
+    }
+
     if (p === 'content' && method === 'GET') {
       return send(res, 200, publicContent(await readContent(), req));
     }
@@ -443,8 +463,12 @@ module.exports = async function handler(req, res) {
     if (p === 'admin-content' && method === 'PUT') {
       const j = await readBody(req);
       const c = await readContent();
+      const oldNames = fileNames(c);
       c.admin = sanitizeAdmin(j);
       await writeContentJson(c);
+      const newNames = fileNames(c);
+      const unused = Array.from(oldNames).filter(function (n) { return !newNames.has(n); });
+      if (unused.length) { await Promise.all(unused.map(function (n) { return store('DELETE', 'cms/' + n).catch(function () {}); })); console.error('CMS gc removed ' + unused.join(',')); }
       console.error('CMS publish admin-content ip=' + ip);
       return send(res, 200, { ok: true, content: c.admin });
     }
@@ -478,7 +502,8 @@ module.exports = async function handler(req, res) {
           const v = j[k];
           if (!v) return;
           const o = {};
-          if (validUploadUrl(v.url)) o.url = v.url;
+          const nu = normUploadUrl(v.url);
+          if (validUploadUrl(nu)) o.url = nu;
           if (validPos(v.pos)) o.pos = v.pos;
           if (Object.keys(o).length) cv[k] = o;
         });
@@ -508,7 +533,7 @@ module.exports = async function handler(req, res) {
         c.gallery = (Array.isArray(j) ? j.slice(0, 60) : []).map(function (x) {
           return {
             id: (x && typeof x.id === 'string' && /^[a-f0-9-]{36}$/.test(x.id)) ? x.id : crypto.randomUUID(),
-            url: validUploadUrl(x && x.url) ? x.url : '',
+            url: validUploadUrl(normUploadUrl(x && x.url)) ? normUploadUrl(x && x.url) : '',
             pos: validPos(x && x.pos) ? x.pos : ''
           };
         }).filter(function (x) { return x.url; });
