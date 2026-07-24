@@ -629,7 +629,7 @@ function renderPortfolio(v,c){
   }).join('')+'<button class="atab" id="addAlbumBtn" style="border-style:dashed">+ Альбом</button></div>';
 
   // Album editor
-  var a=albums[curAlbum]||{ru:''',en:''',preview:0,photos:[]};
+  var a=albums[curAlbum]||{ru:'',en:'',preview:0,photos:[]};
   h+='<div id="albumEditor">';
   h+='<div class="lang-pair" style="margin-bottom:14px"><div><div class="bilabel">RU Название</div><input type="text" id="albNameRu" value="'+esc(a.ru)+'" placeholder="Название RU"></div><div><div class="bilabel en">EN Название</div><input type="text" id="albNameEn" value="'+esc(a.en)+'" placeholder="Название EN"></div></div>';
 
