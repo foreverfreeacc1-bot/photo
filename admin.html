@@ -1,962 +1,110 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Панель управления — Alisa Miterova</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;500;600&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#f2f0ec;
-  --card:#ffffff;
-  --line:#e5e2dd;
-  --tx:#0a0a0a;
-  --mut:#8a8680;
-  --acc:#111111;
-  --red:#b0524c;
-  --sid:240px;
-  --nav-h:56px;
-}
-body{background:var(--bg);color:var(--tx);font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.55;min-height:100vh;}
-
-/* ─── LOGIN ───────────────────────────────────────────────── */
-#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
-.lg-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:48px 36px 36px;display:flex;flex-direction:column;align-items:center;text-align:center;}
-.lg-logo{margin-bottom:28px;color:var(--tx);}
-.lg-h{font-size:22px;font-weight:600;letter-spacing:0;margin:0 0 6px;}
-.lg-sub{color:var(--mut);font-size:12px;margin:0 0 28px;letter-spacing:.06em;}
-.lg-form{width:100%;display:flex;flex-direction:column;gap:10px;}
-.lg-form input{width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:11px 14px;font:inherit;font-size:13px;outline:none;transition:border-color .2s;}
-.lg-form input:focus{border-color:#a09c96;box-shadow:0 0 0 3px rgba(10,10,10,.06);}
-.lg-btn{width:100%;background:var(--acc);color:#fff;border:none;border-radius:10px;padding:12px 18px;font:inherit;font-size:13px;font-weight:500;letter-spacing:.08em;cursor:pointer;margin-top:2px;transition:opacity .2s;}
-.lg-btn:hover{opacity:.85;}
-.lg-err{color:var(--red);font-size:11px;margin-top:12px;min-height:16px;letter-spacing:.04em;}
-
-/* ─── LAYOUT ─────────────────────────────────────────────── */
-#app{display:none;min-height:100vh;}
-.app-inner{display:flex;min-height:100vh;}
-
-/* Sidebar */
-.sidebar{
-  position:fixed;top:0;left:0;bottom:0;
-  width:var(--sid);background:var(--card);border-right:1px solid var(--line);
-  display:flex;flex-direction:column;z-index:100;
-}
-.sid-head{padding:22px 24px 18px;border-bottom:1px solid var(--line);}
-.sid-brand{font-size:10px;letter-spacing:.22em;font-weight:500;text-transform:uppercase;color:var(--tx);}
-.sid-sub{font-size:10px;color:var(--mut);letter-spacing:.1em;margin-top:2px;}
-.sid-nav{flex:1;padding:14px 12px;overflow-y:auto;}
-.snav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--mut);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:background .18s,color .18s;border:none;background:transparent;width:100%;text-align:left;}
-.snav-item svg{opacity:.7;flex:none;}
-.snav-item:hover{background:var(--bg);color:var(--tx);}
-.snav-item.on{background:var(--acc);color:#fff;}
-.snav-item.on svg{opacity:1;}
-.sid-foot{padding:14px 16px;border-top:1px solid var(--line);display:flex;gap:8px;}
-.sid-foot button{flex:1;background:transparent;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:10px;letter-spacing:.1em;color:var(--mut);cursor:pointer;transition:border-color .18s,color .18s;}
-.sid-foot button:hover{border-color:var(--tx);color:var(--tx);}
-
-/* Main content */
-.main-content{margin-left:var(--sid);flex:1;padding:32px 36px 80px;max-width:860px;}
-.sec-title{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-weight:500;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--line);}
-
-/* ─── CARDS / FORMS ──────────────────────────────────────── */
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px;}
-.card-title{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:14px;}
-label,.lbl{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:12px 0 5px;}
-label:first-child,.lbl:first-child{margin-top:0;}
-input[type=text],input[type=url],input[type=tel],input[type=email],textarea,select{
-  width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;color:var(--tx);
-  padding:9px 11px;font:inherit;font-size:12px;outline:none;transition:border-color .2s;
-}
-input:focus,textarea:focus,select:focus{border-color:#a09c96;box-shadow:0 0 0 3px rgba(10,10,10,.05);}
-textarea{min-height:60px;resize:vertical;}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-.bilabel{display:flex;gap:4px;align-items:center;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);padding:3px 8px;border-radius:5px;background:var(--bg);margin-bottom:4px;width:fit-content;}
-.bilabel.en{color:#4a8f6a;}
-.lang-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.lang-pair > div{display:flex;flex-direction:column;}
-
-/* Buttons */
-.btn{background:var(--acc);color:#fff;border:none;border-radius:8px;padding:9px 18px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;transition:opacity .2s;font-weight:500;}
-.btn:hover{opacity:.82;}
-.btn-ghost{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:inherit;font-size:11px;letter-spacing:.07em;cursor:pointer;transition:border-color .18s,color .18s;}
-.btn-ghost:hover{border-color:var(--tx);color:var(--tx);}
-.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(176,82,76,.35);border-radius:8px;padding:7px 12px;font:inherit;font-size:11px;cursor:pointer;transition:border-color .2s;}
-.btn-danger:hover{border-color:var(--red);}
-.btn-sm{padding:5px 12px;font-size:10px;}
-.savebar{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap;}
-hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
-
-/* Preview */
-.prev-box{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0a0a0a;position:relative;}
-.prev-box img{width:100%;height:100%;object-fit:cover;display:block;}
-.prev-cover{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;}
-.prev-cover.mob{aspect-ratio:9/16;max-width:180px;}
-.prev-ph-sq{width:100%;aspect-ratio:1;background-size:cover;background-position:center;}
-.prev-label{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;letter-spacing:.1em;padding:3px 8px;border-radius:4px;}
-
-/* Photo grid */
-.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px;}
-.ph-item{position:relative;border-radius:10px;overflow:hidden;background:var(--line);aspect-ratio:1;cursor:pointer;border:2px solid transparent;transition:border-color .18s;}
-.ph-item img{width:100%;height:100%;object-fit:cover;display:block;}
-.ph-item.preview-sel{border-color:var(--acc);}
-.ph-item .ph-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;}
-.ph-item:hover .ph-del{opacity:1;}
-.ph-item .ph-prev-badge{position:absolute;bottom:5px;left:5px;background:var(--acc);color:#fff;font-size:8px;letter-spacing:.1em;padding:2px 6px;border-radius:4px;}
-
-/* Upload zone */
-.upload-zone{border:1.5px dashed var(--line);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
-.upload-zone:hover,.upload-zone.drag{border-color:#a09c96;background:rgba(0,0,0,.02);}
-.upload-zone input{display:none;}
-.upload-zone p{font-size:11px;color:var(--mut);letter-spacing:.07em;margin-top:6px;}
-.upload-zone .uz-icon{font-size:20px;}
-
-/* Album tabs */
-.album-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
-.atab{background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 14px;font:inherit;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);cursor:pointer;transition:background .18s,color .18s;}
-.atab.on{background:var(--acc);color:#fff;border-color:var(--acc);}
-
-/* Work cards */
-.wcard-wrap{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;}
-.wcard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.wcard-num{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
-.feat-list{display:flex;flex-direction:column;gap:6px;}
-.feat-row{display:flex;gap:6px;align-items:center;}
-.feat-row input{flex:1;}
-.feat-row .btn-danger{padding:5px 8px;}
-
-/* Contacts */
-.ct-row{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 22px;border-radius:10px;font-size:12px;letter-spacing:.06em;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:999;transform:translateX(-50%) translateY(8px);}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* Loader preview */
-.reel-prev{background:#0a0a0a;border-radius:12px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:10px;}
-.reel-ph-row{display:flex;gap:6px;align-items:center;}
-.reel-cell{width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,.08);flex:none;}
-.reel-feat{width:48px;height:48px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,.15);flex:none;box-shadow:0 2px 8px rgba(0,0,0,.4);}
-.reel-feat img{width:100%;height:100%;object-fit:cover;filter:grayscale(.85) contrast(1.02);}
-.reel-txt{font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.5);text-align:center;font-family:'Montserrat',sans-serif;}
-.reel-spin{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.15);border-top-color:rgba(255,255,255,.6);animation:spin .9s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* Stages */
-.stage-item{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;}
-.stage-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.stage-num{width:28px;height:28px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:.1em;flex:none;}
-
-/* Mobile nav (bottom) */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);z-index:100;padding:0 4px;padding-bottom:env(safe-area-inset-bottom);}
-.mob-nav-inner{display:flex;justify-content:space-around;}
-.mnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer;color:var(--mut);font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:none;background:transparent;transition:color .18s;}
-.mnav-item svg{flex:none;}
-.mnav-item.on{color:var(--tx);}
-
-/* Avif badge */
-.avif-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;letter-spacing:.1em;color:#4a8f6a;background:rgba(74,143,106,.1);padding:2px 8px;border-radius:4px;}
-.upload-progress{height:3px;background:var(--line);border-radius:2px;margin-top:8px;overflow:hidden;}
-.upload-progress-bar{height:100%;background:var(--acc);width:0;transition:width .3s;border-radius:2px;}
-
-/* Responsive */
-@media(max-width:900px){
-  :root{--sid:200px;}
-  .main-content{padding:24px 20px 80px;}
-}
-@media(max-width:680px){
-  .sidebar{display:none;}
-  .mob-nav{display:block;}
-  .main-content{margin-left:0;padding:16px 16px 90px;}
-  .row2{grid-template-columns:1fr;}
-  .lang-pair{grid-template-columns:1fr;}
-  .row3{grid-template-columns:1fr 1fr;}
-}
-@media(max-width:400px){
-  .row3{grid-template-columns:1fr;}
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f7f6f3">
+  <title>Управление сайтом — Alisa Miterova</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
+  <div id="login" class="login-screen is-hidden">
+    <main class="login-card">
+      <div class="mark" aria-hidden="true">AM</div>
+      <p class="eyebrow">Панель управления</p>
+      <h1>С возвращением</h1>
+      <p class="login-note">Всё важное о сайте — в одном спокойном месте.</p>
+      <form id="loginForm" class="login-form">
+        <label class="sr-only" for="loginName">Логин</label>
+        <input id="loginName" autocomplete="username" placeholder="Логин" required>
+        <label class="sr-only" for="loginPassword">Пароль</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required>
+        <button class="button button-dark" type="submit">Войти</button>
+      </form>
+      <p id="loginError" class="form-error" role="alert"></p>
+    </main>
+  </div>
 
-<!-- LOGIN -->
-<div id="login">
-  <div class="lg-card">
-    <svg class="lg-logo" fill="currentColor" height="44" viewBox="0 0 40 48" width="37" aria-hidden="true"><clipPath id="lgclip"><path d="m0 0h40v48h-40z"/></clipPath><g clip-path="url(#lgclip)"><path d="m25.0887 5.05386-3.933-1.05386-3.3145 12.3696-2.9923-11.16736-3.9331 1.05386 3.233 12.0655-8.05262-8.0526-2.87919 2.8792 8.83271 8.8328-10.99975-2.9474-1.05385625 3.933 12.01860625 3.2204c-.1376-.5935-.2104-1.2119-.2104-1.8473 0-4.4976 3.646-8.1436 8.1437-8.1436 4.4976 0 8.1436 3.646 8.1436 8.1436 0 .6313-.0719 1.2459-.2078 1.8359l10.9227 2.9267 1.0538-3.933-12.0664-3.2332 11.0005-2.9476-1.0539-3.933-12.0659 3.233 8.0526-8.0526-2.8792-2.87916-8.7102 8.71026z"/><path d="m27.8723 26.2214c-.3372 1.4256-1.0491 2.7063-2.0259 3.7324l7.913 7.9131 2.8792-2.8792z"/><path d="m25.7665 30.0366c-.9886 1.0097-2.2379 1.7632-3.6389 2.1515l2.8794 10.746 3.933-1.0539z"/><path d="m21.9807 32.2274c-.65.1671-1.3313.2559-2.0334.2559-.7522 0-1.4806-.102-2.1721-.2929l-2.882 10.7558 3.933 1.0538z"/><path d="m17.6361 32.1507c-1.3796-.4076-2.6067-1.1707-3.5751-2.1833l-7.9325 7.9325 2.87919 2.8792z"/><path d="m13.9956 29.8973c-.9518-1.019-1.6451-2.2826-1.9751-3.6862l-10.95836 2.9363 1.05385 3.933z"/></g></svg>
-    <h1 class="lg-h">С возвращением</h1>
-    <p class="lg-sub">Alisa Miterova — панель управления</p>
-    <div class="lg-form">
-      <input id="lu" placeholder="Логин" autocomplete="username">
-      <input id="lp" type="password" placeholder="Пароль" autocomplete="current-password">
-      <button id="lbtn" class="lg-btn">Войти</button>
+  <div id="adminApp" class="app-shell is-hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">AM</span>
+        <span><b>Alisa Miterova</b><small>Управление сайтом</small></span>
+      </div>
+      <nav id="mainNav" class="nav" aria-label="Разделы админ-панели"></nav>
+      <div class="sidebar-foot">
+        <button id="magicLink" class="text-button" type="button">Ссылка для входа</button>
+        <button id="logout" class="text-button" type="button">Выйти</button>
+      </div>
+    </aside>
+
+    <header class="mobile-head">
+      <button id="menuToggle" class="icon-button" type="button" aria-label="Открыть меню" aria-expanded="false"><i></i><i></i></button>
+      <span class="mark">AM</span>
+      <button class="icon-button preview-shortcut" type="button" data-preview aria-label="Открыть предпросмотр"><span class="eye-icon"></span></button>
+    </header>
+
+    <main class="workspace">
+      <header class="workspace-head">
+        <div>
+          <p id="sectionKicker" class="eyebrow"></p>
+          <h1 id="sectionTitle"></h1>
+          <p id="sectionNote" class="section-note"></p>
+        </div>
+        <div class="head-actions">
+          <span id="draftState" class="draft-state">Все изменения сохранены</span>
+          <button class="button button-light" type="button" data-preview><span class="eye-icon"></span> Предпросмотр</button>
+          <button id="publish" class="button button-dark" type="button">Опубликовать</button>
+        </div>
+      </header>
+      <section id="editor" class="editor" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div id="previewModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-panel">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">До публикации</p>
+          <h2 id="previewTitle">Предпросмотр</h2>
+        </div>
+        <div class="preview-actions">
+          <div class="device-switch" role="group" aria-label="Размер экрана">
+            <button type="button" data-device="desktop" class="is-active">Компьютер</button>
+            <button type="button" data-device="mobile">Телефон</button>
+          </div>
+          <button id="closePreview" class="icon-button close-button" type="button" aria-label="Закрыть"></button>
+        </div>
+      </header>
+      <div class="preview-stage">
+        <div id="previewFrame" class="preview-frame desktop"></div>
+      </div>
+      <footer class="modal-foot">
+        <p>Так раздел будет выглядеть после публикации.</p>
+        <button id="publishFromPreview" class="button button-dark" type="button">Всё хорошо — опубликовать</button>
+      </footer>
     </div>
-    <p id="lerr" class="lg-err"></p>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app">
-  <div class="app-inner">
-
-    <!-- SIDEBAR -->
-    <nav class="sidebar">
-      <div class="sid-head">
-        <div class="sid-brand">AM Studio</div>
-        <div class="sid-sub">Панель управления</div>
-      </div>
-      <div class="sid-nav" id="sidNav"></div>
-      <div class="sid-foot">
-        <button id="magicBtn">Magic-ссылка</button>
-        <button id="logout">Выйти</button>
-      </div>
-    </nav>
-
-    <!-- CONTENT -->
-    <main class="main-content" id="mainContent"></main>
-
   </div>
 
-  <!-- MOBILE NAV -->
-  <nav class="mob-nav"><div class="mob-nav-inner" id="mobNav"></div></nav>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-(function(){
-"use strict";
-
-var CSRF=null,STATE=null;
-var API='/api/';
-var curTab='loader';
-
-// ─── UTILS ────────────────────────────────────────────────
-function $(s){return document.querySelector(s);}
-function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function toast(m,dur){
-  var t=$(' #toast');
-  t.textContent=m;
-  t.classList.add('on');
-  clearTimeout(t._t);
-  t._t=setTimeout(function(){t.classList.remove('on');},dur||2600);
-}
-
-function api(p,opt){
-  opt=opt||{};
-  opt.credentials='same-origin';
-  opt.headers=opt.headers||{};
-  opt.headers['X-CSRF']=CSRF||'';
-  if(opt.json){opt.body=JSON.stringify(opt.json);opt.headers['Content-Type']='application/json';delete opt.json;}
-  return fetch(API+p,opt).then(function(r){
-    return r.json().catch(function(){return {};}).then(function(j){
-      if(!r.ok){var e=new Error(j.error||('Ошибка '+r.status));e.status=r.status;throw e;}
-      return j;
-    });
-  });
-}
-
-function refresh(){return api('state').then(function(st){STATE=st;CSRF=st.csrf||CSRF;});}
-
-// ─── AVIF CONVERSION ──────────────────────────────────────
-function toAvif(file){
-  return new Promise(function(resolve,reject){
-    var img=new Image();
-    var url=URL.createObjectURL(file);
-    img.onload=function(){
-      var canvas=document.createElement('canvas');
-      canvas.width=img.naturalWidth;
-      canvas.height=img.naturalHeight;
-      canvas.getContext('2d').drawImage(img,0,0);
-      URL.revokeObjectURL(url);
-      // Try AVIF first
-      canvas.toBlob(function(blob){
-        if(blob&&blob.size>100){
-          resolve({blob:blob,type:'avif'});
-        } else {
-          // Fallback to WebP
-          canvas.toBlob(function(b2){
-            resolve({blob:b2||file,type:b2?'webp':'original'});
-          },'image/webp',0.95);
-        }
-      },'image/avif',0.92);
-    };
-    img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('Не удалось загрузить изображение'));}
-    img.src=url;
-  });
-}
-
-function uploadFile(file,onProgress){
-  return toAvif(file).then(function(res){
-    var fmt=res.type;
-    var blob=res.blob;
-    return new Promise(function(resolve,reject){
-      var reader=new FileReader();
-      reader.onload=function(){
-        var b64=String(reader.result).split(',')[1]||'';
-        var type=fmt==='avif'?'image/avif':(fmt==='webp'?'image/webp':(file.type||'image/jpeg'));
-        if(onProgress)onProgress(50);
-        api('upload',{method:'POST',json:{type:type,data:b64}}).then(function(j){
-          if(!j.url)throw new Error(j.error||'Ошибка загрузки');
-          if(onProgress)onProgress(100);
-          resolve({url:j.url,fmt:fmt});
-        }).catch(reject);
-      };
-      reader.onerror=function(){reject(new Error('Ошибка чтения файла'));};
-      reader.readAsDataURL(blob);
-    });
-  });
-}
-
-// ─── NAVIGATION ───────────────────────────────────────────
-var TABS=[
-  {id:'loader',label:'Лоадер',icon:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>'},
-  {id:'home',label:'Главная',icon:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'},
-  {id:'portfolio',label:'Portfolio',icon:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>'},
-  {id:'work',label:'Work',icon:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>'},
-  {id:'contacts',label:'Контакты',icon:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'}
-];
-
-function renderNav(){
-  var sid=$(' #sidNav'),mob=$(' #mobNav');
-  sid.innerHTML=TABS.map(function(t){
-    return '<button class="snav-item'+(t.id===curTab?' on':'')+'" data-tab="'+t.id+'">'+t.icon+'<span>'+t.label+'</span></button>';
-  }).join('');
-  mob.innerHTML=TABS.map(function(t){
-    return '<button class="mnav-item'+(t.id===curTab?' on':'')+'" data-tab="'+t.id+'">'+t.icon+'<span>'+t.label+'</span></button>';
-  }).join('');
-  $$('.snav-item,  .mnav-item').forEach(function(b){
-    b.addEventListener('click',function(){curTab=b.getAttribute('data-tab');renderNav();renderView();});
-  });
-}
-
-// ─── RENDER VIEW ──────────────────────────────────────────
-function renderView(){
-  var c=STATE.content||{};
-  var v=$(' #mainContent');
-  if(curTab==='loader')renderLoader(v,c);
-  else if(curTab==='home')renderHome(v,c);
-  else if(curTab==='portfolio')renderPortfolio(v,c);
-  else if(curTab==='work')renderWork(v,c);
-  else if(curTab==='contacts')renderContacts(v,c);
-}
-
-// ──────────────────────────────────────────────────────────
-// SECTION: LOADER
-// ──────────────────────────────────────────────────────────
-function renderLoader(v,c){
-  var ld=c.loader||{};
-  var ldrTxt=ld.text||' Moscow, 2026';
-  var rph=ld.reelPhotos||[];
-  var rsub=c.rsub||{ru:['',''],en:['','']};  // subtitle paragraphs
-
-  var h='<p class="sec-title">Лоадер</p>';
-
-  // Preview
-  h+='<div class="card">';
-  h+='<div class="card-title">Предпросмотр</div>';
-  h+='<div class="reel-prev" id="reelPrev">'+buildReelPreview(rph,ldrTxt,(rsub.ru&&rsub.ru[0])||'')+'</div>';
-  h+='</div>';
-
-  // Reel photos
-  h+='<div class="card">';
-  h+='<div class="card-title">Фотографии карусели</div>';
-  h+='<p style="font-size:11px;color:var(--mut);margin-bottom:12px">Фото отображаются в центральной колонке карусели лоадера. Загрузите 3–6 фотографий. Автоматически конвертируются в AVIF.</p>';
-  h+='<div class="ph-grid" id="reelGrid">';
-  rph.forEach(function(p,i){
-    h+='<div class="ph-item" data-i="'+i+'"><img src="'+esc(p.url)+'" loading="lazy"><button class="ph-del" data-i="'+i+'">×</button></div>';
-  });
-  h+='</div>';
-  h+='<div class="upload-zone" id="reelUpZone" style="margin-top:12px"><input type="file" id="reelFileIn" accept="image/*" multiple><span class="uz-icon">📷</span><p>Нажмите или перетащите фото</p><div class="avif-badge" style="margin:6px auto 0">⟳ авто-конвертация в AVIF</div></div>';
-  h+='<div id="reelProgress" style="display:none"><div class="upload-progress"><div class="upload-progress-bar" id="reelProgBar"></div></div><p style="font-size:10px;color:var(--mut);margin-top:4px" id="reelProgTxt"></p></div>';
-  h+='</div>';
-
-  // Loader text
-  h+='<div class="card">';
-  h+='<div class="card-title">Текст лоадера</div>';
-  h+='<label>Подпись под спиннером (например: Moscow, 2026)</label>';
-  h+='<input type="text" id="ldrTxtIn" value="'+esc(ldrTxt)+'">';
-  h+='</div>';
-
-  // Subtitle (rsub)
-  h+='<div class="card">';
-  h+='<div class="card-title">Подзаголовок на главном экране</div>';
-  h+='<p style="font-size:11px;color:var(--mut);margin-bottom:12px">Два абзаца появляются под именем при загрузке сайта.</p>';
-  h+='<label>Абзац 1</label>';
-  h+='<div class="lang-pair"><div><div class="bilabel">RU</div><textarea id="rsub1ru">'+esc((rsub.ru&&rsub.ru[0])||'')+'</textarea></div><div><div class="bilabel en">EN</div><textarea id="rsub1en">'+esc((rsub.en&&rsub.en[0])||'')+'</textarea></div></div>';
-  h+='<label style="margin-top:14px">Абзац 2</label>';
-  h+='<div class="lang-pair"><div><div class="bilabel">RU</div><textarea id="rsub2ru">'+esc((rsub.ru&&rsub.ru[1])||'')+'</textarea></div><div><div class="bilabel en">EN</div><textarea id="rsub2en">'+esc((rsub.en&&rsub.en[1])||'')+'</textarea></div></div>';
-  h+='<div class="savebar"><button class="btn" id="saveLoader">Сохранить</button><span id="loaderSaved" style="font-size:11px;color:#4a8f6a;display:none">✓ Сохранено</span></div>';
-  h+='</div>';
-
-  v.innerHTML=h;
-
-  // Reel photos — handlers
-  var rphDraft=rph.slice();
-
-  function refreshReelGrid(){
-    var g=$(' #reelGrid');
-    g.innerHTML=rphDraft.map(function(p,i){
-      return '<div class="ph-item" data-i="'+i+'"><img src="'+esc(p.url)+'" loading="lazy"><button class="ph-del" data-i="'+i+'">×</button></div>';
-    }).join('');
-    g.querySelectorAll('.ph-del').forEach(function(b){
-      b.addEventListener('click',function(e){e.stopPropagation();var i=parseInt(b.getAttribute('data-i'));rphDraft.splice(i,1);refreshReelGrid();saveReelPhotos();});
-    });
-    // Update preview
-    $(' #reelPrev').innerHTML=buildReelPreview(rphDraft,$(' #ldrTxtIn').value||ldrTxt,($(' #rsub1ru')&&$(' #rsub1ru').value)||((rsub.ru&&rsub.ru[0])||''));
-  }
-
-  function saveReelPhotos(){
-    var ld2=Object.assign({},c.loader||{},{reelPhotos:rphDraft,text:$(' #ldrTxtIn').value});
-    api('loader',{method:'PUT',json:ld2}).catch(function(){});
-  }
-
-  // Upload zone
-  var uz=$(' #reelUpZone'),fi=$(' #reelFileIn');
-  uz.addEventListener('click',function(){fi.click();});
-  uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('drag');});
-  uz.addEventListener('dragleave',function(){uz.classList.remove('drag');});
-  uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('drag');handleReelFiles(Array.prototype.slice.call(e.dataTransfer.files));});
-  fi.addEventListener('change',function(){handleReelFiles(Array.prototype.slice.call(fi.files));fi.value='';;});
-
-  function handleReelFiles(files){
-    if(!files.length)return;
-    var pg=$(' #reelProgress'),bar=$(' #reelProgBar'),txt=$(' #reelProgTxt');
-    pg.style.display='';
-    var done=0;
-    var chain=Promise.resolve();
-    files.forEach(function(f){
-      chain=chain.then(function(){
-        txt.textContent='Конвертирую '+f.name+'...'+' ('+(done+1)+'/'+files.length+')';
-        return uploadFile(f,function(pct){bar.style.width=(Math.round((done/files.length+pct/100/files.length)*100))+'%';}).then(function(res){
-          rphDraft.push({url:res.url});
-          done++;
-          toast(f.name+' → '+res.fmt.toUpperCase()+' ✓');
-        });
-      });
-    });
-    chain.then(function(){
-      pg.style.display='none';
-      bar.style.width='0';  
-      refreshReelGrid();
-      saveReelPhotos();
-      toast('Фото загружены');
-    }).catch(function(e){toast(e.message);pg.style.display='none';});
-  }
-
-  // Loader text input — live preview
-  $(' #ldrTxtIn').addEventListener('input',function(){
-    $(' #reelPrev').innerHTML=buildReelPreview(rphDraft,this.value,($(' #rsub1ru')&&$(' #rsub1ru').value)||((rsub.ru&&rsub.ru[0])||''));
-  });
-
-  // Save loader text + rsub
-  $(' #saveLoader').addEventListener('click',function(){
-    var ld2={text:$(' #ldrTxtIn').value,reelPhotos:rphDraft};
-    var rsub2={ru:[$(' #rsub1ru').value,$(' #rsub2ru').value],en:[$(' #rsub1en').value,$(' #rsub2en').value]};
-    Promise.all([
-      api('loader',{method:'PUT',json:ld2}),
-      api('rsub',{method:'PUT',json:rsub2})
-    ]).then(function(){
-      toast('Лоадер сохранён');
-      var s=$(' #loaderSaved');s.style.display='';setTimeout(function(){s.style.display='none';},2000);
-      return refresh();
-    }).catch(function(e){toast(e.message);});
-  });
-
-  refreshReelGrid();
-}
-
-function buildReelPreview(photos,txt,rsub1){
-  // Build 3-column reel like the real loader
-  var cells = function(n){
-    var s='';
-    for(var i=0;i<n;i++) s+='<div class="reel-cell"></div>';
-    return s;
-  };
-  var mid='';
-  // 2 grey cells on top, then featured photos, then 2 grey cells
-  mid+='<div class="reel-cell"></div><div class="reel-cell"></div>';
-  for(var i=0;i<photos.length&&i<6;i++){
-    var u=photos[i]&&photos[i].url?photos[i].url:(typeof photos[i]==='string'?photos[i]:'');
-    if(u) mid+='<div class="reel-feat"><img src="'+esc(u)+'" alt=""></div>';
-    else mid+='<div class="reel-cell"></div>';
-    if(i<photos.length-1&&i<5) mid+='<div class="reel-cell"></div><div class="reel-cell"></div>';
-  }
-  if(!photos.length){
-    mid+='<div class="reel-cell"></div><div class="reel-cell"></div><div class="reel-cell"></div><div class="reel-cell"></div>';
-  }
-  mid+='<div class="reel-cell"></div><div class="reel-cell"></div>';
-
-  var sideCol = cells(4);
-
-  return '<div style="display:flex;gap:6px;justify-content:center;align-items:flex-start">'
-    +'<div style="display:flex;flex-direction:column;gap:6px">'+sideCol+'</div>'
-    +'<div style="display:flex;flex-direction:column;gap:6px">'+mid+'</div>'
-    +'<div style="display:flex;flex-direction:column;gap:6px">'+sideCol+'</div>'
-    +'</div>'
-    +'<div class="reel-spin"></div>'
-    +'<div class="reel-txt">'+esc(txt||'Moscow, 2026')+'</div>'
-    +'<div style="font-size:15px;letter-spacing:.22em;color:rgba(255,255,255,.9);font-weight:300;margin-top:4px;font-family:serif;">ALISA MITEROVA</div>'
-    +(rsub1?'<div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.06em;margin-top:4px;text-align:center;max-width:260px;line-height:1.7">'+esc(rsub1)+'</div>':'');
-}
-
-// ──────────────────────────────────────────────────────────
-// SECTION: HOME
-// ──────────────────────────────────────────────────────────
-function renderHome(v,c){
-  var cv=c.covers||{};
-
-  var h='<p class="sec-title">Главная страница</p>';
-  h+='<p style="font-size:11px;color:var(--mut);margin-bottom:20px;letter-spacing:.04em">На главном экране — две обложки: PORTFOLIO (слева) и WORK (справа). Можно задать разные фото для десктопа и мобильных устройств.</p>';
-
-  [['L','PORTFOLIO'],['R','WORK']].forEach(function(sd){
-    var k=sd[0],nm=sd[1];
-    var desk=(cv[k]&&cv[k].desk)||{};
-    var mob=(cv[k]&&cv[k].mob)||{};
-    h+='<div class="card">';
-    h+='<div class="card-title">'+nm+'</div>';
-    h+='<div class="row2">';
-
-    // Desktop
-    h+='<div>';
-    h+='<div class="bilabel">🖥 Десктоп</div>';
-    h+='<div class="prev-cover" id="prev_d'+k+'" style="'+( desk.url?'background-image:url('+esc(desk.url)+');':'')+'background-position:'+esc(desk.pos||' 50% 50%')+';"></div>';
-    h+='<label>Заменить фото</label><div class="upload-zone" id="uz_d'+k+'" style="padding:12px"><input type="file" id="fi_d'+k+'" accept="image/*"><span class="uz-icon">📁</span><p>Нажмите для выбора</p></div>';
-    h+='<label>Положение</label>'+posSelect('pos_d'+k,desk.pos);
-    h+='</div>';
-
-    // Mobile
-    h+='<div>';
-    h+='<div class="bilabel">📱 Мобильный</div>';
-    h+='<div style="display:flex;gap:8px;align-items:flex-start">';
-    h+='<div class="prev-cover mob" id="prev_m'+k+'" style="'+( mob.url?'background-image:url('+esc(mob.url)+');':'')+'background-position:'+esc(mob.pos||' 50% 50%')+';"></div>';
-    h+='<div style="flex:1">';
-    h+='<div class="upload-zone" id="uz_m'+k+'" style="padding:12px"><input type="file" id="fi_m'+k+'" accept="image/*"><span class="uz-icon">📁</span><p>Нажмите для выбора</p></div>';
-    h+='<label>Положение</label>'+posSelect('pos_m'+k,mob.pos);
-    h+='</div></div>';
-    h+='</div>';
-
-    h+='</div>';
-    h+='<div class="savebar"><button class="btn" id="saveCv_'+k+'">Сохранить '+nm+'</button><button class="btn-danger btn-sm" id="resetCv_'+k+'">Сбросить</button></div>';
-    h+='</div>';
-  });
-
-  v.innerHTML=h;
-
-  var draft={L:JSON.parse(JSON.stringify(cv.L||{})),R:JSON.parse(JSON.stringify(cv.R||{}))};
-
-  [['L'],['R']].forEach(function(sd){
-    var k=sd[0];
-    [['d','desk'],['m','mob']].forEach(function(sc){
-      var pfx=sc[0],sck=sc[1];
-      var uz=$(' #uz_'+pfx+k),fi=$(' #fi_'+pfx+k);
-      uz.addEventListener('click',function(){fi.click();});
-      fi.addEventListener('change',function(){
-        if(!fi.files[0])return;
-        var f=fi.files[0];
-        toast('Конвертирую...');
-        uploadFile(f).then(function(res){
-          draft[k]=draft[k]||{};
-          draft[k][sck]=draft[k][sck]||{};
-          draft[k][sck].url=res.url;
-          var prev=$(' #prev_'+pfx+k);
-          prev.style.backgroundImage='url('+res.url+')';
-          toast('Загружено → '+res.fmt.toUpperCase());
-        }).catch(function(e){toast(e.message);});
-        fi.value='';  
-      });
-      // Position select
-      var ps=$(' #ps_'+pfx+k);
-      if(ps){ps.addEventListener('change',function(){
-        draft[k]=draft[k]||{};
-        draft[k][sck]=draft[k][sck]||{};
-        draft[k][sck].pos=ps.value;
-        $(' #prev_'+pfx+k).style.backgroundPosition=ps.value||' 50% 50%';
-      });}
-    });
-    $(' #saveCv_'+k).addEventListener('click',function(){
-      api('covers',{method:'PUT',json:draft}).then(function(){
-        toast('Сохранено');return refresh();
-      }).catch(function(e){toast(e.message);});
-    });
-    $(' #resetCv_'+k).addEventListener('click',function(){
-      draft[k]={};
-      [['d','desk'],['m','mob']].forEach(function(sc){
-        var prev=$(' #prev_'+sc[0]+k);
-        if(prev){prev.style.backgroundImage='';prev.style.backgroundPosition='';}
-      });
-      toast('Сброшено');
-    });
-  });
-}
-
-function posSelect(id,cur){
-  var POS=['','50% 0%','50% 20%','50% 40%','50% 50%','50% 60%','50% 80%','50% 100%','0% 50%','100% 50%'];
-  var opts=POS.map(function(p){return '<option value="'+p+'"'+( p===(cur||'')?' selected':'')+'>'+(p===''?'по центру (авто)':'Смещение: '+p)+'</option>';}).join('');
-  return '<select id="ps_'+id+'">'+ opts+'</select>';
-}
-
-// ──────────────────────────────────────────────────────────
-// SECTION: PORTFOLIO
-// ──────────────────────────────────────────────────────────
-var curAlbum=0;
-var PF_DEF_NAMES=[[' ПОРТРЕТЫ','PORTRAITS'],[' СВАДЬБЫ','WEDDINGS'],[' КОММЕРЧЕСКАЯ СЪЁМКА','COMMERCIAL'],[' ЛАЙФСТАЙЛ','LIFESTYLE']];
-
-function renderPortfolio(v,c){
-  var pf=c.pf||{albums:[],about:{}};
-  var albums=pf.albums&&pf.albums.length?pf.albums:PF_DEF_NAMES.map(function(n,i){return {ru:n[0],en:n[1],preview:0,photos:[]};});
-  var about=pf.about||{};
-
-  var h='<p class="sec-title">Portfolio</p>';
-
-  // About block
-  h+='<div class="card">';
-  h+='<div class="card-title">Блок «О себе»</div>';
-  h+='<div class="lang-pair"><div><div class="bilabel">RU</div><textarea id="aboutRu" style="min-height:90px">'+esc(about.ru||'')+'</textarea></div><div><div class="bilabel en">EN</div><textarea id="aboutEn" style="min-height:90px">'+esc(about.en||'')+'</textarea></div></div>';
-  h+='<div class="savebar"><button class="btn" id="saveAbout">Сохранить блок о себе</button></div>';
-  h+='</div>';
-
-  // Album tabs
-  h+='<div class="card">';
-  h+='<div class="card-title">Альбомы</div>';
-  h+='<div class="album-tabs" id="albumTabs">'+albums.map(function(a,i){
-    return '<button class="atab'+( i===curAlbum?' on':'')+'" data-ai="'+i+'">'+esc(a.ru)+'</button>';
-  }).join('')+'<button class="atab" id="addAlbumBtn" style="border-style:dashed">+ Альбом</button></div>';
-
-  // Album editor
-  var a=albums[curAlbum]||{ru:'',en:'',preview:0,photos:[]};
-  h+='<div id="albumEditor">';
-  h+='<div class="lang-pair" style="margin-bottom:14px"><div><div class="bilabel">RU Название</div><input type="text" id="albNameRu" value="'+esc(a.ru)+'" placeholder="Название RU"></div><div><div class="bilabel en">EN Название</div><input type="text" id="albNameEn" value="'+esc(a.en)+'" placeholder="Название EN"></div></div>';
-
-  h+='<div class="bilabel" style="margin-bottom:6px">🖼 Превью альбома <span style="font-weight:400;font-style:italic;text-transform:none;letter-spacing:0">(нажмите на фото, чтобы выбрать)</span></div>';
-
-  if(a.photos&&a.photos.length){
-    h+='<div class="ph-grid" id="pfPhGrid">';
-    a.photos.forEach(function(p,i){
-      var isSel=(a.preview||0)===i;
-      h+='<div class="ph-item'+( isSel?' preview-sel':'')+'" data-pi="'+i+'"><img src="'+esc(p.url)+'" loading="lazy"><button class="ph-del" data-pi="'+i+'">×</button>'+( isSel?'<span class="ph-prev-badge">превью</span>':'')+'</div>';
-    });
-    h+='</div>';
-  } else {
-    h+='<div id="pfPhGrid" style="margin-bottom:10px"><p style="font-size:11px;color:var(--mut)">Нет фотографий. Загрузите ниже.</p></div>';
-  }
-
-  h+='<div class="upload-zone" id="pfUpZone" style="margin-top:12px"><input type="file" id="pfFileIn" accept="image/*" multiple><span class="uz-icon">📷</span><p>Нажмите или перетащите фото</p><div class="avif-badge" style="margin:6px auto 0">⟳ авто-конвертация в AVIF</div></div>';
-  h+='<div id="pfProgress" style="display:none"><div class="upload-progress"><div class="upload-progress-bar" id="pfProgBar"></div></div><p style="font-size:10px;color:var(--mut);margin-top:4px" id="pfProgTxt"></p></div>';
-  h+='<div class="savebar"><button class="btn" id="saveAlbum">Сохранить альбом</button>'+( albums.length>1?'<button class="btn-danger" id="delAlbum">Удалить альбом</button>':'')+'</div>';
-  h+='</div>';
-  h+='</div>';
-
-  v.innerHTML=h;
-
-  var albumsDraft=JSON.parse(JSON.stringify(albums));
-
-  // Tabs
-  $$('.atab[data-ai]').forEach(function(b){
-    b.addEventListener('click',function(){curAlbum=parseInt(b.getAttribute('data-ai'));renderPortfolio(v,STATE.content||{});});
-  });
-  $(' #addAlbumBtn').addEventListener('click',function(){
-    albumsDraft.push({ru:'НОВЫЙ АЛЬБОМ',en:'NEW ALBUM',preview:0,photos:[]});
-    curAlbum=albumsDraft.length-1;
-    api('pf',{method:'PUT',json:{albums:albumsDraft,about:c.pf&&c.pf.about||{}}}).then(function(){return refresh();}).then(function(){renderPortfolio(v,STATE.content||{});}).catch(function(e){toast(e.message);});
-  });
-
-  // Album photos — click to set preview
-  var ad=albumsDraft[curAlbum];
-  $$('.ph-item[data-pi]').forEach(function(el){
-    el.addEventListener('click',function(e){
-      if(e.target.classList.contains('ph-del'))return;
-      var pi=parseInt(el.getAttribute('data-pi'));
-      ad.preview=pi;
-      $$('.ph-item[data-pi]').forEach(function(x){x.classList.remove('preview-sel');x.querySelector('.ph-prev-badge')&&x.querySelector('.ph-prev-badge').remove();});
-      el.classList.add('preview-sel');
-      var b=document.createElement('span');b.className='ph-prev-badge';b.textContent='превью';el.appendChild(b);
-    });
-    var del=el.querySelector('.ph-del');
-    if(del)del.addEventListener('click',function(e){
-      e.stopPropagation();
-      var pi=parseInt(del.getAttribute('data-pi'));
-      ad.photos.splice(pi,1);
-      if(ad.preview>=ad.photos.length)ad.preview=0;
-      renderPortfolio(v,STATE.content||{});
-    });
-  });
-
-  // Upload
-  var uz=$(' #pfUpZone'),fi=$(' #pfFileIn');
-  uz.addEventListener('click',function(){fi.click();});
-  uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('drag');});
-  uz.addEventListener('dragleave',function(){uz.classList.remove('drag');});
-  uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('drag');handlePfFiles(Array.prototype.slice.call(e.dataTransfer.files));});
-  fi.addEventListener('change',function(){handlePfFiles(Array.prototype.slice.call(fi.files));fi.value='';});
-
-  function handlePfFiles(files){
-    if(!files.length)return;
-    var pg=$(' #pfProgress'),bar=$(' #pfProgBar'),txt=$(' #pfProgTxt');
-    pg.style.display='';
-    var done=0,total=files.length;
-    var chain=Promise.resolve();
-    files.forEach(function(f){
-      chain=chain.then(function(){
-        txt.textContent='Конвертирую '+f.name+'... ('+( done+1)+'/'+total+')';
-        return uploadFile(f,function(pct){bar.style.width=(Math.round((done/total+pct/100/total)*100))+'%';}).then(function(res){
-          ad.photos.push({url:res.url});
-          if(ad.photos.length===1)ad.preview=0;
-          done++;
-          toast(f.name+' → '+res.fmt.toUpperCase()+'✓');
-        });
-      });
-    });
-    chain.then(function(){
-      pg.style.display='none';bar.style.width='0';
-      renderPortfolio(v,STATE.content||{});
-    }).catch(function(e){toast(e.message);pg.style.display='none';});
-  }
-
-  $(' #saveAbout').addEventListener('click',function(){
-    var ab={ru:$(' #aboutRu').value,en:$(' #aboutEn').value};
-    api('about',{method:'PUT',json:ab}).then(function(){toast('О себе сохранено');return refresh();}).catch(function(e){toast(e.message);});
-  });
-
-  $(' #saveAlbum').addEventListener('click',function(){
-    ad.ru=$(' #albNameRu').value;
-    ad.en=$(' #albNameEn').value;
-    api('pf',{method:'PUT',json:{albums:albumsDraft,about:c.pf&&c.pf.about||{}}}).then(function(){toast('Альбом сохранён');return refresh();}).catch(function(e){toast(e.message);});
-  });
-
-  var delBtn=$(' #delAlbum');
-  if(delBtn)delBtn.addEventListener('click',function(){
-    if(!confirm('Удалить альбом «'+ad.ru+'»? Все фото тоже будут удалены.'))return;
-    albumsDraft.splice(curAlbum,1);
-    curAlbum=Math.max(0,curAlbum-1);
-    api('pf',{method:'PUT',json:{albums:albumsDraft,about:c.pf&&c.pf.about||{}}}).then(function(){return refresh();}).then(function(){renderPortfolio(v,STATE.content||{});}).catch(function(e){toast(e.message);});
-  });
-}
-
-// ──────────────────────────────────────────────────────────
-// SECTION: WORK
-// ──────────────────────────────────────────────────────────
-var WK_DEF=[['ИНДИВИДУАЛЬНАЯ\nУЛИЧНАЯ / ДОМАШНЯЯ\nСЪЁМКА','INDIVIDUAL\nOUTDOOR / HOME\nSESSION','12 000 ₽','12,000 ₽',['— длительность 1–1,5 часа','— помощь в подборе образа','— от 30 фотографий в ретуши'],['— duration 1–1.5 hours','— outfit help','— 30+ retouched photos']],['ПОРТРЕТНАЯ\nСЪЁМКА','PORTRAIT\nSESSION','от 9 000 ₽','from 9,000 ₽',['— длительность 1–2 часа','— от 40 кадров'],['— duration 1–2 hours','— 40+ photos']],['СЕМЕЙНАЯ\nФОТОСЕССИЯ','FAMILY\nSESSION','от 12 000 ₽','from 12,000 ₽',['— от 60 кадров','— авторская ретушь'],['— 60+ photos','— author retouching']],['СВАДЕБНАЯ\nСЪЁМКА','WEDDING\nPHOTOGRAPHY','от 60 000 ₽','from 60,000 ₽',['— полный день','— 400+ кадров'],['— full day','— 400+ photos']]];
-
-var ST_DEF=[[' Заявка','Обсуждаем идею, формат и дату','Request','Discuss the idea and format'],[' Подготовка','Референсы и образы','Preparation','References and looks'],[' Съёмка','Лёгкая атмосфера','The Shoot','Easy atmosphere'],[' Результат','Ретушь и онлайн-галерея','Result','Retouching and gallery']];
-
-function renderWork(v,c){
-  var sc=c.secs||{};
-  var items=(sc.wk&&sc.wk.items)||WK_DEF;
-  var stages=(c.stages)||ST_DEF;
-
-  var h='<p class="sec-title">Work</p>';
-
-  // Cards preview
-  h+='<div class="card">';
-  h+='<div class="card-title">Карточки услуг</div>';
-  items.forEach(function(it,i){
-    var featsRu=it[4]||[];
-    var featsEn=it[5]||[];
-    h+='<div class="wcard-wrap">';
-    h+='<div class="wcard-head"><span class="wcard-num">Карточка '+(i+1)+'</span><button class="btn-danger btn-sm" data-wdel="'+i+'">Удалить</button></div>';
-    h+='<div class="lang-pair">';
-    h+='<div><div class="bilabel">RU Название</div><textarea class="wk-title-ru" data-wi="'+i+'" style="min-height:54px">'+esc(it[0])+'</textarea></div>';
-    h+='<div><div class="bilabel en">EN Название</div><textarea class="wk-title-en" data-wi="'+i+'" style="min-height:54px">'+esc(it[1])+'</textarea></div>';
-    h+='</div>';
-    h+='<div class="row2" style="margin-top:10px">';
-    h+='<div><div class="bilabel">RU Цена</div><input class="wk-price-ru" data-wi="'+i+'" type="text" value="'+esc(it[2])+'"></div>';
-    h+='<div><div class="bilabel en">EN Цена</div><input class="wk-price-en" data-wi="'+i+'" type="text" value="'+esc(it[3])+'"></div>';
-    h+='</div>';
-    h+='<div style="margin-top:12px">';
-    h+='<div class="bilabel">Что включено</div>';
-    h+='<div class="lang-pair" style="margin-top:6px">';
-    h+='<div><div class="bilabel" style="font-size:8px">RU</div><div class="feat-list" id="feat_ru_'+i+'">';
-    featsRu.forEach(function(f,fi){h+=featureRow(f,i,'ru',fi);});
-    h+='</div><button class="btn-ghost btn-sm" style="margin-top:6px" data-addru="'+i+'">+ Пункт RU</button></div>';
-    h+='<div><div class="bilabel" style="font-size:8px;color:#4a8f6a">EN</div><div class="feat-list" id="feat_en_'+i+'">';
-    featsEn.forEach(function(f,fi){h+=featureRow(f,i,'en',fi);});
-    h+='</div><button class="btn-ghost btn-sm" style="margin-top:6px" data-adden="'+i+'">+ Item EN</button></div>';
-    h+='</div></div>';
-    h+='</div><hr>';
-  });
-  h+='<button class="btn-ghost" id="addWkCard">+ Добавить карточку</button>';
-  h+='<div class="savebar"><button class="btn" id="saveWork">Сохранить карточки</button></div>';
-  h+='</div>';
-
-  // Stages
-  h+='<div class="card" style="margin-top:14px">';
-  h+='<div class="card-title">Этапы съёмки</div>';
-  h+='<div id="stagesWrap">';
-  stages.forEach(function(st,i){
-    h+='<div class="stage-item" data-si="'+i+'">';
-    h+='<div class="stage-head"><div class="stage-num">'+( i+1)+'</div><input type="text" class="st-name-ru" data-si="'+i+'" value="'+esc(st[0])+'" placeholder="Название RU" style="flex:1;margin-right:6px"><input type="text" class="st-name-en" data-si="'+i+'" value="'+esc(st[2])+'" placeholder="Name EN" style="flex:1"></div>';
-    h+='<div class="lang-pair"><div><textarea class="st-desc-ru" data-si="'+i+'" style="min-height:40px" placeholder="Описание RU">'+esc(st[1])+'</textarea></div><div><textarea class="st-desc-en" data-si="'+i+'" style="min-height:40px" placeholder="Description EN">'+esc(st[3])+'</textarea></div></div>';
-    h+='</div>';
-  });
-  h+='</div>';
-  h+='<div class="savebar"><button class="btn-ghost" id="addStage">+ Этап</button><button class="btn" id="saveStages">Сохранить этапы</button></div>';
-  h+='</div>';
-
-  v.innerHTML=h;
-
-  var wkDraft=JSON.parse(JSON.stringify(items));
-  var stDraft=JSON.parse(JSON.stringify(stages));
-
-  // Delete card
-  $$(' [data-wdel]').forEach(function(b){
-    b.addEventListener('click',function(){var i=parseInt(b.getAttribute('data-wdel'));wkDraft.splice(i,1);toast('Карточка удалена — не забудьте сохранить');renderWork(v,STATE.content||{});});
-  });
-
-  // Add feat rows
-  $$(' [data-addru]').forEach(function(b){
-    b.addEventListener('click',function(){var i=parseInt(b.getAttribute('data-addru'));var l=$(' #feat_ru_'+i);l.insertAdjacentHTML('beforeend',featureRow('',i,'ru',l.children.length));});
-  });
-  $$(' [data-adden]').forEach(function(b){
-    b.addEventListener('click',function(){var i=parseInt(b.getAttribute('data-adden'));var l=$(' #feat_en_'+i);l.insertAdjacentHTML('beforeend',featureRow('',i,'en',l.children.length));});
-  });
-
-  // Add card
-  $(' #addWkCard').addEventListener('click',function(){
-    wkDraft.push(['НОВАЯ УСЛУГА','NEW SERVICE','0 ₽','0 ₽',[],[]]);  
-    renderWork(v,Object.assign({},STATE.content||{},{secs:Object.assign({},sc,{wk:{items:wkDraft}})}));
-  });
-
-  // Save work
-  $(' #saveWork').addEventListener('click',function(){
-    var out=[];
-    $$('.wcard-wrap').forEach(function(card,i){
-      if(!wkDraft[i])return;
-      var feRu=Array.prototype.map.call(card.querySelectorAll('input.feat-in-ru'),function(x){return x.value;}).filter(Boolean);
-      var feEn=Array.prototype.map.call(card.querySelectorAll('input.feat-in-en'),function(x){return x.value;}).filter(Boolean);
-      var ru=card.querySelector('.wk-title-ru'),en=card.querySelector('.wk-title-en');
-      var pru=card.querySelector('.wk-price-ru'),pen=card.querySelector('.wk-price-en');
-      out.push([ru?ru.value:'',en?en.value:'',pru?pru.value:'',pen?pen.value:'',feRu,feEn]);
-    });
-    api('secs',{method:'PUT',json:{pf:sc.pf,wk:{items:out}}}).then(function(){toast('Карточки сохранены');return refresh();}).catch(function(e){toast(e.message);});
-  });
-
-  // Add stage
-  $(' #addStage').addEventListener('click',function(){
-    stDraft.push(['Новый этап','Описание','New Step','Description']);
-    var sw=$(' #stagesWrap');
-    var i=stDraft.length-1;
-    var st=stDraft[i];
-    var item=document.createElement('div');
-    item.className='stage-item';item.setAttribute('data-si',i);
-    item.innerHTML='<div class="stage-head"><div class="stage-num">'+( i+1)+'</div><input type="text" class="st-name-ru" data-si="'+i+'" value="'+esc(st[0])+'" placeholder="Название RU" style="flex:1;margin-right:6px"><input type="text" class="st-name-en" data-si="'+i+'" value="'+esc(st[2])+'" placeholder="Name EN" style="flex:1"></div><div class="lang-pair"><div><textarea class="st-desc-ru" data-si="'+i+'" style="min-height:40px" placeholder="Описание RU">'+esc(st[1])+'</textarea></div><div><textarea class="st-desc-en" data-si="'+i+'" style="min-height:40px" placeholder="Description EN">'+esc(st[3])+'</textarea></div></div>';
-    sw.appendChild(item);
-  });
-
-  // Save stages
-  $(' #saveStages').addEventListener('click',function(){
-    var out=[];
-    $$('.stage-item').forEach(function(el){
-      var nru=el.querySelector('.st-name-ru'),nen=el.querySelector('.st-name-en');
-      var dru=el.querySelector('.st-desc-ru'),den=el.querySelector('.st-desc-en');
-      out.push([nru?nru.value:'',dru?dru.value:'',nen?nen.value:'',den?den.value:'']);
-    });
-    api('stages',{method:'PUT',json:out}).then(function(){toast('Этапы сохранены');return refresh();}).catch(function(e){toast(e.message);});
-  });
-}
-
-function featureRow(val,ci,lang,fi){
-  return '<div class="feat-row"><input type="text" class="feat-in-'+lang+'" value="'+esc(val)+'" placeholder="— пункт"><button class="btn-danger" style="padding:5px 8px" onclick="this.parentNode.remove()">×</button></div>';
-}
-
-// ──────────────────────────────────────────────────────────
-// SECTION: CONTACTS
-// ──────────────────────────────────────────────────────────
-var CT_DEF=[{icon:'tg',label:'TELEGRAM',sub:'@vpsxm',href:'https://t.me/vpsxm'},{icon:'ig',label:'INSTAGRAM',sub:'@alisamiterova',href:'https://instagram.com/'},{icon:'mx',label:'MAX',sub:'max.ru',href:'https://max.ru'},{icon:'ph',label:'ТЕЛЕФОН',sub:'+7 000 000-00-00',href:'tel:+70000000000'}];
-
-function renderContacts(v,c){
-  var cc=(c.contacts&&c.contacts.length)?c.contacts:CT_DEF;
-
-  var h='<p class="sec-title">Контакты</p>';
-  h+='<div class="card">';
-  h+='<div class="card-title">Ссылки и контакты</div>';
-  h+='<p style="font-size:11px;color:var(--mut);margin-bottom:16px">Укажите ссылки в формате https://…, tel:+7… или mailto:…</p>';
-  h+='<div id="ctRows">';
-  cc.forEach(function(x,i){h+=ctRow(x,i);});
-  h+='</div>';
-  h+='<button class="btn-ghost" id="addCtBtn">+ Добавить контакт</button>';
-  h+='<div class="savebar"><button class="btn" id="saveCt">Сохранить контакты</button></div>';
-  h+='</div>';
-
-  v.innerHTML=h;
-
-  function rebindCtDel(){
-    $$('.ct-del').forEach(function(b){
-      b.onclick=function(){b.closest('.ct-row').remove();};
-    });
-  }
-  rebindCtDel();
-
-  $(' #addCtBtn').addEventListener('click',function(){
-    var rows=$(' #ctRows');
-    var div=document.createElement('div');
-    div.innerHTML=ctRow({icon:'tg',label:'',sub:'',href:''},rows.children.length);
-    rows.appendChild(div.firstChild);
-    rebindCtDel();
-  });
-
-  $(' #saveCt').addEventListener('click',function(){
-    var arr=[];
-    $$('.ct-row').forEach(function(r){
-      arr.push({
-        icon:r.querySelector('.ct-icon').value,
-        label:r.querySelector('.ct-label').value,
-        sub:r.querySelector('.ct-sub').value,
-        href:r.querySelector('.ct-href').value
-      });
-    });
-    api('contacts',{method:'PUT',json:arr}).then(function(){toast('Контакты сохранены');return refresh();}).catch(function(e){toast(e.message);});
-  });
-}
-
-function ctRow(x,i){
-  return '<div class="ct-row"><div class="row3">'+ '<div><label>Иконка</label><select class="ct-icon"><option value="tg"'+((x.icon)==='tg'?' selected':'')+'>Telegram</option><option value="ig"'+((x.icon)==='ig'?' selected':'')+'>Instagram</option><option value="mx"'+((x.icon)==='mx'?' selected':'')+'>MAX</option><option value="ph"'+((x.icon)==='ph'?' selected':'')+'>Телефон</option><option value="gh"'+((x.icon)==='gh'?' selected':'')+'>GitHub</option><option value="vk"'+((x.icon)==='vk'?' selected':'')+'>VK</option></select></div>'+ '<div><label>Название</label><input type="text" class="ct-label" value="'+esc(x.label||'')+'" placeholder="TELEGRAM"></div>'+ '<div><label>Подпись</label><input type="text" class="ct-sub" value="'+esc(x.sub||'')+'" placeholder="@username"></div>'+ '</div><label>Ссылка</label><div style="display:flex;gap:8px"><input type="text" class="ct-href" value="'+esc(x.href||'')+'" placeholder="https://t.me/…"><button class="btn-danger ct-del">×</button></div></div>';
-}
-
-// ─── INIT ─────────────────────────────────────────────────
-function showApp(){if(!STATE){showLogin();return;}$(' #login').style.display='none';$(' #app').style.display='block';renderNav();renderView();}
-function showLogin(){$(' #app').style.display='none';$(' #login').style.display='';}
-
-$(' #lbtn').addEventListener('click',function(){
-  $(' #lerr').textContent='';
-  api('login',{method:'POST',json:{u:$(' #lu').value,p:$(' #lp').value}}).then(function(j){
-    CSRF=j.csrf;return refresh();
-  }).then(showApp).catch(function(e){$(' #lerr').textContent=e.message;});
-});
-$(' #lp').addEventListener('keydown',function(e){if(e.key==='Enter')$(' #lbtn').click();});
-$(' #logout').addEventListener('click',function(){api('logout',{method:'POST'}).then(function(){location.reload();}).catch(function(){location.reload();});});
-$(' #magicBtn').addEventListener('click',function(){
-  api('magic',{method:'POST'}).then(function(j){
-    var u=location.origin+location.pathname+'?ml='+encodeURIComponent(j.token);
-    var fb=function(){window.prompt('Скопируйте ссылку (действует 15 минут):',u);};
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){toast('Magic-ссылка скопирована — действует 15 минут');},fb);}else{fb();}
-  }).catch(function(e){toast(e.message);});
-});
-
-// Magic link auto-login
-var mlTok=null;try{mlTok=new URLSearchParams(location.search).get('ml');}catch(e){}
-if(mlTok){
-  history.replaceState(null,'',location.pathname);
-  api('mlogin',{method:'POST',json:{t:mlTok}}).then(function(j){CSRF=j.csrf;return refresh();}).then(showApp).catch(function(e){$(' #lerr').textContent=e.message;showLogin();});
-} else {
-  refresh().then(showApp).catch(function(e){
-    if(e&&e.status===401){showLogin();}
-    else if(!e||e.status===undefined){
-      $(' #lerr').textContent='Сервер недоступен. Откройте на задеплоенном сайте.';
-      showLogin();
-    } else {
-      $(' #lerr').textContent=(e&&e.message)||('Ошибка сервера '+(e&&e.status?e.status:''));
-      showLogin();
-    }
-  });
-}
-
-})();
-</script>
+  <div id="confirmModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-card">
+      <p class="eyebrow">Последняя проверка</p>
+      <h2 id="confirmTitle">Опубликовать изменения?</h2>
+      <p>Новые фотографии и тексты станут доступны на сайте.</p>
+      <div class="confirm-actions">
+        <button id="cancelPublish" class="button button-light" type="button">Ещё проверить</button>
+        <button id="confirmPublish" class="button button-dark" type="button">Опубликовать</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input id="filePicker" type="file" hidden>
+  <script src="/admin.js"></script>
 </body>
 </html>
