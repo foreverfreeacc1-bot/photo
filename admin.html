@@ -919,7 +919,7 @@ function ctRow(x,i){
 }
 
 // ─── INIT ─────────────────────────────────────────────────
-function showApp(){if(!STATE){showLogin();return;}$(' #login').style.display='none';$(' #app').style.display='';renderNav();renderView();}
+function showApp(){if(!STATE){showLogin();return;}$(' #login').style.display='none';$(' #app').style.display='block';renderNav();renderView();}
 function showLogin(){$(' #app').style.display='none';$(' #login').style.display='';}
 
 $(' #lbtn').addEventListener('click',function(){
