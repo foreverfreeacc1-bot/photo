@@ -2,25 +2,19 @@
    Alisa Miterova — CMS API (Vercel Serverless Function)
    Все запросы /api/* приходят сюда через rewrite (см. vercel.json).
    Хранение: Supabase Storage — контент cms/content.json, фото cms/<uuid>.<ext>
-   Локальные команды (нужен Node 18+):
-     node api/router.js hash "пароль"  → строка ADMIN_PASSWORD_HASH
-     node api/router.js secret          → строка SESSION_SECRET
    ============================================================ */
 'use strict';
 const crypto = require('crypto');
-const sharp = require('sharp');
 
 const SB_URL = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
 const SB_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const BUCKET = process.env.PHOTOS_BUCKET || process.env.NEXT_PUBLIC_PHOTOS_BUCKET || 'photos';
 const ADMIN_USER = String(process.env.ADMIN_USER || '').trim();
 const PASS_HASH = String(process.env.ADMIN_PASSWORD_HASH || '').trim();
-/* SESSION_SECRET необязателен: если не задан, секрет выводится из ADMIN_PASSWORD_HASH + ключа Supabase */
 const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + SB_KEY).digest('hex') : '');
 const TTL = 12 * 60 * 60 * 1000;
 const PUB_BASE = SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
 
-/* ---------- слоты редактируемых текстов (белый список — защита от IDOR) ---------- */
 const SLOTS = [
   { id: 'brand', sel: '#brand', label: 'Логотип в шапке (ALISA MITEROVA)' },
   { id: 'galCaption', sel: '.gal-caption', label: 'Подпись «Выберите раздел»' },
@@ -29,7 +23,7 @@ const SLOTS = [
   { id: 'ctL2', sel: '#ctL .ct2', label: 'Описание PORTFOLIO (основное)' },
   { id: 'cfL2', sel: '#cfL .ct2', label: 'Описание PORTFOLIO (при наведении)' },
   { id: 'cfR2', sel: '#cfR .ct2', label: 'Описание WORK (при наведении)' },
-  { id: 'tick', sel: '.tickin', label: 'Бегущая строка WORK (один сегмент, в конце « · »)', rep: 8 },
+  { id: 'tick', sel: '.tickin', label: 'Бегущая строка WORK', rep: 8 },
   { id: 'mpiPf', sel: '.mpi[data-sec="pf"]', label: 'Меню: пункт Portfolio' },
   { id: 'mpiWk', sel: '.mpi[data-sec="wk"]', label: 'Меню: пункт Work' },
   { id: 'mpiCt', sel: '.mpi[data-sec="ct"]', label: 'Меню: пункт Контакты' },
@@ -39,109 +33,27 @@ const SLOTS = [
   { id: 'svBack', sel: '.sv-bl', label: 'Кнопка НАЗАД в разделах' }
 ];
 
-/* ---------- утилиты ---------- */
 function hmac(s) { return crypto.createHmac('sha256', SECRET).update(String(s)).digest('hex'); }
 function safeEq(a, b) { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); }
 function clean(s, max) { return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').slice(0, max || 2000).trim(); }
-function cleanSel(s) { s = clean(s, 120); return /^[-a-zA-Z0-9 .#_>:,()\[\]="']+$/.test(s) ? s : ''; }
-function validPos(p) { return typeof p === 'string' && /^\d{1,3}% \d{1,3}%$/.test(p); }
-function validUploadUrl(u) { return typeof u === 'string' && u.indexOf(PUB_BASE) === 0 && /^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(u.slice(PUB_BASE.length)); }
+function cleanSel(s) { s = clean(s, 120); return /^[-a-zA-Z0-9 .#_>:,()[\]="']+$/.test(s) ? s : ''; }
+function validPos(p) { return !p || (typeof p === 'string' && /^[\d.]{1,6}% [\d.]{1,6}%$/.test(p)); }
+function validUploadUrl(u) {
+  if (typeof u !== 'string') return false;
+  if (u.indexOf(PUB_BASE) !== 0) return false;
+  return /^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(u.slice(PUB_BASE.length));
+}
 function validHref(h) { return typeof h === 'string' && h.length <= 300 && /^(https?:\/\/|tel:|mailto:)[^\s"'<>]+$/i.test(h); }
-function defaults() { return { texts: {}, custom: [], rsub: null, title: null, covers: {}, gallery: [], secs: null, contacts: [], admin: null }; }
-
-function cleanLangPair(v, max) {
-  return { ru: clean(v && v.ru, max), en: clean(v && v.en, max) };
-}
-function cleanImage(v) {
-  if (!v || !validUploadUrl(v.url)) return null;
-  return {
-    id: (typeof v.id === 'string' && /^[a-f0-9-]{36}$/.test(v.id)) ? v.id : crypto.randomUUID(),
-    url: v.url,
-    name: clean(v.name, 100)
-  };
-}
-function cleanImages(v, limit) {
-  return (Array.isArray(v) ? v.slice(0, limit) : []).map(cleanImage).filter(Boolean);
-}
-function sanitizeAdmin(v) {
-  v = v && typeof v === 'object' ? v : {};
-  const loader = v.loader || {};
-  const home = v.home || {};
-  const portfolio = v.portfolio || {};
-  const work = v.work || {};
-  const out = {
-    loader: {
-      title: cleanLangPair(loader.title, 120),
-      subtitle: cleanLangPair(loader.subtitle, 300),
-      images: cleanImages(loader.images, 4)
-    },
-    home: {},
-    portfolio: {
-      about: cleanLangPair(portfolio.about, 4000),
-      albums: []
-    },
-    work: { cards: [], stages: [] },
-    contacts: []
-  };
-  ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
-    const item = home[mode] || {};
-    out.home[mode] = { L: cleanImage(item.L), R: cleanImage(item.R) };
-  });
-  out.portfolio.albums = (Array.isArray(portfolio.albums) ? portfolio.albums.slice(0, 12) : []).map(function (album) {
-    const photos = cleanImages(album && album.photos, 80);
-    const preview = clean(album && album.previewId, 40);
-    return {
-      id: (album && typeof album.id === 'string' && /^[a-f0-9-]{36}$/.test(album.id)) ? album.id : crypto.randomUUID(),
-      title: cleanLangPair(album && album.title, 120),
-      previewId: photos.some(function (photo) { return photo.id === preview; }) ? preview : (photos[0] ? photos[0].id : ''),
-      photos: photos
-    };
-  }).filter(function (album) { return album.title.ru || album.title.en || album.photos.length; });
-  out.work.cards = (Array.isArray(work.cards) ? work.cards.slice(0, 12) : []).map(function (card) {
-    const oldDescription = cleanLangPair(card && card.description, 1000);
-    const oldSteps = Array.isArray(card && card.steps) ? card.steps : [];
-    const features = card && card.features || {};
-    return {
-      id: (card && typeof card.id === 'string' && /^[a-f0-9-]{36}$/.test(card.id)) ? card.id : crypto.randomUUID(),
-      image: cleanImage(card && card.image),
-      title: cleanLangPair(card && card.title, 120),
-      price: typeof (card && card.price) === 'string'
-        ? { ru: clean(card.price, 80), en: clean(card.price, 80) }
-        : cleanLangPair(card && card.price, 80),
-      features: {
-        ru: (Array.isArray(features.ru) ? features.ru : (oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.ru ? [oldDescription.ru] : []))).slice(0, 12).map(function (line) { return clean(line, 220); }).filter(Boolean),
-        en: (Array.isArray(features.en) ? features.en : (oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.en ? [oldDescription.en] : []))).slice(0, 12).map(function (line) { return clean(line, 220); }).filter(Boolean)
-      }
-    };
-  }).filter(function (card) { return card.title.ru || card.title.en; });
-  out.work.stages = (Array.isArray(work.stages) ? work.stages.slice(0, 8) : []).map(function (stage) {
-    return {
-      id: (stage && typeof stage.id === 'string' && /^[a-f0-9-]{36}$/.test(stage.id)) ? stage.id : crypto.randomUUID(),
-      title: cleanLangPair(stage && stage.title, 100),
-      text: cleanLangPair(stage && stage.text, 300)
-    };
-  }).filter(function (stage) { return stage.title.ru || stage.title.en || stage.text.ru || stage.text.en; });
-  const iconMap = { telegram: 'tg', instagram: 'ig', max: 'mx', phone: 'ph', email: 'ph', website: 'ph' };
-  out.contacts = (Array.isArray(v.contacts) ? v.contacts.slice(0, 10) : []).map(function (contact) {
-    const type = ['telegram', 'instagram', 'max', 'phone', 'email', 'website'].indexOf(contact && contact.type) >= 0 ? contact.type : 'website';
-    const href = validHref(contact && contact.href) ? contact.href : '';
-    return {
-      id: (contact && typeof contact.id === 'string' && /^[a-f0-9-]{36}$/.test(contact.id)) ? contact.id : crypto.randomUUID(),
-      type: type,
-      icon: iconMap[type],
-      label: clean(contact && contact.label, 60),
-      value: clean(contact && contact.value, 120),
-      href: href
-    };
-  }).filter(function (contact) { return contact.label && contact.href; });
-  return out;
+function defaults() {
+  return { texts: {}, custom: [], rsub: null, title: null,
+           covers: {}, coversMob: {}, gallery: [], secs: null,
+           contacts: [], loader: null, pf: null, about: null, stages: null };
 }
 
-/* ---------- Supabase Storage ---------- */
 async function sb(method, path, body, type) {
   const headers = { Authorization: 'Bearer ' + SB_KEY, apikey: SB_KEY };
   if (type) { headers['Content-Type'] = type; headers['x-upsert'] = 'true'; }
-  return fetch(SB_URL + '/storage/v1/object/' + path, { method: method, headers: headers, body: body });
+  return fetch(SB_URL + '/storage/v1/object/' + path, { method, headers, body });
 }
 async function readContent() {
   try {
@@ -155,7 +67,6 @@ async function writeContentJson(c) {
   if (!r.ok) throw new Error('storage write ' + r.status);
 }
 
-/* ---------- сессии / CSRF (stateless, подпись HMAC) ---------- */
 function makeSession() { const exp = Date.now() + TTL; return exp + '.' + hmac('sess.' + exp); }
 function getSession(req) {
   const m = /(?:^|;\s*)cms_s=([^;]+)/.exec(String(req.headers.cookie || ''));
@@ -177,7 +88,6 @@ function verifyPass(p) {
   } catch (e) { return false; }
 }
 
-/* ---------- лимит попыток входа (в рамках тёплого инстанса) ---------- */
 const ATT = new Map();
 function tooMany(ip) {
   const now = Date.now(); const a = ATT.get(ip) || { n: 0, t: now };
@@ -190,76 +100,35 @@ function fail(ip) {
   a.n++; ATT.set(ip, a);
 }
 
-/* ---------- ответы ---------- */
 function send(res, code, obj) {
   res.statusCode = code;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(obj));
 }
-function publicContent(c, req) {
-  const rich = c.admin;
+
+function publicContent(c) {
   const texts = [];
   SLOTS.forEach(function (sl) {
     const t = c.texts && c.texts[sl.id];
     if (t && (t.ru || t.en)) texts.push({ sel: sl.sel, ru: t.ru || '', en: t.en || '', rep: sl.rep || 0 });
   });
   (c.custom || []).forEach(function (x) { texts.push({ sel: x.sel, ru: x.ru || '', en: x.en || '', rep: 0 }); });
-  const out = { texts: texts };
-  if (rich && (rich.loader.subtitle.ru || rich.loader.subtitle.en)) {
-    out.rsub = {
-      ru: [rich.loader.subtitle.ru || '', ''],
-      en: [rich.loader.subtitle.en || '', '']
-    };
-  } else if (c.rsub) out.rsub = c.rsub;
+  const out = { texts };
+  if (c.rsub) out.rsub = c.rsub;
   if (c.title) out.title = c.title;
-  let richCovers = null;
-  if (rich && rich.home) {
-    const ua = String(req && req.headers && req.headers['user-agent'] || '');
-    const mode = /Mobile|Android|iPhone|iPod/i.test(ua) ? 'mobile' : (/iPad|Tablet/i.test(ua) ? 'tablet' : 'desktop');
-    const selected = rich.home[mode] || rich.home.desktop || {};
-    const fallback = rich.home.desktop || {};
-    richCovers = {};
-    ['L', 'R'].forEach(function (side) {
-      const image = selected[side] || fallback[side];
-      if (image && image.url) richCovers[side] = { url: image.url };
-    });
-  }
-  if (richCovers && Object.keys(richCovers).length) out.covers = richCovers;
-  else if (c.covers && Object.keys(c.covers).length) out.covers = c.covers;
-  if (rich && rich.portfolio.albums.length) {
-    out.secs = Object.assign({}, c.secs || {});
-    out.secs.pf = { items: rich.portfolio.albums.map(function (album) { return [album.title.ru, album.title.en]; }) };
-  } else if (c.secs) out.secs = c.secs;
-  if (rich && rich.work.cards.length) {
-    out.secs = Object.assign({}, out.secs || c.secs || {});
-    out.secs.wk = {
-      items: rich.work.cards.map(function (card) {
-        return [card.title.ru, card.title.en, card.price.ru, card.price.en, card.features.ru, card.features.en];
-      })
-    };
-  }
-  if (rich && rich.contacts.length) {
-    out.contacts = rich.contacts.map(function (contact) {
-      return { icon: contact.icon, l: contact.label, s: contact.value || contact.href, h: contact.href };
-    });
-  } else if (c.contacts && c.contacts.length) out.contacts = c.contacts;
-  if (rich && rich.portfolio.albums.length) {
-    out.gallery = [];
-    rich.portfolio.albums.forEach(function (album) {
-      album.photos.forEach(function (photo) { out.gallery.push({ url: photo.url, pos: '' }); });
-    });
-  } else if (c.gallery && c.gallery.length) out.gallery = c.gallery.map(function (x) { return { url: x.url, pos: x.pos || '' }; });
-  if (rich) {
-    out.admin = {
-      loader: rich.loader,
-      home: rich.home,
-      portfolio: rich.portfolio,
-      work: rich.work
-    };
-  }
+  if (c.covers && Object.keys(c.covers).length) out.covers = c.covers;
+  if (c.coversMob && Object.keys(c.coversMob).length) out.coversMob = c.coversMob;
+  if (c.secs) out.secs = c.secs;
+  if (c.contacts && c.contacts.length) out.contacts = c.contacts;
+  if (c.gallery && c.gallery.length) out.gallery = c.gallery.map(x => ({ url: x.url, pos: x.pos || '' }));
+  if (c.loader) out.loader = c.loader;
+  if (c.pf) out.pf = c.pf;
+  if (c.about) out.about = c.about;
+  if (c.stages) out.stages = c.stages;
   return out;
 }
+
 async function readBody(req) {
   if (req.body !== undefined && req.body !== null) {
     if (Buffer.isBuffer(req.body)) { try { return JSON.parse(req.body.toString('utf8')); } catch (e) { return {}; } }
@@ -268,19 +137,33 @@ async function readBody(req) {
   }
   return new Promise(function (resolve) {
     let buf = '';
-    req.on('data', function (d) { buf += d; if (buf.length > 6e6) resolve({}); });
-    req.on('end', function () { try { resolve(JSON.parse(buf)); } catch (e) { resolve({}); } });
-    req.on('error', function () { resolve({}); });
+    req.on('data', d => { buf += d; if (buf.length > 6e6) resolve({}); });
+    req.on('end', () => { try { resolve(JSON.parse(buf)); } catch (e) { resolve({}); } });
+    req.on('error', () => resolve({}));
   });
 }
-function sniff(buf) {
-  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
-  if (buf.length > 7 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
-  if (buf.length > 11 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
+
+function sniff(buf, declaredType) {
+  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return { ext: 'jpg', mime: 'image/jpeg' };
+  if (buf.length > 7 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return { ext: 'png', mime: 'image/png' };
+  if (buf.length > 11 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return { ext: 'webp', mime: 'image/webp' };
+  // AVIF: ftyp box — bytes 4-7 are "ftyp", brand at 8-11 is "avif" or "avis"
+  if (buf.length > 11 && buf.toString('ascii', 4, 8) === 'ftyp') {
+    const brand = buf.toString('ascii', 8, 12);
+    if (brand === 'avif' || brand === 'avis' || brand === 'av01') return { ext: 'avif', mime: 'image/avif' };
+    // also accept generic HEIF which browser may produce
+    if (brand === 'heic' || brand === 'mif1' || brand === 'msf1') return { ext: 'avif', mime: 'image/avif' };
+  }
+  // Fallback: trust declared type if looks like image
+  if (typeof declaredType === 'string') {
+    if (declaredType.includes('avif')) return { ext: 'avif', mime: 'image/avif' };
+    if (declaredType.includes('webp')) return { ext: 'webp', mime: 'image/webp' };
+    if (declaredType.includes('jpeg') || declaredType.includes('jpg')) return { ext: 'jpg', mime: 'image/jpeg' };
+    if (declaredType.includes('png')) return { ext: 'png', mime: 'image/png' };
+  }
   return null;
 }
 
-/* ---------- обработчик ---------- */
 module.exports = async function handler(req, res) {
   try {
     const url = new URL(req.url || '/', 'http://x');
@@ -290,28 +173,25 @@ module.exports = async function handler(req, res) {
 
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
-    const missEnv = [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY], ['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]].filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
+    const missEnv = [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY], ['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]].filter(x => !x[1]).map(x => x[0]);
     if (missEnv.length) {
       if (p === 'content') return send(res, 200, { texts: [] });
       console.error('CMS missing env: ' + missEnv.join(', '));
-      return send(res, 500, { error: 'Не заданы переменные окружения в Vercel: ' + missEnv.join(', ') + '. Добавьте их в Project → Settings → Environment Variables и сделайте Redeploy.' });
+      return send(res, 500, { error: 'Не заданы переменные окружения: ' + missEnv.join(', ') });
     }
 
-    /* публичный контент для сайта */
     if (p === 'content' && method === 'GET') {
-      return send(res, 200, publicContent(await readContent(), req));
+      return send(res, 200, publicContent(await readContent()));
     }
 
-    /* вход */
     if (p === 'login' && method === 'POST') {
       if (tooMany(ip)) return send(res, 429, { error: 'Слишком много попыток. Подождите 15 минут.' });
       const j = await readBody(req);
       const okU = safeEq(clean(j.u, 80), ADMIN_USER);
       const okP = verifyPass(j.p);
       if (!okU || !okP) {
-        fail(ip);
-        console.error('CMS login FAIL ip=' + ip);
-        await new Promise(function (r) { setTimeout(r, 350); });
+        fail(ip); console.error('CMS login FAIL ip=' + ip);
+        await new Promise(r => setTimeout(r, 350));
         return send(res, 401, { error: 'Неверный логин или пароль' });
       }
       const tok = makeSession();
@@ -325,7 +205,6 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { ok: true });
     }
 
-    /* вход по magic-ссылке */
     if (p === 'mlogin' && method === 'POST') {
       if (tooMany(ip)) return send(res, 429, { error: 'Слишком много попыток. Подождите 15 минут.' });
       const j = await readBody(req);
@@ -338,7 +217,6 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { ok: true, csrf: csrfOf(tok.split('.')[0]) });
     }
 
-    /* далее — только с валидной сессией */
     const sess = getSession(req);
     if (!sess) return send(res, 401, { error: 'Не авторизован' });
 
@@ -346,126 +224,175 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp) });
     }
 
-    /* изменяющие запросы — проверка CSRF */
     if (!safeEq(String(req.headers['x-csrf'] || ''), csrfOf(sess.exp))) {
       return send(res, 403, { error: 'Сессия устарела, обновите страницу' });
     }
 
-    /* генерация magic-ссылки для входа (действует 15 минут) */
     if (p === 'magic' && method === 'POST') {
       const exp = Date.now() + 15 * 60 * 1000;
       return send(res, 200, { token: exp + '.' + hmac('magic.' + exp), ttlMin: 15 });
     }
 
-    /* загрузка фото с автоматической lossless-конвертацией в AVIF */
+    /* загрузка фото */
     if (p === 'upload' && method === 'POST') {
       const j = await readBody(req);
-      if (typeof j.data !== 'string' || !j.data || j.data.length > 5.7e6) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
+      if (typeof j.data !== 'string' || !j.data || j.data.length > 8e6) return send(res, 400, { error: 'Файл слишком большой (до ~6 МБ)' });
       let buf;
       try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
-      if (!buf || buf.length < 100 || buf.length > 4.1 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
-      let converted;
-      try {
-        converted = await sharp(buf, { animated: false, failOn: 'error', limitInputPixels: 100000000 })
-          .rotate()
-          .avif({ lossless: true, effort: 5 })
-          .toBuffer();
-      } catch (e) {
-        console.error('CMS image convert:', e && e.message);
-        return send(res, 400, { error: 'Этот формат не удалось открыть. Попробуйте JPG, PNG, WebP, TIFF, GIF или AVIF.' });
-      }
-      const name = crypto.randomUUID() + '.avif';
-      const r = await sb('POST', BUCKET + '/cms/' + name, converted, 'image/avif');
-      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
-      console.error('CMS upload ' + name + ' source=' + clean(j.name, 100) + ' ip=' + ip);
-      return send(res, 200, { url: PUB_BASE + name, name: name });
+      if (!buf || buf.length < 100 || buf.length > 6 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 6 МБ)' });
+      const ft = sniff(buf, j.type);
+      if (!ft) return send(res, 400, { error: 'Только JPG, PNG, WebP или AVIF' });
+      const name = crypto.randomUUID() + '.' + ft.ext;
+      const r = await sb('POST', BUCKET + '/cms/' + name, buf, ft.mime);
+      if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + ')' }); }
+      console.error('CMS upload ' + name + ' ip=' + ip);
+      return send(res, 200, { url: PUB_BASE + name, name });
     }
 
     /* удаление фото */
     if (p === 'upload' && method === 'DELETE') {
       const name = String((req.query && req.query.name) || url.searchParams.get('name') || '');
       if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
-      await sb('DELETE', BUCKET + '/cms/' + name).catch(function () {});
+      await sb('DELETE', BUCKET + '/cms/' + name).catch(() => {});
       console.error('CMS delete ' + name + ' ip=' + ip);
       return send(res, 200, { ok: true });
     }
 
-    /* новая панель: единая атомарная публикация черновика */
-    if (p === 'admin-content' && method === 'PUT') {
-      const j = await readBody(req);
-      const c = await readContent();
-      c.admin = sanitizeAdmin(j);
-      await writeContentJson(c);
-      console.error('CMS publish admin-content ip=' + ip);
-      return send(res, 200, { ok: true, content: c.admin });
-    }
-
-    /* сохранение разделов */
+    /* PUT-эндпоинты */
     if (method === 'PUT') {
       const j = await readBody(req);
       const c = await readContent();
+
       if (p === 'texts') {
         const t = {};
-        SLOTS.forEach(function (sl) {
+        SLOTS.forEach(sl => {
           const v = j.texts && j.texts[sl.id];
           if (v && (v.ru || v.en)) t[sl.id] = { ru: clean(v.ru, 4000), en: clean(v.en, 4000) };
         });
         c.texts = t;
         c.custom = [];
-        (Array.isArray(j.custom) ? j.custom.slice(0, 40) : []).forEach(function (x) {
+        (Array.isArray(j.custom) ? j.custom.slice(0, 40) : []).forEach(x => {
           const sel = cleanSel(x && x.sel);
-          if (sel && ((x.ru && x.ru.trim()) || (x.en && x.en.trim()))) c.custom.push({ sel: sel, ru: clean(x.ru, 4000), en: clean(x.en, 4000) });
+          if (sel && ((x.ru && x.ru.trim()) || (x.en && x.en.trim()))) c.custom.push({ sel, ru: clean(x.ru, 4000), en: clean(x.en, 4000) });
         });
+
       } else if (p === 'rsub') {
-        const ok = function (a) { return Array.isArray(a) && a.length === 2 && a.every(function (x) { return typeof x === 'string'; }); };
-        const r = { ru: ok(j.ru) ? j.ru.map(function (x) { return clean(x, 600); }) : ['', ''], en: ok(j.en) ? j.en.map(function (x) { return clean(x, 600); }) : ['', ''] };
+        const ok = a => Array.isArray(a) && a.length === 2 && a.every(x => typeof x === 'string');
+        const r = { ru: ok(j.ru) ? j.ru.map(x => clean(x, 600)) : ['', ''], en: ok(j.en) ? j.en.map(x => clean(x, 600)) : ['', ''] };
         c.rsub = (r.ru[0] || r.en[0]) ? r : null;
+
       } else if (p === 'title') {
         const t = { ru: clean(j.ru, 150), en: clean(j.en, 150) };
         c.title = (t.ru || t.en) ? t : null;
+
       } else if (p === 'covers') {
         const cv = {};
-        ['L', 'R'].forEach(function (k) {
-          const v = j[k];
-          if (!v) return;
+        ['L', 'R'].forEach(k => {
+          const v = j[k]; if (!v) return;
           const o = {};
           if (validUploadUrl(v.url)) o.url = v.url;
-          if (validPos(v.pos)) o.pos = v.pos;
+          if (v.pos === '' || validPos(v.pos)) o.pos = v.pos || '';
           if (Object.keys(o).length) cv[k] = o;
         });
         c.covers = cv;
+
+      } else if (p === 'coversmob') {
+        const cv = {};
+        ['T', 'B'].forEach(k => {
+          const v = j[k]; if (!v) return;
+          const o = {};
+          if (validUploadUrl(v.url)) o.url = v.url;
+          if (v.pos === '' || validPos(v.pos)) o.pos = v.pos || '';
+          if (Object.keys(o).length) cv[k] = o;
+        });
+        c.coversMob = cv;
+
+      } else if (p === 'loader') {
+        const ld = c.loader || {};
+        // Accept both admin formats
+        // Format A (new admin): { text, reelPhotos: [{url},...] }
+        // Format B (legacy):    { ldrtxt, photos: ['url',...] }
+        if (j.text !== undefined) ld.text = clean(j.text, 200);
+        if (j.ldrtxt !== undefined) ld.text = clean(j.ldrtxt, 200);
+        if (Array.isArray(j.reelPhotos)) {
+          ld.reelPhotos = j.reelPhotos
+            .map(p => (typeof p === 'string' ? {url: p} : p))
+            .filter(p => p && validUploadUrl(p.url))
+            .slice(0, 20);
+        }
+        if (Array.isArray(j.photos)) {
+          ld.reelPhotos = j.photos
+            .filter(u => validUploadUrl(u))
+            .map(u => ({url: u}))
+            .slice(0, 20);
+        }
+        c.loader = ld;
+
+      } else if (p === 'pf') {
+        if (Array.isArray(j.albums)) {
+          c.pf = { albums: j.albums.slice(0, 8).map(alb => ({
+            nameRu: clean(alb.nameRu || alb.name || '', 80),
+            nameEn: clean(alb.nameEn || alb.nameEn || '', 80),
+            photos: (Array.isArray(alb.photos) ? alb.photos : []).filter(u => validUploadUrl(u)).slice(0, 80)
+          })) };
+        }
+
+      } else if (p === 'about') {
+        c.about = { ru: clean(j.ru, 2000), en: clean(j.en, 2000) };
+
+      } else if (p === 'stages') {
+        if (Array.isArray(j)) {
+          c.stages = j.slice(0, 8).map(s => ({
+            ruStep: clean(s.ruStep, 40), enStep: clean(s.enStep, 40),
+            ruTitle: clean(s.ruTitle, 80), enTitle: clean(s.enTitle, 80),
+            ruDesc: clean(s.ruDesc, 400), enDesc: clean(s.enDesc, 400)
+          }));
+        }
+
       } else if (p === 'secs') {
         const out = {};
-        ['pf', 'wk'].forEach(function (k) {
-          const v = j[k];
-          if (v && Array.isArray(v.items)) {
-            const items = v.items.slice(0, 8).map(function (it) {
-              return [clean(String((it && it[0]) || ''), 120), clean(String((it && it[1]) || ''), 120)];
-            }).filter(function (it) { return it[0] || it[1]; });
-            if (items.length) out[k] = { items: items };
-          }
-        });
+        // wk: full 6-field items [ruTitle, enTitle, ruPrice, enPrice, ruBullets[], enBullets[]]
+        const wk = j.wk;
+        if (wk && Array.isArray(wk.items)) {
+          out.wk = { items: wk.items.slice(0, 8).map(it => [
+            clean(String((it && it[0]) || ''), 200),
+            clean(String((it && it[1]) || ''), 200),
+            clean(String((it && it[2]) || ''), 80),
+            clean(String((it && it[3]) || ''), 80),
+            Array.isArray(it && it[4]) ? it[4].slice(0, 12).map(b => clean(b, 200)) : [],
+            Array.isArray(it && it[5]) ? it[5].slice(0, 12).map(b => clean(b, 200)) : []
+          ]).filter(it => it[0] || it[1]) };
+        }
+        // pf: keep old structure too
+        const pf = j.pf;
+        if (pf && Array.isArray(pf.items)) {
+          out.pf = { items: pf.items.slice(0, 8).map(it => [
+            clean(String((it && it[0]) || ''), 120),
+            clean(String((it && it[1]) || ''), 120)
+          ]).filter(it => it[0] || it[1]) };
+        }
         c.secs = Object.keys(out).length ? out : null;
+
       } else if (p === 'contacts') {
-        c.contacts = (Array.isArray(j) ? j.slice(0, 8) : []).map(function (x) {
-          return {
-            icon: ['tg', 'ig', 'mx', 'ph'].indexOf(x && x.icon) >= 0 ? x.icon : 'tg',
-            l: clean(x && x.l, 60),
-            s: clean(x && x.s, 120),
-            h: validHref(x && x.h) ? x.h : ''
-          };
-        }).filter(function (x) { return x.l && x.h; });
+        const ICONS = ['tg', 'ig', 'mx', 'ph', 'em', 'vk'];
+        c.contacts = (Array.isArray(j) ? j.slice(0, 10) : []).map(x => ({
+          icon: ICONS.indexOf(x && x.icon) >= 0 ? x.icon : 'tg',
+          l: clean((x && (x.label || x.l)), 60),
+          s: clean((x && (x.sub || x.s)), 120),
+          h: validHref(x && (x.href || x.h)) ? (x.href || x.h) : ''
+        })).filter(x => x.l && x.h);
+
       } else if (p === 'gallery') {
-        c.gallery = (Array.isArray(j) ? j.slice(0, 60) : []).map(function (x) {
-          return {
-            id: (x && typeof x.id === 'string' && /^[a-f0-9-]{36}$/.test(x.id)) ? x.id : crypto.randomUUID(),
-            url: validUploadUrl(x && x.url) ? x.url : '',
-            pos: validPos(x && x.pos) ? x.pos : ''
-          };
-        }).filter(function (x) { return x.url; });
+        c.gallery = (Array.isArray(j) ? j.slice(0, 60) : []).map(x => ({
+          id: (x && typeof x.id === 'string' && /^[a-f0-9-]{36}$/.test(x.id)) ? x.id : crypto.randomUUID(),
+          url: validUploadUrl(x && x.url) ? x.url : '',
+          pos: validPos(x && x.pos) ? x.pos : ''
+        })).filter(x => x.url);
+
       } else {
         return send(res, 404, { error: 'Not found' });
       }
+
       await writeContentJson(c);
       console.error('CMS save ' + p + ' ip=' + ip);
       return send(res, 200, { ok: true });
@@ -478,7 +405,6 @@ module.exports = async function handler(req, res) {
   }
 };
 
-/* ---------- CLI: генерация секретов ---------- */
 if (require.main === module) {
   const cmd = process.argv[2];
   if (cmd === 'hash') {

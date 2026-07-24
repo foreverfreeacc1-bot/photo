@@ -1150,30 +1150,6 @@ raf=requestAnimationFrame(frame);
 
 <script>
 (function(){
-  function escText(s){return String(s==null?'':s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
-  function renderLoaderName(data){
-    var root=document.getElementById('rname');if(!root||!data)return;
-    var pair=data.title||{};var text=document.documentElement.lang==='en'?(pair.en||pair.ru):(pair.ru||pair.en);
-    if(!text)return;
-    root.innerHTML='';
-    Array.from(String(text).toUpperCase()).forEach(function(ch,i){
-      var span=document.createElement('span');span.className='rn';span.style.animationDelay=(1+Math.abs(i-(text.length-1)/2)*0.06).toFixed(2)+'s';span.innerHTML=ch===' '?'&nbsp;':escText(ch);root.appendChild(span);
-    });
-  }
-  window.__cmsLoader=function(data){
-    if(!data)return;window.__cmsLoaderState=data;
-    renderLoaderName(data);
-    var urls=(data.images||[]).map(function(image){return image&&image.url;}).filter(Boolean);
-    if(urls.length){
-      document.querySelectorAll('#reel .rfeat img').forEach(function(img,i){img.src=urls[i%urls.length];});
-    }
-  };
-  try{new MutationObserver(function(){if(window.__cmsLoaderState)renderLoaderName(window.__cmsLoaderState);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}catch(e){}
-})();
-</script>
-
-<script>
-(function(){
 var sv=document.getElementById('secview'),grid=document.getElementById('svGrid'),ttl=document.getElementById('svTitle'),back=document.getElementById('svBack'),st=document.getElementById('stage');
 if(!sv)return;
 if(st&&sv.parentElement!==st)st.appendChild(sv);
@@ -1190,67 +1166,6 @@ var poolPos=[];var CT=null;
 window.__cmsPool=function(arr){try{if(arr&&arr.length){pool=arr.map(function(a){return a&&a.url?a.url:a;});poolPos=arr.map(function(a){return a&&a.pos?a.pos:"";});if(window.__refreshSec)window.__refreshSec();}}catch(e){}};
 window.__cmsContacts=function(arr){try{if(arr&&arr.length){CT=arr;if(window.__refreshSec)window.__refreshSec();}}catch(e){}};
 window.__cmsSecs=function(d){try{["pf","wk"].forEach(function(k){if(d&&d[k]){if(d[k].items&&d[k].items.length)SECS[k].items=d[k].items;if(d[k].title)SECS[k].title=d[k].title;}});if(window.__refreshSec)window.__refreshSec();}catch(e){}};
-var CMS_ABOUT=null,CMS_STAGES=null,CMS_BASE_ABOUT=aboutHtml,CMS_BASE_STAGES=stagesHtml;
-function cmsEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
-function cmsStagesHtml(e){
- if(!CMS_STAGES||!CMS_STAGES.length)return CMS_BASE_STAGES(e);
- var T=e?['Shooting Stages','From request to finished photos']:['Этапы съемки','От заявки до готовых кадров'];
- var h='<div class="rdm-heading"><span class="rdm-heading-txt">'+T[0]+'</span><span class="rdm-heading-sub">'+T[1]+'</span></div><section class="rdm"><div class="rdm-card"><div class="rdm-body"><div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">';
- CMS_STAGES.forEach(function(stage,i){
-  var title=e?((stage.title&&stage.title.en)||(stage.title&&stage.title.ru)):((stage.title&&stage.title.ru)||(stage.title&&stage.title.en));
-  var text=e?((stage.text&&stage.text.en)||(stage.text&&stage.text.ru)):((stage.text&&stage.text.ru)||(stage.text&&stage.text.en));
-  h+='<div class="rdm-item rdm-seq rdm-seq-'+(i+1)+'" style="animation-delay:'+(i*0.15)+'s"><span class="rdm-dot"><i></i></span><span class="rdm-badge">'+(e?'Step ':'Шаг ')+(i+1)+'</span><h4>'+cmsEsc(title)+'</h4><p>'+cmsEsc(text)+'</p></div>';
- });
- return h+'</div></div></div></div><div class="rdm-btn-wrap"><button class="rdm-btn rdm-btn--white" onclick="openSec(\'pf\')">'+(e?'View Portfolio':'Перейти в Портфолио')+'</button><button class="rdm-btn rdm-btn--black" onclick="openSec(\'ct\')">'+(e?'Book a Shoot':'Забронировать съёмку')+'</button></div></section>';
-}
-function applyCmsHome(home){
- if(!home)return;window.__cmsHomeState=home;
- var mode=window.innerWidth<=640?'mobile':(window.innerWidth<=1024?'tablet':'desktop');
- var selected=home[mode]||home.desktop||{},fallback=home.desktop||{};
- ['L','R'].forEach(function(side){
-  var image=selected[side]||fallback[side];if(!image||!image.url)return;
-  var el=document.querySelector(side==='L'?'.coverL .cimg':'.coverR .cimg');if(el)el.style.backgroundImage='url("'+image.url+'")';
- });
-}
-window.addEventListener('resize',function(){if(window.__cmsHomeState)applyCmsHome(window.__cmsHomeState);},{passive:true});
-window.__cmsRich=function(rich){try{
- if(!rich)return;
- if(rich.home)applyCmsHome(rich.home);
- if(rich.portfolio){
-  CMS_ABOUT=rich.portfolio.about||null;
-  var albums=Array.isArray(rich.portfolio.albums)?rich.portfolio.albums:[];
-  if(albums.length){
-   SECS.pf.items=albums.map(function(album){return [(album.title&&album.title.ru)||'',(album.title&&album.title.en)||''];});
-   COLPH=albums.map(function(album){
-    var photos=Array.isArray(album.photos)?album.photos.slice():[];
-    var pi=photos.findIndex(function(photo){return photo&&photo.id===album.previewId;});
-    if(pi>0)photos.unshift(photos.splice(pi,1)[0]);
-    return photos.map(function(photo){return photo&&photo.url;}).filter(Boolean);
-   });
-  }
- }
- if(rich.work){
-  var cards=Array.isArray(rich.work.cards)?rich.work.cards:[];
-  if(cards.length){
-   SECS.wk.items=cards.map(function(card){
-    var price=card.price||{},features=card.features||{};
-    return [(card.title&&card.title.ru)||'',(card.title&&card.title.en)||'',price.ru||'',price.en||price.ru||'',features.ru||[],features.en||features.ru||[]];
-   });
-   WKPH=cards.map(function(card,i){return card.image&&card.image.url?card.image.url:(WKPH[i]||'');});
-  }
-  CMS_STAGES=Array.isArray(rich.work.stages)?rich.work.stages:null;
-  stagesHtml=cmsStagesHtml;
- }
- if(CMS_BASE_ABOUT){
-  aboutHtml=function(e){
-   var html=CMS_BASE_ABOUT(e);
-   if(!CMS_ABOUT)return html;
-   var text=e?(CMS_ABOUT.en||CMS_ABOUT.ru):(CMS_ABOUT.ru||CMS_ABOUT.en);
-   return text?html.replace(/(<p class="hw-sub">)[\s\S]*?(<\/p>)/,'$1'+cmsEsc(text)+'$2'):html;
-  };
- }
- if(window.__refreshSec)window.__refreshSec();
-}catch(e){}};
 
 var SECS={
 pf:{title:'PORTFOLIO',off:0,items:[['\u041f\u041e\u0420\u0422\u0420\u0415\u0422\u042b','PORTRAITS'],['\u0421\u0412\u0410\u0414\u042c\u0411\u042b','WEDDINGS'],['\u041a\u041e\u041c\u041c\u0415\u0420\u0427\u0415\u0421\u041a\u0410\u042f \u0421\u042a\u0415\u041c\u041a\u0410','COMMERCIAL'],['\u041b\u0410\u0419\u0424\u0421\u0422\u0410\u0419\u041b','LIFESTYLE']]},
@@ -1446,8 +1361,6 @@ if(c.covers){["L","R"].forEach(function(sd){var cv=c.covers[sd];if(cv){var el=do
 if(c.secs&&window.__cmsSecs)window.__cmsSecs(c.secs);
 if(c.contacts&&c.contacts.length&&window.__cmsContacts)window.__cmsContacts(c.contacts);
 if(c.gallery&&c.gallery.length&&window.__cmsPool)window.__cmsPool(c.gallery);
-if(c.admin&&c.admin.loader&&window.__cmsLoader)window.__cmsLoader(c.admin.loader);
-if(c.admin&&window.__cmsRich)window.__cmsRich(c.admin);
 }catch(e){}}).catch(function(){});})();</script>
 <script>(function(){var wc=document.getElementById('wcirc'),lb=document.querySelector('#ctR .wlabel');if(!wc||!lb)return;var GAP=14;function pos(){try{var r=lb.getBoundingClientRect();if(!r.width)return;wc.style.setProperty('--wcr',Math.round(window.innerWidth-r.left+GAP)+'px');}catch(e){}}window.addEventListener('resize',pos);try{new MutationObserver(function(){pos();setTimeout(pos,120);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}catch(e){}pos();setTimeout(pos,400);setTimeout(pos,1200);setTimeout(pos,3000);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){setTimeout(pos,50);});})();</script>
 <script>
