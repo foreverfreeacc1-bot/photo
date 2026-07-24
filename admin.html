@@ -505,13 +505,6 @@ function buildReelPreview(photos,txt,rsub1){
     +(rsub1?'<div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.06em;margin-top:4px;text-align:center;max-width:260px;line-height:1.7">'+esc(rsub1)+'</div>':'');
 }
 
-function buildReelPreview_old(photos,txt){
-  var ph1=photos[0]?'<div class="reel-feat"><img src="'+esc(photos[0].url)+'" alt=""></div>'}:'<div class="reel-feat"></div>';
-  var ph2=photos[1]?'<div class="reel-feat"><img src="'+esc(photos[1].url)+'" alt=""></div>':'<div class="reel-cell"></div>';
-  var ph3=photos[2]?'<div class="reel-feat"><img src="'+esc(photos[2].url)+'" alt=""></div>':'<div class="reel-cell"></div>';
-  return '<div class="reel-ph-row"><div class="reel-cell"></div><div style="display:flex;flex-direction:column;gap:6px">'+ph1+ph2+ph3+'</div><div class="reel-cell"></div></div>'+'<div class="reel-spin"></div>'+'<div class="reel-txt">'+esc(txt||' Moscow, 2026')+'</div>';
-
-
 // ──────────────────────────────────────────────────────────
 // SECTION: HOME
 // ──────────────────────────────────────────────────────────
