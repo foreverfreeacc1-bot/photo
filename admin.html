@@ -1,199 +1,110 @@
 <!doctype html>
 <html lang="ru">
-<head><link rel="icon" href="/favicon.ico" sizes="48x48 32x32 16x16"><link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKIHdpZHRoPSI1MTIuMDAwMDAwcHQiIGhlaWdodD0iNTEyLjAwMDAwMHB0IiB2aWV3Qm94PSIwIDAgNTEyLjAwMDAwMCA1MTIuMDAwMDAwIgogcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQgbWVldCI+PHN0eWxlPmd7ZmlsbDojMDAwMDAwICFpbXBvcnRhbnQ7fUBtZWRpYSAocHJlZmVycy1jb2xvci1zY2hlbWU6ZGFyayl7Z3tmaWxsOiNmZmZmZmYgIWltcG9ydGFudDt9fTwvc3R5bGU+Cgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjAwMDAwMCw1MTIuMDAwMDAwKSBzY2FsZSgwLjEwMDAwMCwtMC4xMDAwMDApIgpmaWxsPSIjMDAwMDAwIiBzdHJva2U9Im5vbmUiPgo8cGF0aCBkPSJNMTI4MSAzNTk4IGMtMTEgLTI0IC0xNjAgLTM4MCAtMzMxIC03OTMgLTE3MSAtNDEyIC0zMzAgLTc4NSAtMzUyCi04MjcgLTcyIC0xNDAgLTE0MyAtMTk5IC0yNTUgLTIxMyAtNTQgLTcgLTcyIC0xOCAtNTIgLTMxIDYgLTMgMTY3IC03IDM1OCAtNwoyOTEgMCAzNDYgMiAzNDYgMTQgMCAxMCAtMjYgMTcgLTk0IDI2IC0xNzQgMjMgLTIxNyA2MyAtMjA4IDE4NyA0IDYzIDIxIDExMAoxNTMgNDI4IGwxNDkgMzU4IDI4NiAwIDI4NiAwIDE4MyAtMzkyIGMxMDEgLTIxNiAxODkgLTQxNSAxOTYgLTQ0MSAyNCAtOTAgLTkKLTEyMyAtMTQzIC0xNDAgLTYzIC05IC04OCAtMTYgLTg4IC0yNiAwIC0xMSA1NiAtMTQgMzM1IC0xNCAyOTYgMCAzMzUgMiAzMzgKMTUgMiAxMiAtOCAxOCAtNDAgMjMgLTkwIDE1IC0xNjMgNzYgLTIzMCAxOTMgLTE3IDMwIC0yMDEgNDIwIC00MDkgODY2IC0yMzgKNTExIC0zODQgODEyIC0zOTQgODE0IC0xMCAyIC0yMiAtMTEgLTM0IC00MHogbTEyNSAtNTExIGwxMzMgLTI4MiAtMTMwIC0zCmMtNzEgLTEgLTE4NyAtMSAtMjU4IDAgbC0xMjggMyA5MyAyMjUgYzUyIDEyNCAxMDYgMjUzIDEyMCAyODggMTUgMzQgMjkgNjAKMzIgNTcgMyAtMyA2NiAtMTMzIDEzOCAtMjg4eiIvPgo8cGF0aCBkPSJNMjUzMCAzNTgxIGMwIC0xNSAxMCAtMTkgNTQgLTI0IDU5IC02IDE0MCAtNDMgMTcyIC03OSBsMjIgLTIzIC0xNQotNzIwIGMtNyAtMzk2IC0xOSAtNzUwIC0yNCAtNzg3IC0xNyAtMTExIC02MyAtMTYxIC0xNjcgLTE4MCAtNDUgLTggLTYyIC0xNgotNjIgLTI3IDAgLTE0IDMyIC0xNiAyODIgLTE2IDI1MCAxIDI4MyAzIDI4NiAxNyAyIDEyIC0xMiAxOCAtNjggMjYgLTExNCAxNwotMTYyIDU5IC0xODEgMTU2IC05IDQ0IDExIDE0MDYgMjAgMTQwNiA0IDAgMTY4IC0zNTYgMzY2IC03OTEgMTk3IC00MzQgMzY1Ci03OTUgMzczIC04MDEgOSAtOCAxOSAtOSAyOCAtMiA4IDUgMTcxIDM2OCAzNjEgODA3IDE5MCA0MzggMzQ4IDc5NiAzNDkgNzk0CjIgLTIgMTYgLTMzMyAzMCAtNzM2IDI2IC02ODggMjYgLTczNCAxMCAtNzY3IC0yMCAtNDMgLTU2IC01OSAtMTU0IC02OSAtNTkKLTYgLTcyIC0xMCAtNzAgLTIzIDMgLTE0IDQyIC0xNiAzMzggLTE2IDI5NyAwIDMzNSAyIDMzOCAxNiAyIDEzIC0xMSAxNyAtNzUKMjIgLTE1NyAxNCAtMTgyIDM1IC0xOTUgMTYzIC05IDk2IC01OCAxMjk1IC01OCAxNDM0IDAgNzMgNCA5MSAyMyAxMjAgMzEgNDgKODMgNzAgMTc3IDc2IDY5IDUgODAgOCA4MCAyNCAwIDE4IC0xMSAxOSAtMTg0IDE5IC0xODEgMCAtMTg1IDAgLTIxNCAtMjUgLTIzCi0xOSAtMTAwIC0xODggLTM2NyAtODAwIC0xODcgLTQyNiAtMzQyIC03NzIgLTM0NyAtNzY3IC00IDQgLTE1MyAzMjIgLTMzMQo3MDggLTM3MyA4MDUgLTM4MCA4MjAgLTQxNSA4NTcgbC0yNiAyNyAtMTc4IDAgYy0xNjcgMCAtMTc4IC0xIC0xNzggLTE5eiIvPgo8L2c+Cjwvc3ZnPgo="><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#f9fafb">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Панель управления — Alisa Miterova</title>
-<style>
-:root{--bg:#f9fafb;--card:#ffffff;--line:#e5e7eb;--tx:#0a0a0a;--mut:#6b7280;--acc:#171717;}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 'Helvetica Neue',Arial,sans-serif;}
-.hidden{display:none!important;}
-.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 90px;}
-h1{font-weight:400;letter-spacing:.2em;font-size:17px;text-transform:uppercase;margin:10px 0;}
-h2{font-weight:400;letter-spacing:.14em;font-size:13px;text-transform:uppercase;color:var(--mut);margin:4px 0 10px;}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0;}
-label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:10px 0 4px;}
-input,textarea,select{width:100%;background:#ffffff;border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:9px 11px;font:inherit;}
-textarea{min-height:54px;resize:vertical;}
-button{background:var(--acc);color:#ffffff;border:none;border-radius:8px;padding:10px 18px;font:inherit;letter-spacing:.06em;cursor:pointer;}
-button.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);}
-button.danger{background:transparent;color:#b0524c;border:1px solid rgba(176,82,76,.45);}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0;}
-.tabs button{background:transparent;border:1px solid var(--line);color:var(--mut);}
-.tabs button.on{background:var(--acc);color:#ffffff;border-color:var(--acc);}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media (max-width:700px){.row2{grid-template-columns:1fr;}}
-.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
-.gitem{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#ffffff;}
-.gitem .im{height:130px;background-size:cover;background-position:50% 50%;}
-.gitem .bd{padding:9px;}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#171717;color:#ffffff;border:1px solid #171717;padding:10px 22px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;}
-.toast.on{opacity:1;}
-.muted{color:var(--mut);font-size:12px;}
-.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.cover-prev{width:100%;height:210px;background-size:cover;background-position:50% 50%;border-radius:10px;border:1px solid var(--line);background-color:#f3f4f6;}
-.savebar{margin-top:14px;}
-hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
-.lg-scr{min-height:calc(100vh - 130px);display:flex;align-items:center;justify-content:center;padding:12px 0;}
-.lg-card{width:100%;max-width:384px;background:var(--card);border:1px solid var(--line);border-radius:32px;padding:56px 38px 38px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;align-items:center;text-align:center;}
-.lg-logo{color:var(--tx);margin-bottom:28px;}
-.lg-h{font-size:26px;font-weight:600;letter-spacing:0;text-transform:none;margin:0 0 6px;}
-.lg-sub{color:var(--mut);font-size:13px;margin:0 0 30px;}
-.lg-form{width:100%;display:flex;flex-direction:column;gap:12px;}
-.lg-form input{border-radius:12px;padding:12px 14px;}
-.lg-form input:focus{outline:none;border-color:#a3a3a3;box-shadow:0 0 0 3px rgba(10,10,10,.07);}
-.lg-btn{width:100%;border-radius:12px;padding:12px 18px;font-weight:500;}
-.lg-btn:hover{opacity:.88;}
-.lg-err{color:#b0524c;font-size:12px;margin:14px 0 0;min-height:15px;}
-</style>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f7f6f3">
+  <title>Управление сайтом — Alisa Miterova</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-<div class="wrap">
-  <div id="login" class="hidden">
-    <div class="lg-scr">
-      <div class="lg-card">
-        <svg class="lg-logo" fill="currentColor" height="44" viewBox="0 0 40 48" width="37" aria-hidden="true"><clipPath id="lgclip"><path d="m0 0h40v48h-40z"/></clipPath><g clip-path="url(#lgclip)"><path d="m25.0887 5.05386-3.933-1.05386-3.3145 12.3696-2.9923-11.16736-3.9331 1.05386 3.233 12.0655-8.05262-8.0526-2.87919 2.8792 8.83271 8.8328-10.99975-2.9474-1.05385625 3.933 12.01860625 3.2204c-.1376-.5935-.2104-1.2119-.2104-1.8473 0-4.4976 3.646-8.1436 8.1437-8.1436 4.4976 0 8.1436 3.646 8.1436 8.1436 0 .6313-.0719 1.2459-.2078 1.8359l10.9227 2.9267 1.0538-3.933-12.0664-3.2332 11.0005-2.9476-1.0539-3.933-12.0659 3.233 8.0526-8.0526-2.8792-2.87916-8.7102 8.71026z"/><path d="m27.8723 26.2214c-.3372 1.4256-1.0491 2.7063-2.0259 3.7324l7.913 7.9131 2.8792-2.8792z"/><path d="m25.7665 30.0366c-.9886 1.0097-2.2379 1.7632-3.6389 2.1515l2.8794 10.746 3.933-1.0539z"/><path d="m21.9807 32.2274c-.65.1671-1.3313.2559-2.0334.2559-.7522 0-1.4806-.102-2.1721-.2929l-2.882 10.7558 3.933 1.0538z"/><path d="m17.6361 32.1507c-1.3796-.4076-2.6067-1.1707-3.5751-2.1833l-7.9325 7.9325 2.87919 2.8792z"/><path d="m13.9956 29.8973c-.9518-1.019-1.6451-2.2826-1.9751-3.6862l-10.95836 2.9363 1.05385 3.933z"/></g></svg>
-        <h1 class="lg-h">С возвращением!</h1>
-        <p class="lg-sub">Панель управления сайтом Alisa Miterova</p>
-        <div class="lg-form">
-          <input id="lu" placeholder="Логин" autocomplete="username">
-          <input id="lp" type="password" placeholder="Пароль" autocomplete="current-password">
-          <button id="lbtn" class="lg-btn">Войти</button>
+  <div id="login" class="login-screen is-hidden">
+    <main class="login-card">
+      <div class="mark" aria-hidden="true">AM</div>
+      <p class="eyebrow">Панель управления</p>
+      <h1>С возвращением</h1>
+      <p class="login-note">Всё важное о сайте — в одном спокойном месте.</p>
+      <form id="loginForm" class="login-form">
+        <label class="sr-only" for="loginName">Логин</label>
+        <input id="loginName" autocomplete="username" placeholder="Логин" required>
+        <label class="sr-only" for="loginPassword">Пароль</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required>
+        <button class="button button-dark" type="submit">Войти</button>
+      </form>
+      <p id="loginError" class="form-error" role="alert"></p>
+    </main>
+  </div>
+
+  <div id="adminApp" class="app-shell is-hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">AM</span>
+        <span><b>Alisa Miterova</b><small>Управление сайтом</small></span>
+      </div>
+      <nav id="mainNav" class="nav" aria-label="Разделы админ-панели"></nav>
+      <div class="sidebar-foot">
+        <button id="magicLink" class="text-button" type="button">Ссылка для входа</button>
+        <button id="logout" class="text-button" type="button">Выйти</button>
+      </div>
+    </aside>
+
+    <header class="mobile-head">
+      <button id="menuToggle" class="icon-button" type="button" aria-label="Открыть меню" aria-expanded="false"><i></i><i></i></button>
+      <span class="mark">AM</span>
+      <button class="icon-button preview-shortcut" type="button" data-preview aria-label="Открыть предпросмотр"><span class="eye-icon"></span></button>
+    </header>
+
+    <main class="workspace">
+      <header class="workspace-head">
+        <div>
+          <p id="sectionKicker" class="eyebrow"></p>
+          <h1 id="sectionTitle"></h1>
+          <p id="sectionNote" class="section-note"></p>
         </div>
-        <p id="lerr" class="lg-err"></p>
+        <div class="head-actions">
+          <span id="draftState" class="draft-state">Все изменения сохранены</span>
+          <button class="button button-light" type="button" data-preview><span class="eye-icon"></span> Предпросмотр</button>
+          <button id="publish" class="button button-dark" type="button">Опубликовать</button>
+        </div>
+      </header>
+      <section id="editor" class="editor" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div id="previewModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-panel">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">До публикации</p>
+          <h2 id="previewTitle">Предпросмотр</h2>
+        </div>
+        <div class="preview-actions">
+          <div class="device-switch" role="group" aria-label="Размер экрана">
+            <button type="button" data-device="desktop" class="is-active">Компьютер</button>
+            <button type="button" data-device="mobile">Телефон</button>
+          </div>
+          <button id="closePreview" class="icon-button close-button" type="button" aria-label="Закрыть"></button>
+        </div>
+      </header>
+      <div class="preview-stage">
+        <div id="previewFrame" class="preview-frame desktop"></div>
+      </div>
+      <footer class="modal-foot">
+        <p>Так раздел будет выглядеть после публикации.</p>
+        <button id="publishFromPreview" class="button button-dark" type="button">Всё хорошо — опубликовать</button>
+      </footer>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-card">
+      <p class="eyebrow">Последняя проверка</p>
+      <h2 id="confirmTitle">Опубликовать изменения?</h2>
+      <p>Новые фотографии и тексты станут доступны на сайте.</p>
+      <div class="confirm-actions">
+        <button id="cancelPublish" class="button button-light" type="button">Ещё проверить</button>
+        <button id="confirmPublish" class="button button-dark" type="button">Опубликовать</button>
       </div>
     </div>
   </div>
-  <div id="app" class="hidden">
-    <div class="flex" style="justify-content:space-between">
-      <h1>Alisa Miterova — управление сайтом</h1>
-      <span class="flex" style="gap:8px"><button class="ghost" id="magicBtn">Magic-ссылка</button><button class="ghost" id="logout">Выйти</button></span>
-    </div>
-    <div class="tabs" id="tabs"></div>
-    <div id="view"></div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-(function(){
-"use strict";
-var CSRF=null,STATE=null;
-var API='/api/';
-var POS=['','50% 0%','50% 12%','50% 20%','50% 35%','50% 50%','50% 65%','50% 80%','50% 100%','0% 50%','100% 50%'];
-function $(s){return document.querySelector(s);}
-function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2400);}
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function api(p,opt){opt=opt||{};opt.credentials='same-origin';opt.headers=opt.headers||{};opt.headers['X-CSRF']=CSRF||'';if(opt.json){opt.body=JSON.stringify(opt.json);opt.headers['Content-Type']='application/json';delete opt.json;}
- return fetch(API+p,opt).then(function(r){return r.json().catch(function(){return {};}).then(function(j){if(!r.ok){var e=new Error(j.error||('Ошибка '+r.status));e.status=r.status;throw e;}return j;});});}
-function upload(file){return new Promise(function(res,rej){if(file.size>3*1024*1024)return rej(new Error('Файл больше 3 МБ — сожмите фото'));var fr=new FileReader();fr.onload=function(){res(String(fr.result).split(',')[1]||'');};fr.onerror=function(){rej(new Error('Не удалось прочитать файл'));};fr.readAsDataURL(file);}).then(function(b64){return api('upload',{method:'POST',json:{type:file.type||'',data:b64}});}).then(function(j){if(!j.url)throw new Error(j.error||'Ошибка загрузки');return j.url;});}
-function posSelect(cur){var o=POS.map(function(p){return '<option value="'+p+'"'+(p===(cur||'')?' selected':'')+'>'+(p===''?'по центру (авто)':p)+'</option>';}).join('');return '<select class="posl">'+o+'</select>';}
-var TABS=[['texts','Тексты'],['hero','Титульный экран'],['covers','Обложки'],['gallery','Галерея'],['secs','Разделы'],['contacts','Контакты']];
-var curTab='texts';
-function renderTabs(){$('#tabs').innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'" class="'+(t[0]===curTab?'on':'')+'">'+t[1]+'</button>';}).join('');
- Array.prototype.forEach.call($('#tabs').querySelectorAll('button'),function(b){b.onclick=function(){curTab=b.getAttribute('data-t');renderTabs();renderView();};});}
-function renderView(){
- var c=STATE.content,v=$('#view'),h='';
- if(curTab==='texts'){
-  h='<div class="card"><h2>Тексты сайта (RU / EN)</h2><p class="muted">Пустое поле = стандартный текст сайта. Поддерживается перенос строки через &lt;br&gt;.</p>';
-  STATE.slots.forEach(function(sl){var t=(c.texts&&c.texts[sl.id])||{};
-   h+='<hr><label>'+esc(sl.label)+'</label><div class="row2"><textarea data-slot="'+sl.id+'" data-l="ru" placeholder="RU">'+esc(t.ru)+'</textarea><textarea data-slot="'+sl.id+'" data-l="en" placeholder="EN">'+esc(t.en)+'</textarea></div>';});
-  h+='<hr><h2>Дополнительные элементы (CSS-селектор)</h2><p class="muted">Для редких случаев: укажите селектор любого элемента сайта и его новый текст.</p><div id="customRows"></div><button class="ghost" id="addCustom">+ Добавить элемент</button>';
-  h+='<div class="savebar"><button id="saveTexts">Сохранить тексты</button></div></div>';
-  v.innerHTML=h;
-  var rows=$('#customRows');
-  var addRow=function(x){var d=document.createElement('div');d.className='crow';d.innerHTML='<hr><label>CSS-селектор</label><input class="csel" value="'+esc(x&&x.sel)+'" placeholder="например .welcome"><div class="row2"><textarea class="cru" placeholder="RU">'+esc(x&&x.ru)+'</textarea><textarea class="cen" placeholder="EN">'+esc(x&&x.en)+'</textarea></div>';rows.appendChild(d);};
-  (c.custom||[]).forEach(addRow);
-  $('#addCustom').onclick=function(){addRow(null);};
-  $('#saveTexts').onclick=function(){
-   var texts={};Array.prototype.forEach.call(v.querySelectorAll('textarea[data-slot]'),function(t){var id=t.getAttribute('data-slot');texts[id]=texts[id]||{ru:'',en:''};texts[id][t.getAttribute('data-l')]=t.value;});
-   var custom=[];Array.prototype.forEach.call(rows.querySelectorAll('.crow'),function(r){custom.push({sel:r.querySelector('.csel').value,ru:r.querySelector('.cru').value,en:r.querySelector('.cen').value});});
-   api('texts',{method:'PUT',json:{texts:texts,custom:custom}}).then(function(){toast('Тексты сохранены');return refresh();}).catch(function(e){toast(e.message);});};
- }
- if(curTab==='hero'){
-  var r=c.rsub||{ru:['',''],en:['','']},t=c.title||{ru:'',en:''};
-  h='<div class="card"><h2>Заголовок вкладки браузера</h2><div class="row2"><input id="tru" placeholder="RU" value="'+esc(t.ru)+'"><input id="ten" placeholder="EN" value="'+esc(t.en)+'"></div></div>';
-  h+='<div class="card"><h2>Текст под именем на титульном экране</h2><p class="muted">Два абзаца, каждый анимируется по словам. Пусто = стандартный текст.</p>';
-  h+='<label>Абзац 1</label><div class="row2"><textarea id="r1ru" placeholder="RU">'+esc(r.ru[0])+'</textarea><textarea id="r1en" placeholder="EN">'+esc(r.en[0])+'</textarea></div>';
-  h+='<label>Абзац 2</label><div class="row2"><textarea id="r2ru" placeholder="RU">'+esc(r.ru[1])+'</textarea><textarea id="r2en" placeholder="EN">'+esc(r.en[1])+'</textarea></div>';
-  h+='<div class="savebar"><button id="saveHero">Сохранить</button></div></div>';
-  v.innerHTML=h;
-  $('#saveHero').onclick=function(){
-   Promise.all([
-    api('title',{method:'PUT',json:{ru:$('#tru').value,en:$('#ten').value}}),
-    api('rsub',{method:'PUT',json:{ru:[$('#r1ru').value,$('#r2ru').value],en:[$('#r1en').value,$('#r2en').value]}})
-   ]).then(function(){toast('Сохранено');return refresh();}).catch(function(e){toast(e.message);});};
- }
- if(curTab==='covers'){
-  var cv=c.covers||{};
-  h='<div class="card"><h2>Обложки на главном экране</h2><p class="muted">Фото заменяет стандартное. «Положение кадра» — какая часть фото видна.</p><div class="row2">';
-  [['L','PORTFOLIO (слева)'],['R','WORK (справа)']].forEach(function(sd){var o=cv[sd[0]]||{};
-   h+='<div><h2>'+sd[1]+'</h2><div class="cover-prev" id="cp'+sd[0]+'" style="'+(o.url?'background-image:url('+esc(o.url)+');':'')+(o.pos?'background-position:'+esc(o.pos)+';':'')+'"></div>'+
-    '<label>Заменить фото</label><input type="file" accept="image/jpeg,image/png,image/webp" data-cv="'+sd[0]+'">'+
-    '<label>Положение кадра</label><span data-cvpos="'+sd[0]+'">'+posSelect(o.pos)+'</span>'+
-    '<div class="savebar"><button class="danger" data-cvreset="'+sd[0]+'">Вернуть стандартное</button></div></div>';});
-  h+='</div><div class="savebar"><button id="saveCovers">Сохранить обложки</button></div></div>';
-  v.innerHTML=h;
-  var draft={L:Object.assign({},cv.L||{}),R:Object.assign({},cv.R||{})};
-  Array.prototype.forEach.call(v.querySelectorAll('input[type=file][data-cv]'),function(inp){inp.onchange=function(){if(!inp.files[0])return;upload(inp.files[0]).then(function(url){var k=inp.getAttribute('data-cv');draft[k].url=url;$('#cp'+k).style.backgroundImage='url('+url+')';toast('Фото загружено — нажмите «Сохранить»');}).catch(function(e){toast(e.message);});};});
-  Array.prototype.forEach.call(v.querySelectorAll('[data-cvpos]'),function(sp){sp.querySelector('select').onchange=function(){var k=sp.getAttribute('data-cvpos');draft[k].pos=this.value;$('#cp'+k).style.backgroundPosition=this.value||'50% 50%';};});
-  Array.prototype.forEach.call(v.querySelectorAll('[data-cvreset]'),function(b){b.onclick=function(){var k=b.getAttribute('data-cvreset');draft[k]={};$('#cp'+k).style.backgroundImage='';$('#cp'+k).style.backgroundPosition='';toast('Сброшено — нажмите «Сохранить»');};});
-  $('#saveCovers').onclick=function(){api('covers',{method:'PUT',json:draft}).then(function(){toast('Обложки сохранены');return refresh();}).catch(function(e){toast(e.message);});};
- }
- if(curTab==='gallery'){
-  var g=c.gallery||[];
-  h='<div class="card"><h2>Фотографии разделов (миниатюры PORTFOLIO / WORK)</h2><p class="muted">Загруженные фото заменяют стандартный набор миниатюр. «Положение» — какая часть кадра видна в миниатюре.</p>';
-  h+='<label>Добавить фотографии</label><input type="file" id="galAdd" accept="image/jpeg,image/png,image/webp" multiple>';
-  h+='<div class="gal" style="margin-top:12px">'+g.map(function(x,i){return '<div class="gitem" data-i="'+i+'"><div class="im" style="background-image:url('+esc(x.url)+');'+(x.pos?'background-position:'+esc(x.pos)+';':'')+'"></div><div class="bd"><label>Положение</label>'+posSelect(x.pos)+'<div class="savebar"><button class="danger gdel">Удалить</button></div></div></div>';}).join('')+'</div>';
-  h+='<div class="savebar"><button id="saveGal">Сохранить галерею</button></div></div>';
-  v.innerHTML=h;
-  var gd=g.map(function(x){return {id:x.id,url:x.url,pos:x.pos||''};});
-  $('#galAdd').onchange=function(){var fls=Array.prototype.slice.call(this.files||[]);if(!fls.length)return;var chain=Promise.resolve();fls.forEach(function(f){chain=chain.then(function(){return upload(f).then(function(url){gd.push({url:url,pos:''});});});});chain.then(function(){return api('gallery',{method:'PUT',json:gd});}).then(function(){toast('Фото добавлены');return refresh();}).then(renderView).catch(function(e){toast(e.message);});};
-  Array.prototype.forEach.call(v.querySelectorAll('.gitem'),function(git){var i=parseInt(git.getAttribute('data-i'),10);
-   git.querySelector('select').onchange=function(){gd[i].pos=this.value;git.querySelector('.im').style.backgroundPosition=this.value||'50% 50%';};
-   git.querySelector('.gdel').onclick=function(){var name=(gd[i].url||'').split('/').pop();api('upload?name='+encodeURIComponent(name),{method:'DELETE'}).then(function(){gd.splice(i,1);return api('gallery',{method:'PUT',json:gd});}).then(function(){toast('Удалено');return refresh();}).then(renderView).catch(function(e){toast(e.message);});};});
-  $('#saveGal').onclick=function(){api('gallery',{method:'PUT',json:gd}).then(function(){toast('Галерея сохранена');return refresh();}).catch(function(e){toast(e.message);});};
- }
- if(curTab==='secs'){
-  var sdef={pf:[['ПОРТРЕТЫ','PORTRAITS'],['СВАДЬБЫ','WEDDINGS'],['КОММЕРЧЕСКАЯ СЪЕМКА','COMMERCIAL'],['ЛАЙФСТАЙЛ','LIFESTYLE']],wk:[['УСЛУГИ И СТОИМОСТЬ','SERVICES & PRICING'],['ФОРМАТ СЪЕМКИ','SHOOTING FORMAT'],['УСЛОВИЯ СОТРУДНИЧЕСТВА','COLLABORATION TERMS'],['ПАРТНЕРСТВО','PARTNERSHIP']]};
-  var sc=c.secs||{};
-  h='';
-  [['pf','Раздел PORTFOLIO — карточки'],['wk','Раздел WORK — карточки']].forEach(function(t){
-   var items=(sc[t[0]]&&sc[t[0]].items)||sdef[t[0]];
-   h+='<div class="card"><h2>'+t[1]+'</h2>';
-   items.forEach(function(it,i){h+='<label>Карточка '+(i+1)+'</label><div class="row2"><input data-k="'+t[0]+'" data-i="'+i+'" data-l="0" value="'+esc(it[0])+'" placeholder="RU"><input data-k="'+t[0]+'" data-i="'+i+'" data-l="1" value="'+esc(it[1])+'" placeholder="EN"></div>';});
-   h+='</div>';});
-  h+='<div class="savebar"><button id="saveSecs">Сохранить разделы</button></div>';
-  v.innerHTML=h;
-  $('#saveSecs').onclick=function(){var out={pf:{items:[]},wk:{items:[]}};
-   ['pf','wk'].forEach(function(k){for(var i=0;i<4;i++){var ru=v.querySelector('input[data-k="'+k+'"][data-i="'+i+'"][data-l="0"]'),en=v.querySelector('input[data-k="'+k+'"][data-i="'+i+'"][data-l="1"]');out[k].items.push([ru?ru.value:'',en?en.value:'']);}});
-   api('secs',{method:'PUT',json:out}).then(function(){toast('Разделы сохранены');return refresh();}).catch(function(e){toast(e.message);});};
- }
- if(curTab==='contacts'){
-  var defC=[{icon:'tg',l:'TELEGRAM',s:'@vpsxm',h:'https://t.me/vpsxm'},{icon:'ig',l:'INSTAGRAM',s:'@alisamiterova',h:'https://instagram.com/'},{icon:'mx',l:'MAX',s:'max.ru',h:'https://max.ru'},{icon:'ph',l:'ТЕЛЕФОН',s:'+7 000 000-00-00',h:'tel:+70000000000'}];
-  var cc=(c.contacts&&c.contacts.length)?c.contacts:defC;
-  h='<div class="card"><h2>Карточки в разделе Контакты</h2><p class="muted">Ссылка: https://…, tel:+7… или mailto:…</p><div id="ctRows"></div><button class="ghost" id="addCt">+ Добавить контакт</button><div class="savebar"><button id="saveCt">Сохранить контакты</button></div></div>';
-  v.innerHTML=h;
-  var rows=$('#ctRows');
-  var addCt=function(x){var d=document.createElement('div');d.className='ctrow';d.innerHTML='<hr><div class="row2"><span><label>Иконка</label><select class="ci"><option value="tg"'+((x&&x.icon)==='tg'?' selected':'')+'>Telegram</option><option value="ig"'+((x&&x.icon)==='ig'?' selected':'')+'>Instagram</option><option value="mx"'+((x&&x.icon)==='mx'?' selected':'')+'>MAX</option><option value="ph"'+((x&&x.icon)==='ph'?' selected':'')+'>Телефон</option></select></span><span><label>Название</label><input class="cl" value="'+esc(x&&x.l)+'"></span></div><div class="row2"><span><label>Подпись</label><input class="cs" value="'+esc(x&&x.s)+'"></span><span><label>Ссылка</label><input class="ch" value="'+esc(x&&x.h)+'"></span></div><button class="danger cdel" style="margin-top:8px">Убрать</button>';rows.appendChild(d);d.querySelector('.cdel').onclick=function(){d.remove();};};
-  cc.forEach(addCt);
-  $('#addCt').onclick=function(){addCt(null);};
-  $('#saveCt').onclick=function(){var arr=[];Array.prototype.forEach.call(rows.querySelectorAll('.ctrow'),function(r){arr.push({icon:r.querySelector('.ci').value,l:r.querySelector('.cl').value,s:r.querySelector('.cs').value,h:r.querySelector('.ch').value});});api('contacts',{method:'PUT',json:arr}).then(function(){toast('Контакты сохранены');return refresh();}).catch(function(e){toast(e.message);});};
- }
-}
-function refresh(){return api('state').then(function(st){STATE=st;CSRF=st.csrf||CSRF;});}
-function showApp(){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');renderTabs();renderView();}
-function showLogin(){$('#app').classList.add('hidden');$('#login').classList.remove('hidden');}
-$('#lbtn').onclick=function(){api('login',{method:'POST',json:{u:$('#lu').value,p:$('#lp').value}}).then(function(j){CSRF=j.csrf;return refresh();}).then(showApp).catch(function(e){$('#lerr').textContent=e.message;});};
-$('#lp').addEventListener('keydown',function(e){if(e.key==='Enter')$('#lbtn').click();});
-$('#logout').onclick=function(){api('logout',{method:'POST'}).then(function(){location.reload();}).catch(function(){location.reload();});};
-$('#magicBtn').onclick=function(){api('magic',{method:'POST'}).then(function(j){var u=location.origin+location.pathname+'?ml='+encodeURIComponent(j.token);var fb=function(){window.prompt('Скопируйте ссылку (действует 15 минут):',u);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){toast('Magic-ссылка скопирована — действует 15 минут');},fb);}else{fb();}}).catch(function(e){toast(e.message);});};
-showLogin();
-var mlTok=null;try{mlTok=new URLSearchParams(location.search).get('ml');}catch(err){}
-if(mlTok){history.replaceState(null,'',location.pathname);api('mlogin',{method:'POST',json:{t:mlTok}}).then(function(j){CSRF=j.csrf;return refresh();}).then(showApp).catch(function(e){$('#lerr').textContent=e.message;});}
-else refresh().then(showApp).catch(function(e){if(!e||e.status===undefined){$('#lerr').textContent='Сервер недоступен. Админка работает только на задеплоенном сайте (Vercel) — не открывайте файл локально. Проверьте, что в репозитории есть api/router.js и vercel.json.';}});
-})();
-</script>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input id="filePicker" type="file" hidden>
+  <script src="/admin.js"></script>
 </body>
 </html>

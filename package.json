@@ -1,0 +1,15 @@
+{
+  "name": "alisa-miterova-photo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Portfolio website and private content management panel",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
+  },
+  "scripts": {
+    "check": "node --check api/router.js && node --check admin.js"
+  }
+}

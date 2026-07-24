@@ -8,6 +8,7 @@
    ============================================================ */
 'use strict';
 const crypto = require('crypto');
+const sharp = require('sharp');
 
 const SB_URL = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
 const SB_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
@@ -44,9 +45,97 @@ function safeEq(a, b) { const x = Buffer.from(String(a)), y = Buffer.from(String
 function clean(s, max) { return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').slice(0, max || 2000).trim(); }
 function cleanSel(s) { s = clean(s, 120); return /^[-a-zA-Z0-9 .#_>:,()\[\]="']+$/.test(s) ? s : ''; }
 function validPos(p) { return typeof p === 'string' && /^\d{1,3}% \d{1,3}%$/.test(p); }
-function validUploadUrl(u) { return typeof u === 'string' && u.indexOf(PUB_BASE) === 0 && /^[a-f0-9-]{36}\.(jpg|png|webp)$/.test(u.slice(PUB_BASE.length)); }
+function validUploadUrl(u) { return typeof u === 'string' && u.indexOf(PUB_BASE) === 0 && /^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(u.slice(PUB_BASE.length)); }
 function validHref(h) { return typeof h === 'string' && h.length <= 300 && /^(https?:\/\/|tel:|mailto:)[^\s"'<>]+$/i.test(h); }
-function defaults() { return { texts: {}, custom: [], rsub: null, title: null, covers: {}, gallery: [], secs: null, contacts: [] }; }
+function defaults() { return { texts: {}, custom: [], rsub: null, title: null, covers: {}, gallery: [], secs: null, contacts: [], admin: null }; }
+
+function cleanLangPair(v, max) {
+  return { ru: clean(v && v.ru, max), en: clean(v && v.en, max) };
+}
+function cleanImage(v) {
+  if (!v || !validUploadUrl(v.url)) return null;
+  return {
+    id: (typeof v.id === 'string' && /^[a-f0-9-]{36}$/.test(v.id)) ? v.id : crypto.randomUUID(),
+    url: v.url,
+    name: clean(v.name, 100)
+  };
+}
+function cleanImages(v, limit) {
+  return (Array.isArray(v) ? v.slice(0, limit) : []).map(cleanImage).filter(Boolean);
+}
+function sanitizeAdmin(v) {
+  v = v && typeof v === 'object' ? v : {};
+  const loader = v.loader || {};
+  const home = v.home || {};
+  const portfolio = v.portfolio || {};
+  const work = v.work || {};
+  const out = {
+    loader: {
+      title: cleanLangPair(loader.title, 120),
+      subtitle: cleanLangPair(loader.subtitle, 300),
+      images: cleanImages(loader.images, 4)
+    },
+    home: {},
+    portfolio: {
+      about: cleanLangPair(portfolio.about, 4000),
+      albums: []
+    },
+    work: { cards: [], stages: [] },
+    contacts: []
+  };
+  ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
+    const item = home[mode] || {};
+    out.home[mode] = { L: cleanImage(item.L), R: cleanImage(item.R) };
+  });
+  out.portfolio.albums = (Array.isArray(portfolio.albums) ? portfolio.albums.slice(0, 12) : []).map(function (album) {
+    const photos = cleanImages(album && album.photos, 80);
+    const preview = clean(album && album.previewId, 40);
+    return {
+      id: (album && typeof album.id === 'string' && /^[a-f0-9-]{36}$/.test(album.id)) ? album.id : crypto.randomUUID(),
+      title: cleanLangPair(album && album.title, 120),
+      previewId: photos.some(function (photo) { return photo.id === preview; }) ? preview : (photos[0] ? photos[0].id : ''),
+      photos: photos
+    };
+  }).filter(function (album) { return album.title.ru || album.title.en || album.photos.length; });
+  out.work.cards = (Array.isArray(work.cards) ? work.cards.slice(0, 12) : []).map(function (card) {
+    const oldDescription = cleanLangPair(card && card.description, 1000);
+    const oldSteps = Array.isArray(card && card.steps) ? card.steps : [];
+    const features = card && card.features || {};
+    return {
+      id: (card && typeof card.id === 'string' && /^[a-f0-9-]{36}$/.test(card.id)) ? card.id : crypto.randomUUID(),
+      image: cleanImage(card && card.image),
+      title: cleanLangPair(card && card.title, 120),
+      price: typeof (card && card.price) === 'string'
+        ? { ru: clean(card.price, 80), en: clean(card.price, 80) }
+        : cleanLangPair(card && card.price, 80),
+      features: {
+        ru: (Array.isArray(features.ru) ? features.ru : (oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.ru ? [oldDescription.ru] : []))).slice(0, 12).map(function (line) { return clean(line, 220); }).filter(Boolean),
+        en: (Array.isArray(features.en) ? features.en : (oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.en ? [oldDescription.en] : []))).slice(0, 12).map(function (line) { return clean(line, 220); }).filter(Boolean)
+      }
+    };
+  }).filter(function (card) { return card.title.ru || card.title.en; });
+  out.work.stages = (Array.isArray(work.stages) ? work.stages.slice(0, 8) : []).map(function (stage) {
+    return {
+      id: (stage && typeof stage.id === 'string' && /^[a-f0-9-]{36}$/.test(stage.id)) ? stage.id : crypto.randomUUID(),
+      title: cleanLangPair(stage && stage.title, 100),
+      text: cleanLangPair(stage && stage.text, 300)
+    };
+  }).filter(function (stage) { return stage.title.ru || stage.title.en || stage.text.ru || stage.text.en; });
+  const iconMap = { telegram: 'tg', instagram: 'ig', max: 'mx', phone: 'ph', email: 'ph', website: 'ph' };
+  out.contacts = (Array.isArray(v.contacts) ? v.contacts.slice(0, 10) : []).map(function (contact) {
+    const type = ['telegram', 'instagram', 'max', 'phone', 'email', 'website'].indexOf(contact && contact.type) >= 0 ? contact.type : 'website';
+    const href = validHref(contact && contact.href) ? contact.href : '';
+    return {
+      id: (contact && typeof contact.id === 'string' && /^[a-f0-9-]{36}$/.test(contact.id)) ? contact.id : crypto.randomUUID(),
+      type: type,
+      icon: iconMap[type],
+      label: clean(contact && contact.label, 60),
+      value: clean(contact && contact.value, 120),
+      href: href
+    };
+  }).filter(function (contact) { return contact.label && contact.href; });
+  return out;
+}
 
 /* ---------- Supabase Storage ---------- */
 async function sb(method, path, body, type) {
@@ -108,7 +197,8 @@ function send(res, code, obj) {
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(obj));
 }
-function publicContent(c) {
+function publicContent(c, req) {
+  const rich = c.admin;
   const texts = [];
   SLOTS.forEach(function (sl) {
     const t = c.texts && c.texts[sl.id];
@@ -116,12 +206,58 @@ function publicContent(c) {
   });
   (c.custom || []).forEach(function (x) { texts.push({ sel: x.sel, ru: x.ru || '', en: x.en || '', rep: 0 }); });
   const out = { texts: texts };
-  if (c.rsub) out.rsub = c.rsub;
+  if (rich && (rich.loader.subtitle.ru || rich.loader.subtitle.en)) {
+    out.rsub = {
+      ru: [rich.loader.subtitle.ru || '', ''],
+      en: [rich.loader.subtitle.en || '', '']
+    };
+  } else if (c.rsub) out.rsub = c.rsub;
   if (c.title) out.title = c.title;
-  if (c.covers && Object.keys(c.covers).length) out.covers = c.covers;
-  if (c.secs) out.secs = c.secs;
-  if (c.contacts && c.contacts.length) out.contacts = c.contacts;
-  if (c.gallery && c.gallery.length) out.gallery = c.gallery.map(function (x) { return { url: x.url, pos: x.pos || '' }; });
+  let richCovers = null;
+  if (rich && rich.home) {
+    const ua = String(req && req.headers && req.headers['user-agent'] || '');
+    const mode = /Mobile|Android|iPhone|iPod/i.test(ua) ? 'mobile' : (/iPad|Tablet/i.test(ua) ? 'tablet' : 'desktop');
+    const selected = rich.home[mode] || rich.home.desktop || {};
+    const fallback = rich.home.desktop || {};
+    richCovers = {};
+    ['L', 'R'].forEach(function (side) {
+      const image = selected[side] || fallback[side];
+      if (image && image.url) richCovers[side] = { url: image.url };
+    });
+  }
+  if (richCovers && Object.keys(richCovers).length) out.covers = richCovers;
+  else if (c.covers && Object.keys(c.covers).length) out.covers = c.covers;
+  if (rich && rich.portfolio.albums.length) {
+    out.secs = Object.assign({}, c.secs || {});
+    out.secs.pf = { items: rich.portfolio.albums.map(function (album) { return [album.title.ru, album.title.en]; }) };
+  } else if (c.secs) out.secs = c.secs;
+  if (rich && rich.work.cards.length) {
+    out.secs = Object.assign({}, out.secs || c.secs || {});
+    out.secs.wk = {
+      items: rich.work.cards.map(function (card) {
+        return [card.title.ru, card.title.en, card.price.ru, card.price.en, card.features.ru, card.features.en];
+      })
+    };
+  }
+  if (rich && rich.contacts.length) {
+    out.contacts = rich.contacts.map(function (contact) {
+      return { icon: contact.icon, l: contact.label, s: contact.value || contact.href, h: contact.href };
+    });
+  } else if (c.contacts && c.contacts.length) out.contacts = c.contacts;
+  if (rich && rich.portfolio.albums.length) {
+    out.gallery = [];
+    rich.portfolio.albums.forEach(function (album) {
+      album.photos.forEach(function (photo) { out.gallery.push({ url: photo.url, pos: '' }); });
+    });
+  } else if (c.gallery && c.gallery.length) out.gallery = c.gallery.map(function (x) { return { url: x.url, pos: x.pos || '' }; });
+  if (rich) {
+    out.admin = {
+      loader: rich.loader,
+      home: rich.home,
+      portfolio: rich.portfolio,
+      work: rich.work
+    };
+  }
   return out;
 }
 async function readBody(req) {
@@ -163,7 +299,7 @@ module.exports = async function handler(req, res) {
 
     /* публичный контент для сайта */
     if (p === 'content' && method === 'GET') {
-      return send(res, 200, publicContent(await readContent()));
+      return send(res, 200, publicContent(await readContent(), req));
     }
 
     /* вход */
@@ -221,29 +357,47 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { token: exp + '.' + hmac('magic.' + exp), ttlMin: 15 });
     }
 
-    /* загрузка фото (JSON: { type, data: base64 }) */
+    /* загрузка фото с автоматической lossless-конвертацией в AVIF */
     if (p === 'upload' && method === 'POST') {
       const j = await readBody(req);
-      if (typeof j.data !== 'string' || !j.data || j.data.length > 5e6) return send(res, 400, { error: 'Файл слишком большой (до 3 МБ)' });
+      if (typeof j.data !== 'string' || !j.data || j.data.length > 5.7e6) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
       let buf;
       try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
-      if (!buf || buf.length < 100 || buf.length > 3.5 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 3 МБ)' });
-      const ext = sniff(buf);
-      if (!ext) return send(res, 400, { error: 'Только JPG, PNG или WebP' });
-      const name = crypto.randomUUID() + '.' + ext;
-      const r = await sb('POST', BUCKET + '/cms/' + name, buf, ext === 'jpg' ? 'image/jpeg' : 'image/' + ext);
+      if (!buf || buf.length < 100 || buf.length > 4.1 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
+      let converted;
+      try {
+        converted = await sharp(buf, { animated: false, failOn: 'error', limitInputPixels: 100000000 })
+          .rotate()
+          .avif({ lossless: true, effort: 5 })
+          .toBuffer();
+      } catch (e) {
+        console.error('CMS image convert:', e && e.message);
+        return send(res, 400, { error: 'Этот формат не удалось открыть. Попробуйте JPG, PNG, WebP, TIFF, GIF или AVIF.' });
+      }
+      const name = crypto.randomUUID() + '.avif';
+      const r = await sb('POST', BUCKET + '/cms/' + name, converted, 'image/avif');
       if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
-      console.error('CMS upload ' + name + ' ip=' + ip);
+      console.error('CMS upload ' + name + ' source=' + clean(j.name, 100) + ' ip=' + ip);
       return send(res, 200, { url: PUB_BASE + name, name: name });
     }
 
     /* удаление фото */
     if (p === 'upload' && method === 'DELETE') {
       const name = String((req.query && req.query.name) || url.searchParams.get('name') || '');
-      if (!/^[a-f0-9-]{36}\.(jpg|png|webp)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
+      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
       await sb('DELETE', BUCKET + '/cms/' + name).catch(function () {});
       console.error('CMS delete ' + name + ' ip=' + ip);
       return send(res, 200, { ok: true });
+    }
+
+    /* новая панель: единая атомарная публикация черновика */
+    if (p === 'admin-content' && method === 'PUT') {
+      const j = await readBody(req);
+      const c = await readContent();
+      c.admin = sanitizeAdmin(j);
+      await writeContentJson(c);
+      console.error('CMS publish admin-content ip=' + ip);
+      return send(res, 200, { ok: true, content: c.admin });
     }
 
     /* сохранение разделов */
