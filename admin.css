@@ -255,3 +255,5 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .tile-spin{display:inline-block;margin:0 auto 5px;width:22px;height:22px;font-size:18px;line-height:22px;color:var(--ink);animation:tileSpin 1s linear infinite}
 @keyframes tileSpin{to{transform:rotate(360deg)}}
 .upload-tile button:disabled{cursor:default;opacity:.75}
+
+.field textarea{min-height:74px;resize:vertical;line-height:1.55;}

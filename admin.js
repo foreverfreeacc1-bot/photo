@@ -26,9 +26,15 @@
   var clone = function (v) { return JSON.parse(JSON.stringify(v)); };
   var uid = function () { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); };
 
+  var NATIVE_LOADER = {
+    title: { ru: 'ALISA MITEROVA', en: 'ALISA MITEROVA' },
+    sub1: { ru: 'Профессиональный фотограф из Москвы, специализирующийся на портретной, свадебной и коммерческой фотографии.', en: 'Professional photographer from Moscow, specializing in portrait, wedding and commercial photography.' },
+    sub2: { ru: 'Индивидуальный подход, внимание к деталям и естественная эстетика в каждом кадре.', en: 'Individual approach, attention to detail and natural aesthetics in every frame.' }
+  };
+
   function emptyContent() {
     return {
-      loader: { title: { ru: '', en: '' }, subtitle: { ru: '', en: '' }, subtitle2: { ru: '', en: '' }, images: [] },
+      loader: { title: clone(NATIVE_LOADER.title), subtitle: clone(NATIVE_LOADER.sub1), subtitle2: clone(NATIVE_LOADER.sub2), subtitleM: clone(NATIVE_LOADER.sub1), images: [] },
       home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null } },
       portfolio: { about: { ru: '', en: '' }, albums: [] },
       work: { cards: [], stages: [] },
@@ -86,9 +92,14 @@
     var base = emptyContent();
     c = c || {};
     if (c.loader) base.loader = Object.assign(base.loader, c.loader);
-    if (!base.loader.subtitle2) base.loader.subtitle2 = { ru: '', en: '' };
-    if (base.loader.title && base.loader.title.ru === 'Алиса Митерова' && base.loader.title.en === 'Alisa Miterova') base.loader.title = { ru: '', en: '' };
-    if (base.loader.subtitle && base.loader.subtitle.ru === 'Фотограф · Москва' && base.loader.subtitle.en === 'Photographer · Moscow') base.loader.subtitle = { ru: '', en: '' };
+    if (base.loader.title && base.loader.title.ru === 'Алиса Митерова' && base.loader.title.en === 'Alisa Miterova') base.loader.title = null;
+    if (base.loader.subtitle && base.loader.subtitle.ru === 'Фотограф · Москва' && base.loader.subtitle.en === 'Photographer · Moscow') base.loader.subtitle = null;
+    /* поля всегда показывают реальный текст сайта — его можно стереть и написать свой */
+    var nl = { title: clone(NATIVE_LOADER.title), subtitle: clone(NATIVE_LOADER.sub1), subtitle2: clone(NATIVE_LOADER.sub2), subtitleM: clone(NATIVE_LOADER.sub1) };
+    ['title', 'subtitle', 'subtitle2', 'subtitleM'].forEach(function (k) {
+      var v = base.loader[k];
+      if (!v || (!String(v.ru || '').trim() && !String(v.en || '').trim())) base.loader[k] = nl[k];
+    });
     if (c.home) {
       ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
         base.home[mode] = Object.assign(base.home[mode], c.home[mode] || {});
@@ -352,15 +363,18 @@
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Пустые поля оставляют родной текст сайта с анимацией. Заполняйте только то, что хотите заменить.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается БОЛЬШИМИ буквами. На компьютере подзаголовок — две строки друг под другом, на телефоне показывается только укороченная версия — для неё отдельные поля. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
       '<div class="field-grid">' +
-      field('Заголовок', data.title.ru, 'title.ru', 'input', 'Алиса Митерова (родной текст)') +
-      field('Title · English', data.title.en, 'title.en', 'input', 'Alisa Miterova') +
+      field('Заголовок (на сайте — большими буквами)', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
+      field('Title · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
       '</div><div class="divider"></div><div class="field-grid">' +
-      field('Подзаголовок · строка 1', data.subtitle.ru, 'subtitle.ru', 'input', 'Профессиональный фотограф из Москвы…') +
-      field('Подзаголовок · строка 2', data.subtitle2.ru, 'subtitle2.ru', 'input', 'Индивидуальный подход, внимание к деталям…') +
-      field('Subtitle · line 1', data.subtitle.en, 'subtitle.en', 'input', 'Professional photographer from Moscow…') +
-      field('Subtitle · line 2', data.subtitle2.en, 'subtitle2.en', 'input', 'Individual approach, attention to detail…') +
+      field('Подзаголовок · строка 1 (верхняя)', data.subtitle.ru, 'subtitle.ru', 'textarea', '') +
+      field('Подзаголовок · строка 2 (нижняя)', data.subtitle2.ru, 'subtitle2.ru', 'textarea', '') +
+      field('Subtitle · line 1 (top)', data.subtitle.en, 'subtitle.en', 'textarea', '') +
+      field('Subtitle · line 2 (bottom)', data.subtitle2.en, 'subtitle2.en', 'textarea', '') +
+      '</div><div class="divider"></div><div class="field-grid">' +
+      field('Подзаголовок для телефона (укороченный, одна строка)', data.subtitleM.ru, 'subtitleM.ru', 'textarea', '') +
+      field('Phone subtitle · English', data.subtitleM.en, 'subtitleM.en', 'textarea', '') +
       '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
@@ -622,7 +636,7 @@
       api('preview-content', { method: 'POST', json: draft }).then(function (result) {
         if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
-        frame.innerHTML = '<iframe class="pv-iframe" src="/?cmsPreview=1&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
+        frame.innerHTML = '<iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
       });

@@ -86,6 +86,7 @@ function sanitizeAdmin(v) {
       title: cleanLangPair(loader.title, 120),
       subtitle: cleanLangPair(loader.subtitle, 300),
       subtitle2: cleanLangPair(loader.subtitle2, 300),
+      subtitleM: cleanLangPair(loader.subtitleM, 300),
       images: cleanImages(loader.images, 4)
     },
     home: {},
@@ -269,6 +270,9 @@ function publicContent(c, req) {
       en: [rich.loader.subtitle.en || '', sub2.en || '']
     };
   } else if (c.rsub) out.rsub = c.rsub;
+  if (rich && rich.loader.subtitleM && (rich.loader.subtitleM.ru || rich.loader.subtitleM.en)) {
+    out.rsubM = { ru: rich.loader.subtitleM.ru || '', en: rich.loader.subtitleM.en || '' };
+  }
   if (c.title) out.title = c.title;
   let richCovers = null;
   if (rich && rich.home) {
