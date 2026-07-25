@@ -32,7 +32,7 @@
     sub2: { ru: 'Индивидуальный подход, внимание к деталям и естественная эстетика в каждом кадре.', en: 'Individual approach, attention to detail and natural aesthetics in every frame.' }
   };
 
-var CONTACT_ICONS = { telegram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>', instagram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2zm0 1.8a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6zm5.15-3.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg>', max: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06L2 22l5.05-1.32A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM8 15.3V9h1.6l2.4 2.2L14.4 9H16v6.3h-1.6v-3.4L12 14.1l-2.4-2.2v3.4H8z"/></svg>', phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' };
+var CONTACT_ICONS = { telegram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>', instagram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2zm0 1.8a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6zm5.15-3.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg>', max: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720"><path fill="#0a0b0b" d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/></svg>', phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' };
 var FAQ_RU_N = [
     {id:'q1',q:'В каких жанрах вы работаете?',a:'Специализируюсь на портрете, fashion, lifestyle и коммерческой фотографии. Также берусь за личные проекты в жанрах стрит и документальная фотография.'},
     {id:'q2',q:'Сколько времени занимает обработка фотографий?',a:'Стандартный срок — 5-7 рабочих дней после съёмки. Срочная обработка (1-2 дня) доступна за дополнительную плату.'},
@@ -50,12 +50,26 @@ var FAQ_EN_N = [
     {id:'q6',q:'What happens if the shoot is cancelled or postponed?',a:'Rescheduling is free if requested at least 48 hours in advance. Cancellations within 48 hours forfeit the deposit. Force-majeure situations are handled individually.'}
   ];
 var NATIVE_FAQ = FAQ_RU_N.map(function (r) { var e = null; for (var i = 0; i < FAQ_EN_N.length; i++) if (FAQ_EN_N[i].id === r.id) e = FAQ_EN_N[i]; return { id: r.id, q: { ru: r.q, en: e ? e.q : '' }, a: { ru: r.a, en: e ? e.a : '' } }; });
-function contactAuto(type, raw) {
+function fmtPhone(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d[0] === '8') d = '7' + d.slice(1);
+    if (d[0] !== '7') d = '7' + d;
+    d = d.slice(0, 11);
+    var out = '+7';
+    if (d.length > 1) out += ' ' + d.slice(1, 4);
+    if (d.length > 4) out += ' ' + d.slice(4, 7);
+    if (d.length > 7) out += '-' + d.slice(7, 9);
+    if (d.length > 9) out += '-' + d.slice(9, 11);
+    return out;
+  }
+
+  function contactAuto(type, raw) {
     var v = String(raw || '').trim();
     if (type === 'phone') {
-      var digits = v.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
-      if (digits && digits[0] !== '+') digits = '+' + digits;
-      return { l: '\u0422\u0415\u041b\u0415\u0424\u041e\u041d', s: v, h: digits.length > 4 ? 'tel:' + digits : '' };
+      var fp = fmtPhone(v);
+      var pd = fp.replace(/\D/g, '');
+      return { l: '\u0422\u0415\u041b\u0415\u0424\u041e\u041d', s: fp, h: pd.length > 4 ? 'tel:+' + pd : '' };
     }
     if (type === 'telegram') {
       var th = v.replace(/^(https?:\/\/)?(www\.)?t\.me\//i, '').replace(/^@/, '').replace(/\/+$/, '');
@@ -65,6 +79,8 @@ function contactAuto(type, raw) {
       var ih = v.replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, '').replace(/^@/, '').replace(/\/+$/, '');
       return { l: 'INSTAGRAM', s: ih ? '@' + ih : '', h: ih ? 'https://instagram.com/' + ih : '' };
     }
+    var mu = v.replace(/^(https?:\/\/)?(www\.)?max\.ru\/?/i, '').replace(/^@/, '').replace(/\/+$/, '');
+    if (mu && !/[\/.:?#\s]/.test(mu)) return { l: 'MAX', s: '@' + mu, h: 'https://max.ru/' + mu };
     var url = v;
     if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
     var dom = url.replace(/^https?:\/\//i, '').split('/')[0];
@@ -807,6 +823,48 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     });
   }
 
+  function enableFaqReorder(container, list, done) {
+    if (!container) return;
+    $$('.faq-admin-item', container).forEach(function (item, i) { item.dataset.index = i; });
+    var dragEl = null;
+    $$('.faq-drag', container).forEach(function (handle) {
+      var arm = function () { handle.closest('.faq-admin-item').setAttribute('draggable', 'true'); };
+      handle.addEventListener('mousedown', arm);
+      handle.addEventListener('touchstart', arm, { passive: true });
+    });
+    container.addEventListener('dragstart', function (event) {
+      var item = event.target.closest ? event.target.closest('.faq-admin-item') : null;
+      if (!item || item.getAttribute('draggable') !== 'true') return;
+      dragEl = item;
+      item.classList.add('is-drag');
+      event.dataTransfer.effectAllowed = 'move';
+      try { event.dataTransfer.setData('text/plain', 'reorder'); } catch (e) {}
+    });
+    container.addEventListener('dragover', function (event) {
+      if (!dragEl) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      var item = event.target.closest ? event.target.closest('.faq-admin-item') : null;
+      if (!item || item === dragEl) return;
+      var rect = item.getBoundingClientRect();
+      var before = (event.clientY - rect.top) < rect.height / 2;
+      container.insertBefore(dragEl, before ? item : item.nextSibling);
+    });
+    container.addEventListener('drop', function (event) { if (dragEl) event.preventDefault(); });
+    container.addEventListener('dragend', function () {
+      if (!dragEl) return;
+      dragEl.classList.remove('is-drag');
+      dragEl.removeAttribute('draggable');
+      dragEl = null;
+      var order = $$('.faq-admin-item', container).map(function (item) { return Number(item.dataset.index); });
+      var changed = order.some(function (v, i) { return v !== i; });
+      if (!changed) return;
+      var next = order.map(function (i) { return list[i]; });
+      list.splice.apply(list, [0, list.length].concat(next));
+      done();
+    });
+  }
+
   function renderContacts() {
     var contacts = draft.contacts;
     var faq = draft.faq;
@@ -820,7 +878,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
-        return '<div class="faq-admin-item"><div class="faq-admin-head"><b>Вопрос ' + (i + 1) + '</b><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
+        return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
           '<label class="field"><span>Вопрос · English</span><textarea data-faq="' + i + '.q.en">' + esc(f.q.en) + '</textarea></label>' +
           '<label class="field"><span>Ответ · Русский</span><textarea data-faq="' + i + '.a.ru">' + esc(f.a.ru) + '</textarea></label>' +
@@ -831,6 +889,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       input.oninput = function () {
         var i = Number(input.dataset.ctLink);
         var r = contactAuto(contacts[i].type, input.value);
+        if (contacts[i].type === 'phone' && input.value !== r.s) input.value = r.s;
         contacts[i].href = r.h; contacts[i].value = r.s; contacts[i].label = r.l;
         var sub = $('[data-ct-sub="' + i + '"]', editor); if (sub) sub.textContent = r.s;
         setDirty();
@@ -854,6 +913,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       };
     });
     $('#addFaq').onclick = function () { faq.push({ id: uid(), q: { ru: '', en: '' }, a: { ru: '', en: '' } }); setDirty(); renderContacts(); };
+    enableFaqReorder($('#faqRows'), faq, function () { setDirty(); renderContacts(); });
   }
 
   function contactRow(contact, index) {
