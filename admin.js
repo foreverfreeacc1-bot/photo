@@ -1186,27 +1186,28 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function pfAboutBlock(data, lang) {
     var about = data.aboutBlock;
+    var last = about.stages.length - 1;
     return '<article class="cover-plate site-plate">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'Обо мне' : 'About me') + '</span></div>' +
-      '<div class="plate-body is-about">' +
-      '<div class="sa-head">' +
-      '<div class="ce sa-title" data-pce="aboutBlock.title.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce sa-name" data-pce="aboutBlock.name.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce sa-text" data-pce="aboutBlock.text.' + lang + '" data-multiline spellcheck="false"></div>' +
+      '<div class="plate-body is-about"><div class="hw-wrap">' +
+      '<div class="hw-head">' +
+      '<div class="ce hw-badge" data-pce="aboutBlock.title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce hw-h2" data-pce="aboutBlock.name.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce hw-sub" data-pce="aboutBlock.text.' + lang + '" data-multiline spellcheck="false"></div>' +
       '</div>' +
-      '<div class="sa-items">' + about.stages.map(function (stage, i) {
-        return '<div class="hw-item" data-pf-stage="' + i + '" data-lang="' + lang + '">' +
-          '<span class="hw-rail">' + pfIconBox(stage, i) + '</span>' +
-          '<div class="hw-body">' +
+      '<ol class="hw-list">' + about.stages.map(function (stage, i) {
+        return '<li class="hw-item" data-pf-stage="' + i + '" data-lang="' + lang + '">' +
+          '<div class="hw-rail">' + pfIconBox(stage, i) + (i === last ? '' : '<span class="hw-vline"></span>') + '</div>' +
+          '<div class="hw-body' + (i === last ? ' hw-last' : '') + '">' +
           '<div class="ce hw-t" data-sce="title.' + lang + '" spellcheck="false"></div>' +
           '<div class="ce hw-p" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
           (lang === 'ru' ? ('<div class="hw-tools"><button class="text-button" type="button" data-pf-icon-pick="' + i + '">' + (stage.iconImage ? 'Заменить значок' : 'Загрузить значок') + '</button>' +
             (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">Убрать значок</button>' : '') +
-            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="Удалить пункт">✕</button></div>') : '') +
-          '</div></div>';
-      }).join('') + '</div>' +
+            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="Удалить пункт">\u2715</button></div>') : '') +
+          '</div></li>';
+      }).join('') + '</ol>' +
       (lang === 'ru' ? '<button class="add-tile is-inline" type="button" id="addPfStage"><span>+</span> Добавить пункт</button>' : '') +
-      '</div></article>';
+      '</div></div></article>';
   }
 
   function renderPortfolio() {
@@ -1222,7 +1223,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<button class="add-tile is-card" type="button" id="addAlbum"><span>+</span> Добавить альбом</button></div>' +
       (openIndex >= 0 ? albumEditor(data.albums[openIndex], openIndex) : '') + '</div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Точно такой же блок, как на сайте: нажмите на любой текст и правьте. Значок пункта можно загрузить картинкой.</p></div></div>' +
-      '<div class="cover-grid is-stack">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div></div>';
+      '<div class="cover-grid is-column">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div></div>';
     bindPathEditable(editor, data, 'data-pce', 'portfolio');
     $('#addAlbum').onclick = function () {
       var album = { id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] };
@@ -1366,7 +1367,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="svc-list">' + cards.map(workCard).join('') +
       '<button class="add-tile is-card" type="button" id="addWork"><span>+</span> Добавить карточку</button></div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Этапы съёмки</h2><p>Блок целиком, как на сайте. Правятся только заголовки и подписи.</p></div></div>' +
-      '<div class="cover-grid is-stack">' + stagesMock(work, 'ru') + stagesMock(work, 'en') + '</div></div>';
+      '<div class="cover-grid is-column">' + stagesMock(work, 'ru') + stagesMock(work, 'en') + '</div></div>';
     $('#addWork').onclick = function () {
       cards.push({ id: uid(), image: null, title: { ru: 'Новая услуга', en: 'New service' }, price: { ru: '', en: '' }, features: { ru: [], en: [] } });
       setDirty('work'); renderWork();
@@ -1378,25 +1379,25 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function workPlate(card, cardIndex, lang) {
     var list = (card.features && card.features[lang]) || [];
-    return '<article class="svc-plate" data-svc-lang="' + lang + '">' +
+    return '<article class="svc-plate wkc" data-svc-lang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'услуга' : 'service') + '</span></div>' +
-      '<div class="svc-photo" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '<span class="pane-empty">Фотография не выбрана</span>') + '</div>' +
-      '<div class="svc-body">' +
-      '<div class="ce svc-title" data-ace="title.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce svc-price" data-ace="price.' + lang + '" spellcheck="false"></div>' +
-      '<ul class="svc-feats">' + list.map(function (item, i) {
-        return '<li><span class="ce svc-feat" data-feat="' + lang + ':' + i + '" spellcheck="false">' + esc(item) + '</span>' +
-          '<button class="kill-btn is-mini" type="button" data-feat-del="' + lang + ':' + i + '" title="Удалить пункт">✕</button></li>';
+      '<div class="wkimg" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '<span class="pane-empty">Фотография не выбрана</span>') + '</div>' +
+      '<div class="wk-info">' +
+      '<div class="ce wkcap" data-ace="title.' + lang + '" spellcheck="false"></div>' +
+      '<ul class="wk-feats">' + list.map(function (item, i) {
+        return '<li><span class="ce wk-feat" data-feat="' + lang + ':' + i + '" spellcheck="false">' + esc(item) + '</span>' +
+          '<button class="kill-btn is-mini" type="button" data-feat-del="' + lang + ':' + i + '" title="Удалить пункт">\u2715</button></li>';
       }).join('') + '</ul>' +
       '<button class="text-button" type="button" data-feat-add="' + lang + '">+ Пункт</button>' +
+      '<div class="ce wkprice" data-ace="price.' + lang + '" spellcheck="false"></div>' +
       '</div></article>';
   }
 
   function workCard(card, cardIndex) {
     return '<section class="svc-card" data-work="' + cardIndex + '">' +
       '<div class="svc-tools"><button class="button button-light" type="button" data-work-image>' + (card.image ? 'Заменить фотографию' : 'Выбрать фотографию') + '</button>' +
-      '<button class="kill-btn" type="button" data-delete-work title="Удалить карточку">✕</button></div>' +
-      '<div class="svc-pair">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
+      '<button class="kill-btn" type="button" data-delete-work title="Удалить карточку">\u2715</button></div>' +
+      '<div class="svc-pair is-column">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
       '</section>';
   }
 
