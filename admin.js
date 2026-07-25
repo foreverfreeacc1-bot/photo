@@ -1181,7 +1181,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function pfIconBox(stage, index) {
     var img = stage.iconImage;
-    return '<span class="hw-ico' + (img ? ' has-img' : '') + '" data-pf-icon="' + index + '" title="Загрузить значок" style="' + (img ? 'background-image:url(' + esc(img.url) + ')' : '') + '">' + (img ? '' : iconMarkup(stage.icon)) + '</span>';
+    return '<span class="hw-ico' + (img ? ' has-img' : '') + '" data-pf-icon="' + index + '" title="Загрузить значок" style="' + (img ? 'background-image:url(' + esc(img.url) + ')' : '') + '">' + (img ? '' : iconMarkup(stage.icon || 'camera')) + '</span>';
   }
 
   function pfAboutBlock(data, lang) {
@@ -1203,7 +1203,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<div class="ce hw-p" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
           (lang === 'ru' ? ('<div class="hw-tools">' +
             (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">\u0412\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u0437\u043d\u0430\u0447\u043e\u043a</button>' : '') +
-            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u043f\u0443\u043d\u043a\u0442">\u2715</button></div>') : '') +
+            '<button class="kill-btn is-item" type="button" data-delete-pf-stage="' + i + '"><span>\u2715</span> \u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u0443\u043d\u043a\u0442</button></div>') : '') +
           '</div></li>';
       }).join('') + '</ol>' +
       (lang === 'ru' ? '<button class="add-tile is-inline" type="button" id="addPfStage"><span>+</span> Добавить пункт</button>' : '') +

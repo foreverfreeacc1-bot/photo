@@ -704,3 +704,30 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .wkcap:focus,.wkprice:focus,.wk-feat:focus{outline:1px solid #111;background:rgba(17,17,17,.04)}
 .add-tile.is-inline{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px dashed rgba(17,17,17,.28);border-radius:8px;background:#fbfaf8;cursor:pointer;font-size:12px;align-self:flex-start;margin-top:4px}
 .kill-btn.is-item{width:26px;height:26px;padding:0;font-size:11px}
+
+
+/* ===== правки 32 ===== */
+/* кнопка удаления пункта в белой плашке */
+.kill-btn.is-item{display:inline-flex;align-items:center;gap:8px;width:auto;height:auto;padding:6px 12px;border-radius:8px;background:#fff;border:1px solid rgba(17,17,17,.16);color:#111;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;letter-spacing:.01em;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kill-btn.is-item span{font-size:12px;line-height:1;color:var(--red)}
+.kill-btn.is-item:hover{border-color:var(--red);color:var(--red);background:#fff}
+
+/* заголовки альбомов — точно как .scap на сайте */
+.tile-cap{position:absolute;left:14px;right:14px;bottom:13px;z-index:2;display:flex;flex-direction:column;gap:4px}
+.tile-cap b{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:.24em;line-height:1.35;text-transform:uppercase;color:#f2f0ec}
+.tile-cap small{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:9px;font-weight:400;letter-spacing:.16em;text-transform:uppercase;color:rgba(242,240,236,.72)}
+@media(max-width:640px){.tile-cap b{font-size:9px;letter-spacing:.16em}}
+
+/* ровная карточка «Добавить альбом» */
+.album-grid{align-items:stretch}
+.album-tile{aspect-ratio:2/3;height:auto;margin:0}
+.add-tile.is-card{aspect-ratio:2/3;height:auto;width:100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px dashed rgba(17,17,17,.28);border-radius:0;background:#fbfaf8;color:var(--muted);font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+.add-tile.is-card span{font-size:18px;line-height:1;letter-spacing:0}
+.add-tile.is-card:hover{border-color:#111;color:#111}
+
+/* видно, что поля карточек услуг редактируются */
+.svc-plate .ce{border-radius:4px;transition:background-color .15s,outline-color .15s}
+.svc-plate .ce:hover{background:rgba(17,17,17,.05)}
+.svc-plate .ce:focus{outline:1px solid #111 !important;outline-offset:3px;background:rgba(17,17,17,.06)}
+.wkcap:empty::before{content:'\041D\0430\0437\0432\0430\043D\0438\0435 \0443\0441\043B\0443\0433\0438';color:rgba(17,17,17,.32)}
+.wkprice:empty::before{content:'\0426\0435\043D\0430';color:rgba(17,17,17,.32)}
