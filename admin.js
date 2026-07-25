@@ -15,9 +15,9 @@
   var sections = [
     { id: 'loader', index: '01', label: 'Лоадер', title: 'Первое впечатление', note: 'Фотографии в центре, заголовок и короткая подпись.' },
     { id: 'home', index: '02', label: 'Главная страница', title: 'Главная страница', note: 'Отдельные кадры для широких, средних и мобильных экранов.' },
-    { id: 'portfolio', index: '03', label: 'PORTFOLIO', title: 'Portfolio', note: 'Альбомы, фотографии, превью каждого раздела и блок о себе.' },
-    { id: 'work', index: '04', label: 'WORK', title: 'Work', note: 'Карточки услуг и понятные этапы работы с клиентом.' },
-    { id: 'contacts', index: '05', label: 'КОНТАКТЫ', title: 'Контакты', note: 'Ссылки, по которым посетитель сможет быстро связаться с вами.' }
+    { id: 'portfolio', index: '03', label: 'Портфолио', title: 'Портфолио', note: 'Альбомы, фотографии, превью каждого раздела и блок о себе.' },
+    { id: 'work', index: '04', label: 'Услуги', title: 'Услуги', note: 'Карточки услуг и понятные этапы работы с клиентом.' },
+    { id: 'contacts', index: '05', label: 'Контакты', title: 'Контакты', note: 'Ссылки, по которым посетитель сможет быстро связаться с вами.' }
   ];
 
   var $ = function (s, root) { return (root || document).querySelector(s); };
@@ -131,6 +131,113 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     { icon: 'camera', title: { ru: 'Профессиональное оборудование', en: 'Professional Equipment' }, text: { ru: 'Для съёмок используется современная профессиональная фототехника и светосильная оптика, позволяющие получать детализированные изображения с естественной светопередачей как в студии, так и на открытых локациях. При необходимости применяется профессиональное студийное освещение.', en: 'Modern professional photo equipment and fast lenses are used for shoots, delivering detailed images with natural colour reproduction both in studio and on location. Professional studio lighting is applied when needed.' } },
     { icon: 'image', title: { ru: 'Авторская обработка', en: 'Signature Editing' }, text: { ru: 'Каждый кадр проходит индивидуальную обработку. Цвет, свет и тональность сохраняют естественность изображения, подчеркивая атмосферу съёмки без чрезмерной ретуши. Главная задача — создать фотографии, которые останутся актуальными спустя годы.', en: 'Every frame is edited individually. Colour, light and tone retain the naturalness of the image, emphasising the atmosphere of the shoot without excessive retouching. The main goal is to create photographs that will remain timeless.' } },
     { icon: 'pin', title: { ru: 'Локации', en: 'Locations' }, text: { ru: 'Провожу съёмки в Москве и Московской области. Возможен выезд в другие города по предварительной договорённости. Работаю как в студиях, так и на городских, природных и интерьерных локациях.', en: 'Shoots in Moscow and the Moscow Region. Travel to other cities is possible by prior arrangement. I work in studios as well as urban, natural and interior locations.' } }
+  ];
+
+  var NATIVE_WORK_CARDS = [
+    {
+      "title": {
+        "ru": "ИНДИВИДУАЛЬНАЯ УЛИЧНАЯ / ДОМАШНЯЯ СЪЕМКА",
+        "en": "INDIVIDUAL OUTDOOR / HOME SESSION"
+      },
+      "price": {
+        "ru": "12 000 ₽",
+        "en": "12,000 ₽"
+      },
+      "features": {
+        "ru": [
+          "— длительность 1–1,5 часа",
+          "— помощь в подборе образа",
+          "— составление мудборда",
+          "— от 30 фотографий в ретуши",
+          "— готовность до 3 недель"
+        ],
+        "en": [
+          "— duration 1–1.5 hours",
+          "— outfit selection help",
+          "— moodboard creation",
+          "— 30+ retouched photos",
+          "— delivery within 3 weeks"
+        ]
+      }
+    },
+    {
+      "title": {
+        "ru": "ПОРТРЕТНАЯ СЪЕМКА",
+        "en": "PORTRAIT SESSION"
+      },
+      "price": {
+        "ru": "от 9 000 ₽",
+        "en": "from 9,000 ₽"
+      },
+      "features": {
+        "ru": [
+          "— длительность 1–2 часа",
+          "— 2 образа и локации",
+          "— от 40 кадров в обработке",
+          "— авторская ретушь",
+          "— готовность до 2 недель"
+        ],
+        "en": [
+          "— duration 1–2 hours",
+          "— 2 looks and locations",
+          "— 40+ edited photos",
+          "— author retouching",
+          "— delivery within 2 weeks"
+        ]
+      }
+    },
+    {
+      "title": {
+        "ru": "СЕМЕЙНАЯ ФОТОСЕССИЯ",
+        "en": "FAMILY PHOTO SESSION"
+      },
+      "price": {
+        "ru": "от 12 000 ₽",
+        "en": "from 12,000 ₽"
+      },
+      "features": {
+        "ru": [
+          "— длительность 1,5–2 часа",
+          "— репортаж и постановка",
+          "— 60+ кадров в обработке",
+          "— авторская ретушь",
+          "— готовность до 2 недель"
+        ],
+        "en": [
+          "— duration 1.5–2 hours",
+          "— reportage and staging",
+          "— 60+ edited photos",
+          "— author retouching",
+          "— delivery within 2 weeks"
+        ]
+      }
+    },
+    {
+      "title": {
+        "ru": "СВАДЕБНАЯ СЪЕМКА",
+        "en": "WEDDING PHOTOGRAPHY"
+      },
+      "price": {
+        "ru": "от 60 000 ₽",
+        "en": "from 60,000 ₽"
+      },
+      "features": {
+        "ru": [
+          "— полный день до 10 часов",
+          "— 400+ кадров в обработке",
+          "— тизер за 48 часов",
+          "— авторская ретушь",
+          "— готовность до 4 недель"
+        ],
+        "en": [
+          "— full day up to 10 hours",
+          "— 400+ edited photos",
+          "— teaser within 48 hours",
+          "— author retouching",
+          "— delivery within 4 weeks"
+        ]
+      }
+    }
   ];
 
   var NATIVE_WORK_STAGES = [
@@ -309,6 +416,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         };
       });
     }
+    if (!base.work.cards.length) {
+      base.work.cards = clone(NATIVE_WORK_CARDS).map(function (card) {
+        return { id: uid(), image: null, title: card.title, price: card.price, features: card.features };
+      });
+    }
     base.work.cards = base.work.cards.map(function (card) {
       var oldSteps = Array.isArray(card.steps) ? card.steps : [];
       var oldDescription = card.description || {};
@@ -378,7 +490,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     return fetch(API + path, options).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (json) {
         if (!response.ok) {
-          var error = new Error(json.error || 'Не ��д��лось выполнить действие');
+          var error = new Error(json.error || 'Не удалось выполнить действие');
           error.status = response.status;
           throw error;
         }
@@ -709,7 +821,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Плашки такие же, как на сайте: нажмите на заголовок или подзаголовок и правьте текст прямо в плашке. Заголовок на сайте всегда показывается большими буквами. В подзаголовке Enter делает перенос строки.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Заголовок на сайте всегда показывается большими буквами. В подзаголовке Enter делает перенос строки.</p></div></div>' +
       '<div class="cover-grid is-loader">' + loaderPlate('main', 'ru') + loaderPlate('main', 'en') + '</div>' +
       '<div class="cover-grid is-phones">' + loaderPlate('phone', 'ru') + loaderPlate('phone', 'en') + '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
@@ -835,11 +947,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<span class="pane-tag">' + (side === 'L' ? 'PORTFOLIO' : 'WORK') + '</span>' +
           (url ? '' : '<span class="pane-empty">Сначала выберите фотографию</span>') + '</div>';
       }).join('') +
-      '</div><p class="device-caption">' + labels[screenMode] + ' · ' + deviceNote[screenMode] + '</p></div>' +
-      '<div class="frame-actions"><button class="text-button" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
-      '<button class="text-button" type="button" data-frame-reset="R">Work — по центру</button></div>' +
+      '</div></div>' +
+      '<div class="frame-actions"><button class="frame-chip" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
+      '<button class="frame-chip" type="button" data-frame-reset="R">Work — по центру</button></div>' +
       '<p class="help">Зажмите половину экрана и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Ико��ки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
       '<div class="cover-grid">' +
       coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
       coverPlate('L', 'en', data) + coverPlate('R', 'en', data) +
@@ -1241,7 +1353,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
       }).join('') + '</div>' +
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные ��о��росы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
         return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
@@ -1361,19 +1473,32 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       });
     }
     if (active === 'portfolio') {
-      frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-portfolio"><header class="pv-heading"><h2>Portfolio</h2><p>' + esc(draft.portfolio.about.ru || 'Здесь появится ваш текст о себе.') + '</p></header><div class="pv-albums">' +
-        draft.portfolio.albums.map(function (album) {
-          var image = album.photos.filter(function (x) { return x.id === album.previewId; })[0] || album.photos[0];
-          return '<article class="pv-album" style="' + (image ? 'background-image:url(' + esc(image.url) + ')' : '') + '"><b>' + esc(album.title.ru) + '</b></article>';
-        }).join('') + '</div></section></div>';
+      frame.innerHTML = '<div class="pv-loading">Загружаем раздел Портфолио…</div>';
+      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+        if (active !== 'portfolio' || $('#previewModal').classList.contains('is-hidden')) return;
+        try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
+        frame.classList.add('is-live');
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=pf&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Портфолио"></iframe></div>';
+        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        fitPreviewScale(frame);
+      }).catch(function (error) {
+        frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
+      });
     }
     if (active === 'work') {
-      frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-work"><header class="pv-heading"><h2>Work</h2></header><div class="pv-work-list">' +
-        draft.work.cards.map(function (card) {
-          return '<article class="pv-work-card"><div><h3>' + esc(card.title.ru) + '</h3><p>' + esc((card.features.ru || []).join(' · ')) + '</p></div><strong>' + esc(card.price.ru) + '</strong></article>';
-        }).join('') + '</div><div class="pv-steps" style="margin-top:28px">' +
-        draft.work.stages.map(function (stage, i) { return '<span class="pv-step"><b>0' + (i + 1) + ' · ' + esc(stage.title.ru) + '</b>' + esc(stage.text.ru) + '</span>'; }).join('') +
-        '</div></section></div>';
+      frame.innerHTML = '<div class="pv-loading">Загружаем раздел Услуги…</div>';
+      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+        if (active !== 'work' || $('#previewModal').classList.contains('is-hidden')) return;
+        try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
+        frame.classList.add('is-live');
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=wk&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Услуги"></iframe></div>';
+        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        fitPreviewScale(frame);
+      }).catch(function (error) {
+        frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
+      });
     }
     if (active === 'contacts') {
       frame.innerHTML = '<div class="pv-loading">Загружаем раздел Контакты…</div>';
@@ -1538,7 +1663,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var user = $('#naUser').value.trim();
     var pass = $('#naPass').value;
     if (!user) { toast('Укажите логин'); return; }
-    if (pass.length < 8) { toast('Пароль должен быть не короче 8 ��имволов'); return; }
+    if (pass.length < 8) { toast('Пароль должен быть не короче 8 символов'); return; }
     api('admin-add', { method: 'POST', json: { name: name, tag: tag, user: user, password: pass } }).then(function () {
       toast('Администратор создан');
       $('#naName').value = ''; if ($('#naTag')) $('#naTag').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
