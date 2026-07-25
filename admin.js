@@ -164,6 +164,18 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       });
       if (c.home.texts) base.home.texts = Object.assign(base.home.texts, c.home.texts);
     }
+    base.home.photo = { L: null, R: null };
+    ['L', 'R'].forEach(function (side) {
+      base.home.photo[side] = (c.home && c.home.photo && c.home.photo[side]) || base.home.desktop[side] || base.home.tablet[side] || base.home.mobile[side] || null;
+    });
+    base.home.pos = { desktop: {}, tablet: {}, mobile: {} };
+    ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
+      ['L', 'R'].forEach(function (side) {
+        var p = c.home && c.home.pos && c.home.pos[mode] && c.home.pos[mode][side];
+        base.home.pos[mode][side] = (p && isFinite(p.x) && isFinite(p.y)) ? { x: Math.min(100, Math.max(0, Math.round(Number(p.x)))), y: Math.min(100, Math.max(0, Math.round(Number(p.y)))) } : { x: 50, y: 50 };
+      });
+    });
+    ['desktop', 'tablet', 'mobile'].forEach(function (mode) { base.home[mode] = { L: base.home.photo.L, R: base.home.photo.R }; });
     Object.keys(NATIVE_HOME).forEach(function (k) {
       var v = base.home.texts[k];
       if (!v || (!String(v.ru || '').trim() && !String(v.en || '').trim())) base.home.texts[k] = clone(NATIVE_HOME[k]);
@@ -401,7 +413,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var total = list.length;
     var savedTiles = null;
     function busyTiles(text) {
-      if (!savedTiles) { savedTiles = []; $$('.upload-tile button').forEach(function (b) { savedTiles.push([b, b.innerHTML]); b.disabled = true; }); }
+      if (!savedTiles) { savedTiles = []; $$('.upload-tile button, [data-home-upload]').forEach(function (b) { savedTiles.push([b, b.innerHTML]); b.disabled = true; }); }
       savedTiles.forEach(function (pair) { pair[0].innerHTML = '<b class="tile-spin">◌</b>' + text; });
     }
     function unbusyTiles() {
@@ -462,7 +474,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   function richField(label, lang) {
-    return '<label class="field"><span>' + label + '</span><div class="field-rich" data-rich="' + lang + '" contenteditable="true" spellcheck="false"></div></label>';
+    return '<label class="field"><span>' + label + '</span><textarea class="field-rich" data-rich="' + lang + '" rows="2" spellcheck="false"></textarea></label>';
   }
 
   function initRichFields(root, data) {
@@ -477,7 +489,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         return value;
       };
       var commit = function (value) {
-        value = String(value);
+        value = String(value).replace(/\r/g, '');
         if (kind === 'phone') {
           data.subtitleM[lang] = value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).join('\n');
         } else {
@@ -487,61 +499,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         }
         setDirty();
       };
-      var renderRich = function (value) {
-        el.innerHTML = '';
-        String(value).split('\n').forEach(function (part, i) {
-          if (i > 0) {
-            var chip = document.createElement('span');
-            chip.className = 'nl-chip';
-            chip.contentEditable = 'false';
-            chip.textContent = '/n';
-            el.appendChild(chip);
-          }
-          if (part) el.appendChild(document.createTextNode(part));
-        });
-      };
-      var serialize = function () {
-        var out = '';
-        for (var i = 0; i < el.childNodes.length; i++) {
-          var node = el.childNodes[i];
-          if (node.nodeType === 3) out += node.nodeValue;
-          else if (node.nodeType === 1 && node.classList && node.classList.contains('nl-chip')) out += '\n';
-          else if (node.nodeName === 'BR') out += '';
-          else out += node.textContent;
-        }
-        return out;
-      };
-      var caretEnd = function () {
-        var range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      };
-      el.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          document.execCommand('insertHTML', false, '<span class="nl-chip" contenteditable="false">/n</span>');
-        }
-      });
-      el.addEventListener('paste', function (event) {
-        event.preventDefault();
-        var text = (event.clipboardData || window.clipboardData).getData('text');
-        document.execCommand('insertText', false, text.replace(/\r?\n/g, ' '));
-      });
-      el.addEventListener('input', function () {
-        var raw = serialize();
-        if (/\/[nN]/.test(raw)) {
-          var value = raw.replace(/ ?\/[nN] ?/g, '\n');
-          renderRich(value);
-          caretEnd();
-          commit(value);
-          return;
-        }
-        commit(raw);
-      });
-      renderRich(read());
+      var fit = function () { el.style.height = 'auto'; el.style.height = Math.max(el.scrollHeight + 2, 56) + 'px'; };
+      el.value = read();
+      el.addEventListener('input', function () { commit(el.value); fit(); });
+      setTimeout(fit, 0);
     });
   }
 
@@ -592,12 +553,12 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="field-grid">' +
       field('Заголовок · Русский', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
       field('Заголовок · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
-      richField('Подзаголовок · Русский («/n» — перенос строки)', 'main.ru') +
-      richField('Подзаголовок · English («/n» — перенос строки)', 'main.en') +
-      richField('Подзаголовок для телефона · Русский («/n» — перенос строки)', 'phone.ru') +
-      richField('Подзаголовок для телефона · English («/n» — перенос строки)', 'phone.en') +
+      richField('Подзаголовок · Русский (Enter — перенос строки)', 'main.ru') +
+      richField('Подзаголовок · English (Enter — перенос строки)', 'main.en') +
+      richField('Подзаголовок для телефона · Русский (Enter — перенос строки)', 'phone.ru') +
+      richField('Подзаголовок для телефона · English (Enter — перенос строки)', 'phone.en') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в благородном чёрно-белом — это фирменная эстетика лоадера: любая фотография смотрится цельно и стильно. Очерёдность фотографий можно менять, просто перетаскивая кадры мышкой.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true)) + '</div></div>';
     bindFields(editor, data);
@@ -616,23 +577,55 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     });
   }
 
+  var NATIVE_COVERS = { L: '', R: '' };
+  var nativeCoversLoading = false;
+  function loadNativeCovers() {
+    if ((NATIVE_COVERS.L && NATIVE_COVERS.R) || nativeCoversLoading) return;
+    nativeCoversLoading = true;
+    fetch('/', { credentials: 'omit' }).then(function (r) { return r.text(); }).then(function (html) {
+      var re = /class="cimg" style="background-image:url\('([^']+)'\)/g;
+      var m1 = re.exec(html);
+      var m2 = re.exec(html);
+      if (m1) NATIVE_COVERS.L = m1[1];
+      if (m2) NATIVE_COVERS.R = m2[1];
+      nativeCoversLoading = false;
+      if (active === 'home') renderHome();
+    }).catch(function () { nativeCoversLoading = false; });
+  }
+
+  function syncHomePairs() {
+    ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
+      draft.home[mode] = { L: draft.home.photo.L, R: draft.home.photo.R };
+    });
+  }
+
   function renderHome() {
     var data = draft.home;
     var editor = $('#editor');
     var labels = { desktop: 'Широкий экран', tablet: 'Ноутбук', mobile: 'Телефон' };
-    var pair = data[screenMode];
+    var frameAspect = { desktop: '8 / 9', tablet: '4 / 5', mobile: '9 / 16' };
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии обложки</h2><p>Выберите кадры отдельно для каждого размера. Сайт покажет нужную версию автоматически.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии обложки</h2><p>Одна фотография на каждую половину — она используется на всех устройствах сразу. Пока своя не выбрана, показывается фотография, которая уже стоит на сайте.</p></div></div>' +
+      '<div class="screen-pair">' + ['L', 'R'].map(function (side) {
+        var image = data.photo[side];
+        var url = image ? image.url : NATIVE_COVERS[side];
+        return '<article class="screen-card"><h3>' + (side === 'L' ? 'Portfolio' : 'Work') + '</h3>' +
+          '<div class="screen-photo" style="' + (url ? 'background-image:url(' + esc(url) + ')' : '') + '">' + (image ? '' : (url ? '<span class="ph-badge">Фото с сайта</span>' : 'Загружаем фотографию сайта…')) + '</div>' +
+          '<button class="button button-light" type="button" data-home-upload="' + side + '">' + (image ? 'Заменить' : 'Выбрать свою фотографию') + '</button>' +
+          (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</article>';
+      }).join('') + '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Миниатюра выбирается отдельно для широкого экрана, ноутбука и телефона. Фотография одна и та же — меняется только видимая часть кадра.</p></div></div>' +
       '<div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
         return '<button type="button" data-screen="' + mode + '" class="' + (mode === screenMode ? 'is-active' : '') + '">' + labels[mode] + '</button>';
       }).join('') + '</div>' +
       '<div class="screen-pair">' + ['L', 'R'].map(function (side) {
-        var image = pair[side];
+        var image = data.photo[side];
+        var url = image ? image.url : NATIVE_COVERS[side];
+        var pos = data.pos[screenMode][side];
         return '<article class="screen-card"><h3>' + (side === 'L' ? 'Portfolio' : 'Work') + '</h3>' +
-          '<div class="screen-photo" style="' + (image ? 'background-image:url(' + esc(image.url) + ')' : '') + '">' + (image ? '' : 'Фотография не выбрана') + '</div>' +
-          '<button class="button button-light" type="button" data-home-upload="' + side + '">' + (image ? 'Заменить' : 'Выбрать фотографию') + '</button>' +
-          (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Убрать фотографию</button>' : '') + '</article>';
-      }).join('') + '</div><p class="help">Подсказка: на телефоне лучше работают вертикальные кадры, на компьютере — горизонтальные.</p></div>' +
+          '<div class="frame-box" data-frame="' + side + '" style="aspect-ratio:' + frameAspect[screenMode] + ';' + (url ? 'background-image:url(' + esc(url) + ');background-position:' + pos.x + '% ' + pos.y + '%;' : '') + '">' + (url ? '' : 'Сначала выберите фотографию') + '</div>' +
+          '<button class="text-button" type="button" data-frame-reset="' + side + '">По центру</button></article>';
+      }).join('') + '</div><p class="help">Зажмите кадр мышкой и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Это реальные тексты главной страницы — сотрите и напишите свои. Русские поля слева, английские справа — для английской версии сайта. Перенос строки — клавиша Enter.</p></div></div><div class="field-grid">' +
       field('Надзаголовок над PORTFOLIO · Русский', data.texts.tagL.ru, 'texts.tagL.ru', 'textarea', '') +
       field('Надзаголовок над PORTFOLIO · English', data.texts.tagL.en, 'texts.tagL.en', 'textarea', '') +
@@ -647,13 +640,51 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $$('[data-home-upload]', editor).forEach(function (button) {
       button.onclick = function () {
         var side = button.dataset.homeUpload;
-        chooseFiles({ multiple: false }, function (images) { data[screenMode][side] = images[0]; setDirty(); renderHome(); });
+        chooseFiles({ multiple: false }, function (images) { data.photo[side] = images[0]; syncHomePairs(); setDirty(); renderHome(); });
       };
     });
     $$('[data-home-remove]', editor).forEach(function (button) {
-      button.onclick = function () { data[screenMode][button.dataset.homeRemove] = null; setDirty(); renderHome(); };
+      button.onclick = function () { data.photo[button.dataset.homeRemove] = null; syncHomePairs(); setDirty(); renderHome(); };
+    });
+    $$('[data-frame-reset]', editor).forEach(function (button) {
+      button.onclick = function () { data.pos[screenMode][button.dataset.frameReset] = { x: 50, y: 50 }; setDirty(); renderHome(); };
+    });
+    $$('.frame-box', editor).forEach(function (box) {
+      var side = box.dataset.frame;
+      var start = null;
+      var onMove = function (event) {
+        if (!start) return;
+        var point = event.touches ? event.touches[0] : event;
+        var rect = box.getBoundingClientRect();
+        var pos = data.pos[screenMode][side];
+        pos.x = Math.min(100, Math.max(0, Math.round(start.px - ((point.clientX - start.x) / rect.width) * 100)));
+        pos.y = Math.min(100, Math.max(0, Math.round(start.py - ((point.clientY - start.y) / rect.height) * 100)));
+        box.style.backgroundPosition = pos.x + '% ' + pos.y + '%';
+        event.preventDefault();
+      };
+      var onUp = function () {
+        if (start) { start = null; setDirty(); }
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+      };
+      var onDown = function (event) {
+        if (!(data.photo[side] || NATIVE_COVERS[side])) return;
+        var point = event.touches ? event.touches[0] : event;
+        var pos = data.pos[screenMode][side];
+        start = { x: point.clientX, y: point.clientY, px: pos.x, py: pos.y };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onUp);
+        event.preventDefault();
+      };
+      box.addEventListener('mousedown', onDown);
+      box.addEventListener('touchstart', onDown, { passive: false });
     });
     bindFields(editor, data);
+    loadNativeCovers();
   }
 
   function renderPortfolio() {
@@ -983,7 +1014,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     }
     if (active === 'home') {
       frame.innerHTML = '<div class="pv-loading">Загружаем настоящую главную…</div>';
-      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+      api('preview-content', { method: 'POST', json: Object.assign({ __mode: device === 'mobile' ? 'mobile' : 'desktop' }, draft) }).then(function (result) {
         if (active !== 'home' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');

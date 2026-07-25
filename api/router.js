@@ -101,6 +101,17 @@ function sanitizeAdmin(v) {
     const item = home[mode] || {};
     out.home[mode] = { L: cleanImage(item.L), R: cleanImage(item.R) };
   });
+  out.home.pos = {};
+  ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
+    const pm = (home.pos && home.pos[mode]) || {};
+    out.home.pos[mode] = {};
+    ['L', 'R'].forEach(function (side) {
+      const p = pm[side];
+      if (p && isFinite(p.x) && isFinite(p.y)) {
+        out.home.pos[mode][side] = { x: Math.min(100, Math.max(0, Math.round(Number(p.x)))), y: Math.min(100, Math.max(0, Math.round(Number(p.y)))) };
+      }
+    });
+  });
   const homeTexts = home.texts || {};
   out.home.texts = {
     tagL: cleanLangPair(homeTexts.tagL, 120),
@@ -268,7 +279,7 @@ function send(res, code, obj) {
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(obj));
 }
-function publicContent(c, req) {
+function publicContent(c, req, forceMode) {
   const rich = c.admin;
   const texts = [];
   SLOTS.forEach(function (sl) {
@@ -291,13 +302,18 @@ function publicContent(c, req) {
   let richCovers = null;
   if (rich && rich.home) {
     const ua = String(req && req.headers && req.headers['user-agent'] || '');
-    const mode = /Mobile|Android|iPhone|iPod/i.test(ua) ? 'mobile' : (/iPad|Tablet/i.test(ua) ? 'tablet' : 'desktop');
+    const uaMode = /Mobile|Android|iPhone|iPod/i.test(ua) ? 'mobile' : (/iPad|Tablet/i.test(ua) ? 'tablet' : 'desktop');
+    const mode = (forceMode === 'mobile' || forceMode === 'tablet' || forceMode === 'desktop') ? forceMode : uaMode;
     const selected = rich.home[mode] || rich.home.desktop || {};
     const fallback = rich.home.desktop || {};
     richCovers = {};
     ['L', 'R'].forEach(function (side) {
       const image = selected[side] || fallback[side];
-      if (image && image.url) richCovers[side] = { url: image.url };
+      const entry = {};
+      if (image && image.url) entry.url = image.url;
+      const pp = rich.home.pos && rich.home.pos[mode] && rich.home.pos[mode][side];
+      if (pp && isFinite(pp.x) && isFinite(pp.y)) entry.pos = Number(pp.x) + '% ' + Number(pp.y) + '%';
+      if (entry.url || entry.pos) richCovers[side] = entry;
     });
   }
   if (richCovers && Object.keys(richCovers).length) out.covers = richCovers;
@@ -502,9 +518,10 @@ module.exports = async function handler(req, res) {
     /* предпросмотр: публичный контент с учётом черновика, ничего не сохраняет */
     if (p === 'preview-content' && method === 'POST') {
       const j = await readBody(req);
+      const forceMode = j && typeof j.__mode === 'string' ? j.__mode : '';
       const c = await readContent();
       c.admin = sanitizeAdmin(j);
-      return send(res, 200, { ok: true, content: publicContent(c, req) });
+      return send(res, 200, { ok: true, content: publicContent(c, req, forceMode) });
     }
 
     /* новая панель: единая атомарная публикация черновика */

@@ -295,3 +295,9 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .faq-head-left{display:flex;align-items:center;gap:10px;}
 .faq-drag{cursor:grab;user-select:none;font-size:16px;color:#8a8578;line-height:1;padding:2px 4px;}
 .faq-admin-item.is-drag{opacity:.45;}
+
+textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
+.screen-photo{position:relative;}
+.ph-badge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;}
+.frame-box{width:100%;background-size:cover;background-position:50% 50%;background-color:#eae6dd;border:1px solid var(--line);border-radius:8px;cursor:grab;display:flex;align-items:center;justify-content:center;color:#8a8578;font-size:12px;user-select:none;touch-action:none;max-height:440px;}
+.frame-box:active{cursor:grabbing;}
