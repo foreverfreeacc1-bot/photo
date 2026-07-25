@@ -418,3 +418,43 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .loader-plate.is-phone .plate-body{min-height:300px;padding:34px 16px}
 .loader-plate.is-phone .ce-loadtitle{font-size:19px;letter-spacing:.12em}
 .loader-plate.is-phone .ce-loadsub{font-size:10.5px}
+
+/* ---------- плашки лоадера: серый фон, чёрный текст, шрифты сайта ---------- */
+.cover-grid.is-loader{grid-template-columns:1fr}
+.loader-plate{background:#eceae4;border-color:#d9d5cd;color:#111}
+.loader-plate .plate-head{background:#e2dfd8;border-bottom-color:#d2cec5;color:#6a655c}
+.loader-plate .plate-head b{color:#111}
+.loader-plate .plate-body{align-items:center;justify-content:center;text-align:center;gap:22px;min-height:150px;padding:34px 22px}
+.loader-plate .ce{border-color:rgba(0,0,0,.14);color:#111}
+.loader-plate .ce:hover{border-color:rgba(0,0,0,.34)}
+.loader-plate .ce:focus{border-color:#111;border-style:solid;background:rgba(0,0,0,.05)}
+.loader-plate .ce:empty:before{color:#8b867d}
+.ce-loadtitle{font-family:'CormorantLight',Georgia,serif;font-weight:400;font-size:26px;line-height:1.15;letter-spacing:.17em;text-transform:uppercase;color:#000;width:auto;max-width:100%}
+.ce-loadsub{font-family:var(--sans);font-weight:400;font-size:10px;line-height:1.9;letter-spacing:0;text-transform:none;color:#46423a;width:auto;max-width:640px}
+.cover-grid.is-phones{grid-template-columns:1fr 1fr;margin-top:14px;justify-items:center}
+.loader-plate.is-phone{width:100%;max-width:360px}
+.loader-plate.is-phone .plate-body{min-height:280px;padding:40px 18px}
+.loader-plate.is-phone .ce-loadtitle{font-size:19px;letter-spacing:.14em}
+.loader-plate.is-phone .ce-loadsub{font-size:9px;max-width:300px}
+@media (max-width:860px){.cover-grid.is-phones{grid-template-columns:1fr}}
+
+/* ---------- плашки альбомов и услуг ---------- */
+.album-plate .plate-body{position:relative;min-height:190px;justify-content:flex-end;background-size:cover;background-position:center}
+.album-plate .plate-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.25),rgba(10,10,10,.82))}
+.album-plate .plate-stack{position:relative;display:flex;flex-direction:column;gap:10px}
+.ce-atitle{font-family:var(--serif);font-size:24px;line-height:1.1;letter-spacing:.1em;text-transform:uppercase}
+.ce-adesc{font-size:12px;line-height:1.7;color:#ddd8ce}
+.work-plate .plate-body{min-height:120px;justify-content:center;gap:12px}
+.ce-wprice{font-size:13px;letter-spacing:.06em;color:#ddd8ce}
+
+/* ---------- выбор значка ---------- */
+.icon-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.icon-now{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:#111;color:#fff;flex:none}
+.icon-now svg{width:22px;height:22px}
+.icon-label{display:block;margin-bottom:8px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.icon-picker{display:flex;flex-wrap:wrap;gap:8px}
+.icon-opt{display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:#111;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.icon-opt svg{width:19px;height:19px}
+.icon-opt:hover{border-color:#111}
+.icon-opt.is-on{background:#111;border-color:#111;color:#fff}
+.stage-list{display:flex;flex-direction:column;gap:14px}
