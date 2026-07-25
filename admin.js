@@ -272,7 +272,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     return fetch(API + path, options).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (json) {
         if (!response.ok) {
-          var error = new Error(json.error || 'Не удалось выполнить действие');
+          var error = new Error(json.error || 'Не ��д��лось выполнить действие');
           error.status = response.status;
           throw error;
         }
@@ -388,8 +388,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '</div></article>';
   }
 
-  function uploadTile(label, multiple, accept) {
-    return '<div class="upload-tile"><button type="button" data-upload><b>＋</b>' + label + '</button></div>';
+  function uploadTile(label, multiple, accept, counter) {
+    return '<div class="upload-tile"><button type="button" data-upload><b>＋</b>' + label +
+      (counter ? '<i class="tile-count">' + esc(counter) + '</i>' : '') + '</button></div>';
   }
 
   function chooseFiles(options, callback) {
@@ -558,9 +559,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       richField('Подзаголовок для телефона · Русский (Enter — перенос строки)', 'phone.ru') +
       richField('Подзаголовок для телефона · English (Enter — перенос строки)', 'phone.en') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера: любая фотография смотрится цельно и стильно. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
-      (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true)) + '</div></div>';
+      (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true, null, data.images.length + ' / 4')) + '</div></div>';
     bindFields(editor, data);
     initRichFields(editor, data);
     enableReorder($('.upload-grid', editor), data.images, function () { renderLoader(); setDirty(); });
@@ -599,13 +600,67 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     });
   }
 
+  function ceBox(label, value, key) {
+    return '<div class="ce ce-' + label + '" data-ce="' + key + '" spellcheck="false">' + esc(value || '') + '</div>';
+  }
+
+  function bindEditable(root, object) {
+    $$('[data-ce]', root).forEach(function (el) {
+      el.setAttribute('contenteditable', 'true');
+      el.setAttribute('role', 'textbox');
+      el.addEventListener('paste', function (event) {
+        event.preventDefault();
+        var text = (event.clipboardData || window.clipboardData).getData('text');
+        document.execCommand('insertText', false, String(text).replace(/\s+/g, ' '));
+      });
+      el.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') { event.preventDefault(); el.blur(); }
+      });
+      el.addEventListener('input', function () {
+        var path = el.getAttribute('data-ce').split('.');
+        var target = object;
+        for (var i = 0; i < path.length - 1; i++) target = target[path[i]];
+        target[path[path.length - 1]] = el.textContent.replace(/\s+/g, ' ').replace(/^ | $/g, '');
+        setDirty();
+      });
+    });
+  }
+
+  function coverPlate(side, lang, data) {
+    var t = data.texts;
+    var langLabel = lang === 'ru' ? 'Русский' : 'English';
+    var head = '<div class="plate-head"><b>' + (side === 'L' ? 'Portfolio' : 'Work') + '</b><span>' + langLabel + '</span></div>';
+    if (side === 'L') {
+      return '<article class="cover-plate">' + head +
+        '<div class="plate-body">' +
+        ceBox('tag', t.tagL[lang], 'texts.tagL.' + lang) +
+        '<div class="plate-title">PORTFOLIO —</div>' +
+        ceBox('small', t.smallL[lang], 'texts.smallL.' + lang) +
+        ceBox('sub', t.subL[lang], 'texts.subL.' + lang) +
+        '</div></article>';
+    }
+    var icons = '<div class="plate-socs" aria-hidden="true">' +
+      '<span class="psoc">' + CONTACT_ICONS.telegram + '</span>' +
+      '<span class="psoc"><i class="psoc-star">*</i>' + CONTACT_ICONS.instagram + '</span>' +
+      '<span class="psoc">' + CONTACT_ICONS.max + '</span>' +
+      '<span class="psoc">' + CONTACT_ICONS.phone + '</span></div>';
+    return '<article class="cover-plate">' + head +
+      '<div class="plate-body">' +
+      '<div class="plate-title">WORK</div>' +
+      ceBox('sub', t.subR[lang], 'texts.subR.' + lang) +
+      icons +
+      '<div class="plate-fixed"><span class="plate-plus">+</span>' + (lang === 'ru' ? 'СТОИМОСТЬ УСЛУГ' : 'SERVICE PRICING') + '</div>' +
+      '</div></article>';
+  }
+
   function renderHome() {
     var data = draft.home;
     var editor = $('#editor');
     var labels = { desktop: 'Широкий экран', tablet: 'Ноутбук', mobile: 'Телефон' };
-    var frameAspect = { desktop: '8 / 9', tablet: '4 / 5', mobile: '9 / 16' };
+    var deviceAspect = { desktop: '16 / 9', tablet: '4 / 3', mobile: '9 / 19' };
+    var deviceNote = { desktop: 'две половины рядом', tablet: 'две половины рядом', mobile: 'Portfolio сверху, Work снизу' };
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии обложки</h2><p>Одна фотография на каждую половину — она используется на всех устройствах сразу. Пока своя не выбрана, показывается фотография, которая уже стоит на сайте.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии обложки</h2><p>Одна фотография на каждую половину — она используется на всех устройствах сразу.</p></div></div>' +
       '<div class="screen-pair">' + ['L', 'R'].map(function (side) {
         var image = data.photo[side];
         var url = image ? image.url : NATIVE_COVERS[side];
@@ -614,27 +669,27 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<button class="button button-light" type="button" data-home-upload="' + side + '">' + (image ? 'Заменить' : 'Выбрать свою фотографию') + '</button>' +
           (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</article>';
       }).join('') + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Миниатюра выбирается отдельно для широкого экрана, ноутбука и телефона. Фотография одна и та же — меняется только видимая часть кадра.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже — настоящий экран выбранного устройства: такие же пропорции и такое же расположение половин, как на сайте. Фотография одна и та же — меняется только видимая часть кадра.</p></div></div>' +
       '<div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
         return '<button type="button" data-screen="' + mode + '" class="' + (mode === screenMode ? 'is-active' : '') + '">' + labels[mode] + '</button>';
       }).join('') + '</div>' +
-      '<div class="screen-pair">' + ['L', 'R'].map(function (side) {
+      '<div class="device-wrap"><div class="device-mock' + (screenMode === 'mobile' ? ' is-stacked' : '') + '" style="aspect-ratio:' + deviceAspect[screenMode] + '">' +
+      ['L', 'R'].map(function (side) {
         var image = data.photo[side];
         var url = image ? image.url : NATIVE_COVERS[side];
         var pos = data.pos[screenMode][side];
-        return '<article class="screen-card"><h3>' + (side === 'L' ? 'Portfolio' : 'Work') + '</h3>' +
-          '<div class="frame-box" data-frame="' + side + '" style="aspect-ratio:' + frameAspect[screenMode] + ';' + (url ? 'background-image:url(' + esc(url) + ');background-position:' + pos.x + '% ' + pos.y + '%;' : '') + '">' + (url ? '' : 'Сначала выберите фотографию') + '</div>' +
-          '<button class="text-button" type="button" data-frame-reset="' + side + '">По центру</button></article>';
-      }).join('') + '</div><p class="help">Зажмите кадр мышкой и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Это реальные тексты главной страницы — сотрите и напишите свои. Русские поля слева, английские справа — для английской версии сайта. Перенос строки — клавиша Enter.</p></div></div><div class="field-grid">' +
-      field('Надзаголовок над PORTFOLIO · Русский', data.texts.tagL.ru, 'texts.tagL.ru', 'textarea', '') +
-      field('Надзаголовок над PORTFOLIO · English', data.texts.tagL.en, 'texts.tagL.en', 'textarea', '') +
-      field('Подпись под PORTFOLIO · Русский', data.texts.smallL.ru, 'texts.smallL.ru', 'textarea', '') +
-      field('Подпись под PORTFOLIO · English', data.texts.smallL.en, 'texts.smallL.en', 'textarea', '') +
-      field('Подзаголовок PORTFOLIO (внизу) · Русский', data.texts.subL.ru, 'texts.subL.ru', 'textarea', '') +
-      field('Подзаголовок PORTFOLIO (внизу) · English', data.texts.subL.en, 'texts.subL.en', 'textarea', '') +
-      field('Подзаголовок WORK (внизу) · Русский', data.texts.subR.ru, 'texts.subR.ru', 'textarea', '') +
-      field('Подзаголовок WORK (внизу) · English', data.texts.subR.en, 'texts.subR.en', 'textarea', '') +
+        return '<div class="frame-pane" data-frame="' + side + '" style="' + (url ? 'background-image:url(' + esc(url) + ');background-position:' + pos.x + '% ' + pos.y + '%;' : '') + '">' +
+          '<span class="pane-tag">' + (side === 'L' ? 'PORTFOLIO' : 'WORK') + '</span>' +
+          (url ? '' : '<span class="pane-empty">Сначала выберите фотографию</span>') + '</div>';
+      }).join('') +
+      '</div><p class="device-caption">' + labels[screenMode] + ' · ' + deviceNote[screenMode] + '</p></div>' +
+      '<div class="frame-actions"><button class="text-button" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
+      '<button class="text-button" type="button" data-frame-reset="R">Work — по центру</button></div>' +
+      '<p class="help">Зажмите половину экрана и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Четыре плашки — такие же, как на сайте: слева Portfolio, справа Work, сверху русская версия, снизу английская. Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
+      '<div class="cover-grid">' +
+      coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
+      coverPlate('L', 'en', data) + coverPlate('R', 'en', data) +
       '</div></div>';
     $$('[data-screen]', editor).forEach(function (button) { button.onclick = function () { screenMode = button.dataset.screen; renderHome(); }; });
     $$('[data-home-upload]', editor).forEach(function (button) {
@@ -649,7 +704,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $$('[data-frame-reset]', editor).forEach(function (button) {
       button.onclick = function () { data.pos[screenMode][button.dataset.frameReset] = { x: 50, y: 50 }; setDirty(); renderHome(); };
     });
-    $$('.frame-box', editor).forEach(function (box) {
+    bindEditable(editor, data);
+    $$('.frame-pane', editor).forEach(function (box) {
       var side = box.dataset.frame;
       var start = null;
       var onMove = function (event) {
@@ -695,7 +751,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       field('Текст · Русский', data.about.ru, 'about.ru', 'textarea', 'Расскажите о себе и своём подходе') +
       field('Текст · English', data.about.en, 'about.en', 'textarea', 'Tell visitors about your approach') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Первый кадр с отметкой «Превью�� будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Первый кадр с отметкой «Превью» будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
       '<div class="album-list">' + (data.albums.length ? data.albums.map(albumCard).join('') : emptyBlock('Альбомов пока нет', 'Добавьте первый альбом и загрузите фотографии.', 'Создать альбом', 'emptyAlbum')) + '</div></div>';
     bindFields(editor, data);
     var add = function () {
@@ -907,7 +963,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
       }).join('') + '</div>' +
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные во��росы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
         return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
@@ -1129,14 +1185,46 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     inp.focus();
   };
   function closeSettings() { $('#settingsModal').classList.add('is-hidden'); }
+  function initials(name) {
+    var parts = String(name || '?').trim().split(/\s+/);
+    return ((parts[0] || '?')[0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+  }
   function renderAdminList() {
     $('#adminList').innerHTML = '<p class="set-note">Загружаю список…</p>';
     api('admins').then(function (result) {
-      var rows = (result.admins || []).map(function (a) {
-        return '<div class="admin-row"><div><b>' + esc(a.name || a.user) + (a.you ? '<span class="ar-you">это вы</span>' : '') + '</b><small>' + esc(a.user) + (a.root ? ' · владелец' : '') + '</small></div>' +
-          (a.root ? '' : '<button type="button" class="ar-del" data-admin-del="' + esc(a.id) + '">Удалить</button>') + '</div>';
+      var list = result.admins || [];
+      var me = list.filter(function (a) { return a.you; })[0];
+      var iAmOwner = !!(me && me.root);
+      var box = $('#addAdminBox');
+      if (box) box.classList.toggle('is-hidden', !iAmOwner);
+      var rows = list.map(function (a) {
+        var canDelete = iAmOwner && !a.you && !a.root;
+        return '<div class="admin-row' + (a.you ? ' is-you' : '') + '">' +
+          '<span class="ar-ava">' + esc(initials(a.name || a.user)) + '</span>' +
+          '<div class="ar-main">' +
+          '<b>' + esc(a.name || a.user) +
+          (a.root ? '<span class="ar-chip is-owner">владелец</span>' : '') +
+          (a.you ? '<span class="ar-chip">это вы</span>' : '') + '</b>' +
+          '<small>логин: ' + esc(a.user) + '</small>' +
+          '<label class="ar-tag"><span>Тег</span>' +
+          '<input type="text" maxlength="40" placeholder="' + (a.root ? 'Владелец' : 'без тега') + '" value="' + esc(a.tag || '') + '"' +
+          (iAmOwner || a.you ? ' data-admin-tag="' + esc(a.id) + '"' : ' disabled') + '></label>' +
+          '</div>' +
+          (canDelete ? '<button type="button" class="ar-del" data-admin-del="' + esc(a.id) + '" title="Удалить">Удалить</button>' : '<span class="ar-lock">' + (a.you ? 'Себя удалить нельзя' : (a.root ? 'Защищён' : 'Удаляет только владелец')) + '</span>') +
+          '</div>';
       }).join('');
       $('#adminList').innerHTML = rows || '<p class="set-note">Пока только владелец.</p>';
+      $$('#adminList [data-admin-tag]').forEach(function (input) {
+        var initial = input.value;
+        input.onblur = function () {
+          var value = input.value.trim();
+          if (value === initial) return;
+          api('admin-edit', { method: 'POST', json: { id: input.dataset.adminTag, tag: value } })
+            .then(function () { initial = value; toast('Тег обновлён'); })
+            .catch(function (error) { input.value = initial; toast(error.message); });
+        };
+        input.onkeydown = function (event) { if (event.key === 'Enter') input.blur(); };
+      });
       $$('#adminList [data-admin-del]').forEach(function (button) {
         button.onclick = function () {
           if (!window.confirm('Удалить этого администратора? Он больше не сможет войти в панель.')) return;
@@ -1149,6 +1237,17 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       $('#adminList').innerHTML = '<p class="set-note">' + esc(error.message) + '</p>';
     });
   }
+  $$('[data-eye]').forEach(function (button) {
+    button.onclick = function () {
+      var input = document.getElementById(button.dataset.eye);
+      if (!input) return;
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      button.classList.toggle('is-on', show);
+      button.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+      input.focus();
+    };
+  });
   $('#openSettings').onclick = function () {
     $('#settingsModal').classList.remove('is-hidden');
     renderAdminList();
@@ -1157,13 +1256,15 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   $('#settingsModal').onclick = function (event) { if (event.target === this) closeSettings(); };
   $('#addAdmin').onclick = function () {
     var name = $('#naName').value.trim();
+    var tag = $('#naTag') ? $('#naTag').value.trim() : '';
     var user = $('#naUser').value.trim();
     var pass = $('#naPass').value;
     if (!user) { toast('Укажите логин'); return; }
     if (pass.length < 8) { toast('Пароль должен быть не короче 8 символов'); return; }
-    api('admin-add', { method: 'POST', json: { name: name, user: user, password: pass } }).then(function () {
+    api('admin-add', { method: 'POST', json: { name: name, tag: tag, user: user, password: pass } }).then(function () {
       toast('Администратор создан');
-      $('#naName').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
+      $('#naName').value = ''; if ($('#naTag')) $('#naTag').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
+      if ($('#addAdminBox')) $('#addAdminBox').open = false;
       renderAdminList();
     }).catch(function (error) { toast(error.message); });
   };

@@ -107,22 +107,36 @@
       </header>
       <div class="settings-body">
         <section class="set-block">
-          <h3>Администраторы</h3>
-          <p class="set-note">Каждый администратор входит под своим логином и паролем и может редактировать сайт.</p>
-          <div id="adminList" class="admin-list"></div>
-          <div class="admin-add">
-            <input id="naName" placeholder="Имя (например: Алиса)" maxlength="60" autocomplete="off">
-            <input id="naUser" placeholder="Логин (латиница и цифры)" maxlength="40" autocomplete="off">
-            <input id="naPass" type="password" placeholder="Пароль (не короче 8 символов)" autocomplete="new-password">
-            <button id="addAdmin" class="button button-dark" type="button">Создать администратора</button>
+          <div class="set-head">
+            <span class="set-num">01</span>
+            <div>
+              <h3>Список администраторов</h3>
+              <p class="set-note">Каждый администратор входит под своим логином и может редактировать сайт. Тег — это подпись рядом с именем: роль или короткая пометка.</p>
+            </div>
           </div>
+          <div id="adminList" class="admin-list"></div>
+          <details id="addAdminBox" class="admin-add-box">
+            <summary>Добавить администратора</summary>
+            <div class="admin-add">
+              <label class="set-field"><span>Имя</span><input id="naName" placeholder="Например: Алиса" maxlength="60" autocomplete="off"></label>
+              <label class="set-field"><span>Тег</span><input id="naTag" placeholder="Например: ретушёр" maxlength="40" autocomplete="off"></label>
+              <label class="set-field"><span>Логин</span><input id="naUser" placeholder="Латиница и цифры" maxlength="40" autocomplete="off"></label>
+              <label class="set-field"><span>Пароль</span><span class="pass-wrap"><input id="naPass" type="password" placeholder="Не короче 8 символов" autocomplete="new-password"><button class="eye" type="button" data-eye="naPass" aria-label="Показать пароль"></button></span></label>
+              <button id="addAdmin" class="button button-dark" type="button">Создать администратора</button>
+            </div>
+          </details>
         </section>
         <section class="set-block">
-          <h3>Сменить пароль</h3>
-          <p class="set-note">Новый пароль для аккаунта, под которым вы сейчас вошли.</p>
+          <div class="set-head">
+            <span class="set-num">02</span>
+            <div>
+              <h3>Смена личного пароля</h3>
+              <p class="set-note">Новый пароль для аккаунта, под которым вы сейчас вошли.</p>
+            </div>
+          </div>
           <div class="admin-add">
-            <input id="cpOld" type="password" placeholder="Текущий пароль" autocomplete="current-password">
-            <input id="cpNew" type="password" placeholder="Новый пароль (не короче 8 символов)" autocomplete="new-password">
+            <label class="set-field"><span>Текущий пароль</span><span class="pass-wrap"><input id="cpOld" type="password" placeholder="Введите текущий пароль" autocomplete="current-password"><button class="eye" type="button" data-eye="cpOld" aria-label="Показать пароль"></button></span></label>
+            <label class="set-field"><span>Новый пароль</span><span class="pass-wrap"><input id="cpNew" type="password" placeholder="Не короче 8 символов" autocomplete="new-password"><button class="eye" type="button" data-eye="cpNew" aria-label="Показать пароль"></button></span></label>
             <button id="changePass" class="button button-dark" type="button">Поменять пароль</button>
           </div>
         </section>

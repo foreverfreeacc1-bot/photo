@@ -278,11 +278,12 @@ async function readAdmins() {
       const j = JSON.parse(await r.text());
       return {
         admins: (Array.isArray(j.admins) ? j.admins : []).filter(function (a) { return a && typeof a.user === 'string' && typeof a.hash === 'string'; }),
-        rootHash: typeof j.rootHash === 'string' ? j.rootHash : ''
+        rootHash: typeof j.rootHash === 'string' ? j.rootHash : '',
+        rootTag: typeof j.rootTag === 'string' ? j.rootTag : ''
       };
     }
   } catch (e) { console.error('CMS admins read:', e && e.message); }
-  return { admins: [], rootHash: '' };
+  return { admins: [], rootHash: '', rootTag: '' };
 }
 async function writeAdmins(acc) {
   const r = await store('PUT', 'cms/admins.json', JSON.stringify(acc), 'application/json');
@@ -519,8 +520,8 @@ module.exports = async function handler(req, res) {
 
     if (p === 'admins' && method === 'GET') {
       const accL = await readAdmins();
-      const list = [{ id: 'root', name: 'Владелец', user: ADMIN_USER || 'admin', root: true, you: !sess.user }].concat(accL.admins.map(function (a) {
-        return { id: a.id, name: a.name || a.user, user: a.user, root: false, you: sess.user === a.user };
+      const list = [{ id: 'root', name: 'Владелец', tag: accL.rootTag || '', user: ADMIN_USER || 'admin', root: true, you: !sess.user }].concat(accL.admins.map(function (a) {
+        return { id: a.id, name: a.name || a.user, tag: a.tag || '', user: a.user, root: false, you: sess.user === a.user };
       }));
       return send(res, 200, { admins: list });
     }
@@ -540,6 +541,7 @@ module.exports = async function handler(req, res) {
     if (p === 'admin-add' && method === 'POST') {
       const j = await readBody(req);
       const name = clean(j.name, 60);
+      const tag = clean(j.tag, 40);
       const user = clean(j.user, 40);
       const pass = String(j.password || '');
       if (!/^[a-zA-Z0-9._@-]{3,40}$/.test(user)) return send(res, 400, { error: 'Логин: 3–40 символов — латиница, цифры, точки, дефисы' });
@@ -547,7 +549,31 @@ module.exports = async function handler(req, res) {
       const acc = await readAdmins();
       if (safeEq(user, ADMIN_USER) || acc.admins.some(function (a) { return a.user === user; })) return send(res, 400, { error: 'Такой логин уже занят' });
       if (acc.admins.length >= 20) return send(res, 400, { error: 'Слишком много администраторов (до 20)' });
-      acc.admins.push({ id: crypto.randomUUID(), name: name || user, user: user, hash: hashPass(pass), createdAt: Date.now() });
+      acc.admins.push({ id: crypto.randomUUID(), name: name || user, tag: tag, user: user, hash: hashPass(pass), createdAt: Date.now() });
+      await writeAdmins(acc);
+      return send(res, 200, { ok: true });
+    }
+
+    /* редактирование тега (и имени) администратора */
+    if (p === 'admin-edit' && method === 'POST') {
+      const j = await readBody(req);
+      const id = clean(j.id, 60);
+      const tag = clean(j.tag, 40);
+      const name = j.name === undefined ? null : clean(j.name, 60);
+      if (!id) return send(res, 400, { error: 'Администратор не найден' });
+      const acc = await readAdmins();
+      const isOwner = !sess.user;
+      if (id === 'root') {
+        if (!isOwner) return send(res, 403, { error: 'Менять запись владельца может только владелец' });
+        acc.rootTag = tag;
+        await writeAdmins(acc);
+        return send(res, 200, { ok: true });
+      }
+      const rec = acc.admins.filter(function (a) { return a.id === id; })[0];
+      if (!rec) return send(res, 404, { error: 'Администратор не найден' });
+      if (!isOwner && rec.user !== sess.user) return send(res, 403, { error: 'Менять чужую запись может только владелец' });
+      rec.tag = tag;
+      if (name) rec.name = name;
       await writeAdmins(acc);
       return send(res, 200, { ok: true });
     }
@@ -556,7 +582,10 @@ module.exports = async function handler(req, res) {
       const j = await readBody(req);
       const id = clean(j.id, 60);
       if (!id || id === 'root') return send(res, 400, { error: 'Владельца удалить нельзя' });
+      if (sess.user) return send(res, 403, { error: 'Удалять администраторов может только владелец' });
       const acc = await readAdmins();
+      const victim = acc.admins.filter(function (a) { return a.id === id; })[0];
+      if (victim && sess.user && victim.user === sess.user) return send(res, 403, { error: 'Себя удалить нельзя' });
       const count0 = acc.admins.length;
       acc.admins = acc.admins.filter(function (a) { return a.id !== id; });
       if (acc.admins.length === count0) return send(res, 404, { error: 'Администратор не найден' });
