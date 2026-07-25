@@ -257,3 +257,13 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .upload-tile button:disabled{cursor:default;opacity:.75}
 
 .field textarea{min-height:74px;resize:vertical;line-height:1.55;}
+
+.panel-head p{text-align:justify;}
+.preview-frame{position:relative;}
+.pv-langbar{position:absolute;top:10px;right:10px;z-index:6;display:flex;gap:6px;}
+.pv-langbar button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 12px;font-size:11px;letter-spacing:.08em;cursor:pointer;}
+.pv-langbar button.is-on{background:#000;border-color:#000;color:#fff;}
+.field-rich{width:100%;min-height:104px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);padding:12px 13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;box-sizing:border-box;}
+.field-rich:focus{outline:2px solid var(--ink);outline-offset:2px;}
+.nl-chip{display:inline-block;background:#000;color:#fff;border-radius:4px;padding:0 7px;margin:0 5px;font-size:10px;line-height:1.7;vertical-align:baseline;user-select:none;}
+.field textarea{min-height:96px;}

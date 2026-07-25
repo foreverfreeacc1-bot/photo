@@ -361,7 +361,7 @@ module.exports = async function handler(req, res) {
     }
 
     /* публичный контент для сайта */
-    if (p.indexOf('img/') === 0 && method === 'GET') {
+    if (p.indexOf('img/') === 0 && (method === 'GET' || method === 'HEAD')) {
       const name = p.slice(4);
       if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 404, { error: 'Not found' });
       const r = await store('GET', 'cms/' + name);
@@ -370,6 +370,8 @@ module.exports = async function handler(req, res) {
       res.statusCode = 200;
       res.setHeader('Content-Type', name.slice(-5) === '.avif' ? 'image/avif' : name.slice(-5) === '.webp' ? 'image/webp' : name.slice(-4) === '.png' ? 'image/png' : 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+      res.setHeader('Content-Length', buf.length);
+      if (method === 'HEAD') return res.end();
       return res.end(buf);
     }
 

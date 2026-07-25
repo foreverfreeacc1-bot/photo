@@ -254,6 +254,11 @@
         target[path[path.length - 1]] = input.value;
         setDirty();
       };
+      if (input.tagName === 'TEXTAREA') {
+        var fit = function () { input.style.height = 'auto'; input.style.height = (input.scrollHeight + 4) + 'px'; };
+        requestAnimationFrame(fit);
+        input.addEventListener('input', fit);
+      }
     });
   }
 
@@ -262,13 +267,30 @@
     if (!n) return '';
     return n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
   }
+  var sizeCache = {};
+  function fillSizes(root) {
+    $$('[data-lazy-size]', root).forEach(function (el) {
+      var url = el.getAttribute('data-lazy-size');
+      el.removeAttribute('data-lazy-size');
+      var apply = function (n) { el.textContent = n ? fmtSize(n) : '—'; };
+      if (sizeCache[url] !== undefined) return apply(sizeCache[url]);
+      fetch(url, { method: 'HEAD' }).then(function (r) {
+        var n = Number(r.headers.get('content-length')) || 0;
+        sizeCache[url] = n;
+        apply(n);
+      }).catch(function () { apply(0); });
+    });
+  }
+  try {
+    new MutationObserver(function () { fillSizes(document); }).observe(document.getElementById('editor'), { childList: true, subtree: true });
+  } catch (e) {}
 
   function mediaTile(image, index, coverIndex) {
     var size = fmtSize(image.size);
-    return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + '">' +
-      '<img src="' + esc(image.url) + '" alt="' + esc(image.name || 'Загруженная фотография') + '">' +
+    return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + '" title="' + esc(image.name || '') + '">' +
+      '<img src="' + esc(image.url) + '" alt="' + esc(image.name || 'Загруженная фотография') + '" title="' + esc(image.name || '') + '">' +
       '<button class="tile-del" type="button" data-remove="' + index + '" title="Удалить" aria-label="Удалить">&minus;</button>' +
-      '<div class="tile-meta"><span class="tile-name" title="' + esc(image.name || '') + '">' + esc(image.name || 'Без названия') + '</span>' + (size ? '<span class="tile-size">' + size + '</span>' : '') + '</div>' +
+      '<div class="tile-meta"><span class="tile-name" title="' + esc(image.name || '') + '">' + esc(image.name || 'Без названия') + '</span>' + (size ? '<span class="tile-size">' + size + '</span>' : '<span class="tile-size" data-lazy-size="' + esc(image.url) + '">…</span>') + '</div>' +
       '<div class="media-actions">' +
       '<button class="media-action" type="button" data-cover="' + index + '">Превью</button>' +
       '</div></article>';
@@ -359,27 +381,97 @@
     });
   }
 
+  function richField(label, lang) {
+    return '<label class="field"><span>' + label + '</span><div class="field-rich" data-rich="' + lang + '" contenteditable="true" spellcheck="false"></div></label>';
+  }
+
+  function initRichFields(root, data) {
+    $$('.field-rich', root).forEach(function (el) {
+      var lang = el.getAttribute('data-rich');
+      var renderRich = function (value) {
+        el.innerHTML = '';
+        String(value).split('\n').forEach(function (part, i) {
+          if (i > 0) {
+            var chip = document.createElement('span');
+            chip.className = 'nl-chip';
+            chip.contentEditable = 'false';
+            chip.textContent = '/n';
+            el.appendChild(chip);
+          }
+          if (part) el.appendChild(document.createTextNode(part));
+        });
+      };
+      var serialize = function () {
+        var out = '';
+        for (var i = 0; i < el.childNodes.length; i++) {
+          var node = el.childNodes[i];
+          if (node.nodeType === 3) out += node.nodeValue;
+          else if (node.nodeType === 1 && node.classList && node.classList.contains('nl-chip')) out += '\n';
+          else if (node.nodeName === 'BR') out += '';
+          else out += node.textContent;
+        }
+        return out;
+      };
+      var commit = function (value) {
+        var parts = String(value).split('\n');
+        data.subtitle[lang] = parts[0].trim();
+        data.subtitle2[lang] = parts.slice(1).join(' ').trim();
+        setDirty();
+      };
+      var caretEnd = function () {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      };
+      el.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          document.execCommand('insertHTML', false, '<span class="nl-chip" contenteditable="false">/n</span>');
+        }
+      });
+      el.addEventListener('paste', function (event) {
+        event.preventDefault();
+        var text = (event.clipboardData || window.clipboardData).getData('text');
+        document.execCommand('insertText', false, text.replace(/\r?\n/g, ' '));
+      });
+      el.addEventListener('input', function () {
+        var raw = serialize();
+        if (raw.indexOf('/n') >= 0) {
+          var value = raw.replace(/ ?\/n ?/g, '\n');
+          renderRich(value);
+          caretEnd();
+          commit(value);
+          return;
+        }
+        commit(raw);
+      });
+      var initial = data.subtitle[lang] || '';
+      if ((data.subtitle2[lang] || '').trim()) initial += '\n' + data.subtitle2[lang];
+      renderRich(initial);
+    });
+  }
+
   function renderLoader() {
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается БОЛЬШИМИ буквами. На компьютере подзаголовок — две строки друг под другом, на телефоне показывается только укороченная версия — для неё отдельные поля. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается БОЛЬШИМИ буквами. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
       '<div class="field-grid">' +
-      field('Заголовок (на сайте — большими буквами)', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
-      field('Title · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
-      '</div><div class="divider"></div><div class="field-grid">' +
-      field('Подзаголовок · строка 1 (верхняя)', data.subtitle.ru, 'subtitle.ru', 'textarea', '') +
-      field('Подзаголовок · строка 2 (нижняя)', data.subtitle2.ru, 'subtitle2.ru', 'textarea', '') +
-      field('Subtitle · line 1 (top)', data.subtitle.en, 'subtitle.en', 'textarea', '') +
-      field('Subtitle · line 2 (bottom)', data.subtitle2.en, 'subtitle2.en', 'textarea', '') +
-      '</div><div class="divider"></div><div class="field-grid">' +
-      field('Подзаголовок для телефона (укороченный, одна строка)', data.subtitleM.ru, 'subtitleM.ru', 'textarea', '') +
-      field('Phone subtitle · English', data.subtitleM.en, 'subtitleM.en', 'textarea', '') +
+      field('Заголовок · Русский', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
+      field('Заголовок · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
+      richField('Подзаголовок · Русский («/n» — перенос строки на десктопе)', 'ru') +
+      richField('Подзаголовок · English («/n» — line break)', 'en') +
+      field('Подзаголовок для телефона · Русский', data.subtitleM.ru, 'subtitleM.ru', 'textarea', '') +
+      field('Подзаголовок для телефона · English', data.subtitleM.en, 'subtitleM.en', 'textarea', '') +
       '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       uploadTile('Добавить фотографии', true) + '</div></div>';
     bindFields(editor, data);
+    initRichFields(editor, data);
     $('[data-upload]', editor).onclick = function () {
       chooseFiles({ multiple: true }, function (images) {
         data.images = data.images.concat(images).slice(0, 4);
@@ -627,6 +719,8 @@
     return draft.home[mode][side] || draft.home.desktop[side] || null;
   }
 
+  var previewLang = 'ru';
+
   function renderPreview() {
     var frame = $('#previewFrame');
     frame.className = 'preview-frame ' + device;
@@ -636,7 +730,9 @@
       api('preview-content', { method: 'POST', json: draft }).then(function (result) {
         if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
-        frame.innerHTML = '<iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+          '<iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
+        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
       });
