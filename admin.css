@@ -629,5 +629,78 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .add-tile.is-inline{margin-top:4px;align-self:flex-start}
 
 /* подсветка редактируемых полей */
-.wkcap,.wkprice,.wk-feat,.hw-t,.hw-p,.hw-h2,.hw-sub,.hw-badge,.rdm-heading-txt,.rdm-heading-sub,.rdm-badge,.rdm-title,.rdm-text,.site-alb-title,.site-alb-desc,.ce-pfintro{outline:1px dashed rgba(17,17,17,.14);outline-offset:3px;border-radius:2px}
 .wkcap:focus,.wkprice:focus,.wk-feat:focus,.hw-t:focus,.hw-p:focus,.hw-h2:focus,.hw-sub:focus,.hw-badge:focus,.rdm-heading-txt:focus,.rdm-heading-sub:focus,.rdm-badge:focus,.rdm-title:focus,.rdm-text:focus,.site-alb-title:focus,.site-alb-desc:focus,.ce-pfintro:focus{outline:1px solid #111;background:rgba(17,17,17,.04)}
+
+
+/* ===== правки 31: возврат шрифтов сайта и точечные правки ===== */
+.brand-sub,.brand-sub-m{display:inline-block;background:#111 !important;color:#fff !important;padding:4px 10px;border-radius:6px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.cover-grid.is-column{display:grid;grid-template-columns:1fr;gap:18px}
+.help.is-center{text-align:center;max-width:none;margin:14px 0 0}
+.pick-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.pick-col{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.pick-col .button{width:100%;max-width:none}
+
+/* портфолио: шрифты как на сайте */
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-top:8px}
+@media(max-width:860px){.album-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}}
+.tile-cap b{font-family:'CormorantLight',var(--serif2),var(--serif),serif;font-size:16px;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;font-weight:400;color:#fff}
+.tile-cap small{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+.site-alb-title{font-family:'CormorantLight',var(--serif2),var(--serif),serif;font-size:30px;line-height:1.1;letter-spacing:.12em;font-weight:400;text-transform:uppercase;color:#111}
+.site-alb-desc{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:1.85;letter-spacing:.02em;color:rgba(17,17,17,.66)}
+.ce-pfintro{width:100%;max-width:none;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;line-height:1.85;letter-spacing:.02em;color:rgba(17,17,17,.66);padding:12px 18px}
+
+/* блок «Обо мне» — 1:1 с .hw на сайте */
+.site-plate .plate-body.is-about{display:block;background:#f2f0ec;padding:34px 26px}
+.plate-body.is-about .hw-wrap{margin:0 auto;width:100%;max-width:672px}
+.plate-body.is-about .hw-head{margin-bottom:36px}
+.hw-badge{display:inline-block;margin-bottom:6px;border:1px solid rgba(17,17,17,.2);border-radius:999px;padding:3px 10px;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:.02em;color:#111;background:none;text-transform:none}
+.hw-h2{margin:0;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.2;color:#111;text-transform:none}
+.hw-sub{margin:12px 0 0;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:rgba(17,17,17,.6)}
+.hw-list{display:flex;flex-direction:column;list-style:none;margin:0;padding:0}
+.hw-item{display:flex;gap:24px;align-items:stretch}
+.hw-rail{display:flex;flex-direction:column;align-items:center}
+.hw-ico{display:flex;width:40px;height:40px;flex:none;align-items:center;justify-content:center;border:1px solid rgba(17,17,17,.2);border-radius:0;background:rgba(17,17,17,.05) center/cover no-repeat;color:#111;cursor:pointer;transition:border-color .2s,background-color .2s}
+.hw-ico:hover{border-color:#111;background-color:rgba(17,17,17,.1)}
+.hw-ico svg{width:16px;height:16px;color:#111}
+.hw-vline{margin-top:4px;width:1px;flex:1;background:rgba(17,17,17,.2)}
+.hw-body{flex:1;min-width:0;padding-bottom:32px}
+.hw-body.hw-last{padding-bottom:0}
+.hw-t{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#111;letter-spacing:0;text-transform:none}
+.hw-p{margin:6px 0 0;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7;color:rgba(17,17,17,.6)}
+.hw-tools{display:flex;align-items:center;gap:10px;margin-top:8px}
+
+/* этапы съёмки — серая плашка, светлые бейджи, ru сверху / en снизу */
+.site-plate .plate-body.is-steps{background:#f2f0ec;padding:30px 24px}
+.plate-body.is-steps .rdm-card{padding:24px;max-width:1000px;margin:0 auto;background:#fff;border:1px solid rgba(17,17,17,.12);border-radius:14px;box-shadow:0 20px 25px -5px rgba(0,0,0,.08)}
+.rdm-heading{text-align:center;margin-bottom:18px}
+.rdm-heading-txt{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:600;font-size:24px;line-height:1.2;letter-spacing:.02em;color:#111}
+.rdm-heading-sub{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;letter-spacing:0;text-transform:none;color:rgba(17,17,17,.55);margin-top:6px}
+.rdm-rel{position:relative}
+.rdm-line{position:absolute;left:0;right:0;top:16px;height:1px;background:rgba(17,17,17,.14)}
+.rdm-row{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.rdm-row{grid-template-columns:repeat(2,1fr)}}
+.rdm-item{position:relative;padding-top:32px;text-align:center}
+.rdm-dot{position:absolute;left:50%;top:8px;transform:translateX(-50%);margin:0;width:16px;height:16px;border:0;border-radius:50%;background:rgba(17,17,17,.12);display:flex;align-items:center;justify-content:center}
+.rdm-dot i{width:6px;height:6px;border-radius:50%;background:#fff;display:block}
+.rdm-badge{display:inline-block;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;line-height:1;padding:4px 10px;border-radius:999px;margin-bottom:4px;background:transparent;color:#111;border:1px solid rgba(17,17,17,.3)}
+.rdm-title{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;color:#111;margin:6px 0 0}
+.rdm-text{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(17,17,17,.55);margin-top:4px;line-height:1.5}
+
+/* карточки услуг — 1:1 с .wkc, ru слева / en справа */
+.svc-list{display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.svc-card{width:100%;max-width:none;border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.svc-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.svc-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.svc-pair{grid-template-columns:1fr}}
+.svc-plate.wkc{border:1px solid rgba(17,17,17,.12);border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 20px 25px -5px rgba(0,0,0,.08),0 8px 10px -6px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.svc-plate.wkc .wkimg{position:relative;aspect-ratio:16/9;overflow:hidden;background:#e7e4de center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+.wk-info{display:flex;flex-direction:column;padding:16px 18px 14px;background:#fff}
+.wkcap{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;line-height:1.2;color:#111;text-transform:uppercase;margin-bottom:10px}
+.wk-feats{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:4px}
+.wk-feats li{display:flex;align-items:center;gap:8px}
+.wk-feat{flex:1;font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;letter-spacing:.02em;color:#666;line-height:1.5}
+.wkprice{font-family:'Montserrat','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#111;letter-spacing:.02em;margin-top:10px}
+.wkcap,.wkprice,.wk-feat{outline:1px dashed rgba(17,17,17,.16);outline-offset:3px}
+.wkcap:focus,.wkprice:focus,.wk-feat:focus{outline:1px solid #111;background:rgba(17,17,17,.04)}
+.add-tile.is-inline{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px dashed rgba(17,17,17,.28);border-radius:8px;background:#fbfaf8;cursor:pointer;font-size:12px;align-self:flex-start;margin-top:4px}
+.kill-btn.is-item{width:26px;height:26px;padding:0;font-size:11px}

@@ -945,13 +945,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           (url ? '' : '<span class="pane-empty">Сначала выберите фотографию</span>') + '</div>';
       }).join('') +
       '</div></div>' +
-      '<p class="help is-center">Потяните фотографию внутри половины экрана — так вы выбираете, какая её часть видна на этом устройстве.</p>' +
       '<div class="pick-row">' + ['L', 'R'].map(function (side) {
         var image = data.photo[side];
         return '<div class="pick-col">' +
           '<button class="button button-light" type="button" data-home-upload="' + side + '">Выбрать фотографию</button>' +
           (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</div>';
-      }).join('') + '</div></div>' +
+      }).join('') + '</div>' +
+      '<p class="help is-center">Потяните фотографию внутри половины экрана — так вы выбираете, какая её часть видна на этом устройстве.</p></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
       '<div class="cover-grid">' +
       coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
@@ -1203,7 +1203,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<div class="ce hw-p" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
           (lang === 'ru' ? ('<div class="hw-tools">' +
             (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">\u0412\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u0437\u043d\u0430\u0447\u043e\u043a</button>' : '') +
-            '<button class="kill-btn is-item" type="button" data-delete-pf-stage="' + i + '" title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u043f\u0443\u043d\u043a\u0442">\u2715 \u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u0443\u043d\u043a\u0442</button></div>') : '') +
+            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u043f\u0443\u043d\u043a\u0442">\u2715</button></div>') : '') +
           '</div></li>';
       }).join('') + '</ol>' +
       (lang === 'ru' ? '<button class="add-tile is-inline" type="button" id="addPfStage"><span>+</span> Добавить пункт</button>' : '') +
