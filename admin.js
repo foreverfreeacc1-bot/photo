@@ -129,8 +129,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   var NATIVE_PF_STAGES = [
     { icon: 'camera', title: { ru: 'Профессиональное оборудование', en: 'Professional Equipment' }, text: { ru: 'Для съёмок используется современная профессиональная фототехника и светосильная оптика, позволяющие получать детализированные изображения с естественной светопередачей как в студии, так и на открытых локациях. При необходимости применяется профессиональное студийное освещение.', en: 'Modern professional photo equipment and fast lenses are used for shoots, delivering detailed images with natural colour reproduction both in studio and on location. Professional studio lighting is applied when needed.' } },
-    { icon: 'image', title: { ru: 'Авторская обработка', en: 'Signature Editing' }, text: { ru: 'Каждый кадр проходит индивидуальную обработку. Цвет, свет и тональность сохраняют естественность изображения, подчеркивая атмосферу съёмки без чрезмерной ретуши. Главная задача — создать фотографии, которые останутся актуальными спустя годы.', en: 'Every frame is edited individually. Colour, light and tone retain the naturalness of the image, emphasising the atmosphere of the shoot without excessive retouching. The main goal is to create photographs that will remain timeless.' } },
-    { icon: 'pin', title: { ru: 'Локации', en: 'Locations' }, text: { ru: 'Провожу съёмки в Москве и Московской области. Возможен выезд в другие города по предварительной договорённости. Работаю как в студиях, так и на городских, природных и интерьерных локациях.', en: 'Shoots in Moscow and the Moscow Region. Travel to other cities is possible by prior arrangement. I work in studios as well as urban, natural and interior locations.' } }
+    { icon: 'camera', title: { ru: 'Авторская обработка', en: 'Signature Editing' }, text: { ru: 'Каждый кадр проходит индивидуальную обработку. Цвет, свет и тональность сохраняют естественность изображения, подчеркивая атмосферу съёмки без чрезмерной ретуши. Главная задача — создать фотографии, которые останутся актуальными спустя годы.', en: 'Every frame is edited individually. Colour, light and tone retain the naturalness of the image, emphasising the atmosphere of the shoot without excessive retouching. The main goal is to create photographs that will remain timeless.' } },
+    { icon: 'camera', title: { ru: 'Локации', en: 'Locations' }, text: { ru: 'Провожу съёмки в Москве и Московской области. Возможен выезд в другие города по предварительной договорённости. Работаю как в студиях, так и на городских, природных и интерьерных локациях.', en: 'Shoots in Moscow and the Moscow Region. Travel to other cities is possible by prior arrangement. I work in studios as well as urban, natural and interior locations.' } }
   ];
 
   var NATIVE_WORK_CARDS = [
@@ -1201,9 +1201,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<div class="hw-body' + (i === last ? ' hw-last' : '') + '">' +
           '<div class="ce hw-t" data-sce="title.' + lang + '" spellcheck="false"></div>' +
           '<div class="ce hw-p" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
-          (lang === 'ru' ? ('<div class="hw-tools"><button class="text-button" type="button" data-pf-icon-pick="' + i + '">' + (stage.iconImage ? 'Заменить значок' : 'Загрузить значок') + '</button>' +
-            (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">Убрать значок</button>' : '') +
-            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="Удалить пункт">\u2715</button></div>') : '') +
+          (lang === 'ru' ? ('<div class="hw-tools">' +
+            (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">\u0412\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u0439 \u0437\u043d\u0430\u0447\u043e\u043a</button>' : '') +
+            '<button class="kill-btn is-item" type="button" data-delete-pf-stage="' + i + '" title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u043f\u0443\u043d\u043a\u0442">\u2715 \u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u0443\u043d\u043a\u0442</button></div>') : '') +
           '</div></li>';
       }).join('') + '</ol>' +
       (lang === 'ru' ? '<button class="add-tile is-inline" type="button" id="addPfStage"><span>+</span> Добавить пункт</button>' : '') +
@@ -1233,7 +1233,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     };
     var addStage = $('#addPfStage');
     if (addStage) addStage.onclick = function () {
-      data.aboutBlock.stages.push({ id: uid(), icon: 'star', iconImage: null, title: { ru: 'Новый пункт', en: 'New point' }, text: { ru: 'Описание пункта', en: 'Description' } });
+      data.aboutBlock.stages.push({ id: uid(), icon: 'camera', iconImage: null, title: { ru: 'Новый пункт', en: 'New point' }, text: { ru: 'Описание пункта', en: 'Description' } });
       setDirty('portfolio'); renderPortfolio();
     };
     $$('[data-pf-stage]', editor).forEach(function (row) {
@@ -1365,7 +1365,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var editor = $('#editor');
     editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>Карточки услуг</h2><p>Карточки такие же, как на сайте. Нажмите на любой текст и правьте.</p></div></div>' +
       '<div class="svc-list">' + cards.map(workCard).join('') +
-      '<button class="add-tile is-card" type="button" id="addWork"><span>+</span> Добавить карточку</button></div></div>' +
+      '<button class="add-tile is-inline" type="button" id="addWork"><span>+</span> Добавить карточку</button></div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Этапы съёмки</h2><p>Блок целиком, как на сайте. Правятся только заголовки и подписи.</p></div></div>' +
       '<div class="cover-grid is-column">' + stagesMock(work, 'ru') + stagesMock(work, 'en') + '</div></div>';
     $('#addWork').onclick = function () {
@@ -1397,7 +1397,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     return '<section class="svc-card" data-work="' + cardIndex + '">' +
       '<div class="svc-tools"><button class="button button-light" type="button" data-work-image>' + (card.image ? 'Заменить фотографию' : 'Выбрать фотографию') + '</button>' +
       '<button class="kill-btn" type="button" data-delete-work title="Удалить карточку">\u2715</button></div>' +
-      '<div class="svc-pair is-column">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
+      '<div class="svc-pair">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
       '</section>';
   }
 
