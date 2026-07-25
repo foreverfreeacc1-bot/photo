@@ -155,6 +155,13 @@ function sanitizeAdmin(v) {
       href: href
     };
   }).filter(function (contact) { return contact.label && contact.href; });
+  out.faq = (Array.isArray(v.faq) ? v.faq.slice(0, 20) : []).map(function (item) {
+    return {
+      id: (item && typeof item.id === 'string' && /^[a-zA-Z0-9-]{1,40}$/.test(item.id)) ? item.id : crypto.randomUUID(),
+      q: cleanLangPair(item && item.q, 300),
+      a: cleanLangPair(item && item.a, 2000)
+    };
+  }).filter(function (item) { return item.q.ru || item.q.en || item.a.ru || item.a.en; });
   return out;
 }
 
@@ -323,6 +330,13 @@ function publicContent(c, req) {
       return { icon: contact.icon, l: contact.label, s: contact.value || contact.href, h: contact.href };
     });
   } else if (c.contacts && c.contacts.length) out.contacts = c.contacts;
+  if (rich && rich.faq && rich.faq.length) {
+    const escf = function (x) { return String(x || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); };
+    out.faq = {
+      ru: rich.faq.map(function (item) { return { id: item.id, q: escf(item.q.ru || item.q.en), a: escf(item.a.ru || item.a.en) }; }),
+      en: rich.faq.map(function (item) { return { id: item.id, q: escf(item.q.en || item.q.ru), a: escf(item.a.en || item.a.ru) }; })
+    };
+  }
   if (rich && rich.portfolio.albums.length) {
     out.gallery = [];
     rich.portfolio.albums.forEach(function (album) {

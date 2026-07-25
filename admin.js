@@ -32,6 +32,45 @@
     sub2: { ru: 'Индивидуальный подход, внимание к деталям и естественная эстетика в каждом кадре.', en: 'Individual approach, attention to detail and natural aesthetics in every frame.' }
   };
 
+var CONTACT_ICONS = { telegram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>', instagram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2zm0 1.8a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6zm5.15-3.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg>', max: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06L2 22l5.05-1.32A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zM8 15.3V9h1.6l2.4 2.2L14.4 9H16v6.3h-1.6v-3.4L12 14.1l-2.4-2.2v3.4H8z"/></svg>', phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' };
+var FAQ_RU_N = [
+    {id:'q1',q:'В каких жанрах вы работаете?',a:'Специализируюсь на портрете, fashion, lifestyle и коммерческой фотографии. Также берусь за личные проекты в жанрах стрит и документальная фотография.'},
+    {id:'q2',q:'Сколько времени занимает обработка фотографий?',a:'Стандартный срок — 5-7 рабочих дней после съёмки. Срочная обработка (1-2 дня) доступна за дополнительную плату.'},
+    {id:'q3',q:'Сколько фотографий я получу?',a:'Количество зависит от пакета: мини-съёмки — 10-15 обработанных кадров, стандартные — 25-40, расширенные — от 60. Точное количество оговаривается при бронировании.'},
+    {id:'q4',q:'Вы снимаете на выезде или только в студии?',a:'Оба варианта доступны. Работаю как в студии, так и на выезде — парки, крыши, кафе, лофты. Выезд за город тоже возможен, с учётом транспортных расходов.'},
+    {id:'q5',q:'Какие способы оплаты вы принимаете?',a:'Принимаю банковский перевод, оплату картой и наличные. Для подтверждения бронирования необходим задаток 50%; остаток оплачивается в день съёмки.'},
+    {id:'q6',q:'Что происходит при отмене или переносе съёмки?',a:'Перенос бесплатен при запросе не менее чем за 48 часов. Отмена в течение 48 часов влечёт потерю задатка. Форс-мажорные ситуации рассматриваются индивидуально.'}
+  ];
+var FAQ_EN_N = [
+    {id:'q1',q:'What genres of photography do you work with?',a:'I specialise in portrait, fashion, lifestyle and commercial photography. I also take on personal projects in street and documentary genres.'},
+    {id:'q2',q:'How long does it take to receive the edited photos?',a:'Standard turnaround is 5-7 business days after the shoot. Rush editing (1-2 days) is available for an additional fee.'},
+    {id:'q3',q:'How many photos will I receive?',a:'The number depends on the package: mini-sessions include 10-15 edited photos, standard sessions 25-40, and extended shoots 60+. Exact numbers are agreed when booking.'},
+    {id:'q4',q:'Do you shoot on location or only in the studio?',a:'Both options are available. I work both in studio and on location — parks, rooftops, cafes, industrial spaces. Travel outside the city is also possible with a travel fee.'},
+    {id:'q5',q:'What payment methods do you accept?',a:'I accept bank transfers, card payments and cash. A 50% deposit is required to confirm the booking; the balance is paid on the day of the shoot.'},
+    {id:'q6',q:'What happens if the shoot is cancelled or postponed?',a:'Rescheduling is free if requested at least 48 hours in advance. Cancellations within 48 hours forfeit the deposit. Force-majeure situations are handled individually.'}
+  ];
+var NATIVE_FAQ = FAQ_RU_N.map(function (r) { var e = null; for (var i = 0; i < FAQ_EN_N.length; i++) if (FAQ_EN_N[i].id === r.id) e = FAQ_EN_N[i]; return { id: r.id, q: { ru: r.q, en: e ? e.q : '' }, a: { ru: r.a, en: e ? e.a : '' } }; });
+function contactAuto(type, raw) {
+    var v = String(raw || '').trim();
+    if (type === 'phone') {
+      var digits = v.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
+      if (digits && digits[0] !== '+') digits = '+' + digits;
+      return { l: '\u0422\u0415\u041b\u0415\u0424\u041e\u041d', s: v, h: digits.length > 4 ? 'tel:' + digits : '' };
+    }
+    if (type === 'telegram') {
+      var th = v.replace(/^(https?:\/\/)?(www\.)?t\.me\//i, '').replace(/^@/, '').replace(/\/+$/, '');
+      return { l: 'TELEGRAM', s: th ? '@' + th : '', h: th ? 'https://t.me/' + th : '' };
+    }
+    if (type === 'instagram') {
+      var ih = v.replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, '').replace(/^@/, '').replace(/\/+$/, '');
+      return { l: 'INSTAGRAM', s: ih ? '@' + ih : '', h: ih ? 'https://instagram.com/' + ih : '' };
+    }
+    var url = v;
+    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    var dom = url.replace(/^https?:\/\//i, '').split('/')[0];
+    return { l: 'MAX', s: dom, h: url };
+  }
+
 var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0418\u042f", "en": "COLLECTION"}, "smallL": {"ru": "\u0418\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b", "en": "Selected works"}, "subL": {"ru": "\u041f\u041e\u0414\u0411\u041e\u0420\u041a\u0410 \u041f\u0420\u041e\u0415\u041a\u0422\u041e\u0412, \u041e\u0422\u0420\u0410\u0416\u0410\u042e\u0429\u0418\u0425 \u041c\u041e\u0419 \u0421\u0422\u0418\u041b\u042c,\n\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415 \u041a \u041a\u041e\u041c\u041f\u041e\u0417\u0418\u0426\u0418\u0418 \u0418 \u042d\u041c\u041e\u0426\u0418\u042f\u041c", "en": "A SELECTION OF PROJECTS REFLECTING MY STYLE,\nATTENTION TO COMPOSITION AND EMOTION"}, "subR": {"ru": "\u0414\u0410\u0412\u0410\u0419\u0422\u0415 \u041f\u0420\u0415\u0412\u0420\u0410\u0422\u0418\u041c \u0418\u0414\u0415\u042e \u0412 \u0418\u0421\u0422\u041e\u0420\u0418\u042e,\n\u041a\u041e\u0422\u041e\u0420\u0410\u042f \u0421\u041e\u0425\u0420\u0410\u041d\u0418\u0422 \u0421\u0410\u041c\u042b\u0415 \u0412\u0410\u0416\u041d\u042b\u0415 \u041c\u041e\u041c\u0415\u041d\u0422\u042b", "en": "LET\u2019S TURN AN IDEA INTO A STORY\nTHAT KEEPS THE MOST PRECIOUS MOMENTS"}};
 
   function emptyContent() {
@@ -40,7 +79,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null }, texts: clone(NATIVE_HOME) },
       portfolio: { about: { ru: '', en: '' }, albums: [] },
       work: { cards: [], stages: [] },
-      contacts: []
+      contacts: [],
+      faq: []
     };
   }
 
@@ -115,6 +155,23 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     if (c.portfolio) base.portfolio = Object.assign(base.portfolio, c.portfolio);
     if (c.work) base.work = Object.assign(base.work, c.work);
     if (Array.isArray(c.contacts)) base.contacts = c.contacts;
+    if (Array.isArray(c.faq)) base.faq = c.faq;
+    if (!base.faq.length) base.faq = clone(NATIVE_FAQ);
+    base.faq = base.faq.map(function (f) { return { id: f.id || uid(), q: f.q || { ru: '', en: '' }, a: f.a || { ru: '', en: '' } }; });
+    var defC = [
+      { type: 'telegram', value: '@vpsxm', href: 'https://t.me/vpsxm' },
+      { type: 'instagram', value: '@alisamiterova', href: 'https://instagram.com/alisamiterova' },
+      { type: 'max', value: 'max.ru', href: 'https://max.ru' },
+      { type: 'phone', value: '+7 000 000-00-00', href: 'tel:+70000000000' }
+    ];
+    base.contacts = defC.map(function (d) {
+      var found = null;
+      (base.contacts || []).forEach(function (x) { if (x && x.type === d.type && !found) found = x; });
+      var value = found && found.value ? found.value : d.value;
+      var href = found && found.href ? found.href : d.href;
+      var auto = contactAuto(d.type, d.type === 'phone' ? value : href);
+      return { id: (found && found.id) || uid(), type: d.type, label: auto.l, value: auto.s || value, href: auto.h || href };
+    });
     if (!base.portfolio.albums) base.portfolio.albums = [];
     if (!base.work.cards) base.work.cards = [];
     if (!base.work.stages) base.work.stages = [];
@@ -752,17 +809,51 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function renderContacts() {
     var contacts = draft.contacts;
+    var faq = draft.faq;
     var editor = $('#editor');
-    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>Ссылки</h2><p>Оставьте только те способы связи, которыми вы действительно пользуетесь.</p></div><button id="addContact" class="button button-light" type="button">Добавить ссылку</button></div>' +
-      '<div id="contactRows">' + (contacts.length ? contacts.map(contactRow).join('') : emptyBlock('Ссылок пока нет', 'Добавьте Telegram, Instagram, телефон или почту.', 'Добавить ссылку', 'emptyContact')) + '</div></div>';
-    var add = function () { contacts.push({ id: uid(), type: 'telegram', label: 'Telegram', value: '', href: '' }); setDirty(); renderContacts(); };
-    $('#addContact').onclick = add;
-    var emptyButton = $('#emptyContact'); if (emptyButton) emptyButton.onclick = add;
-    $$('.contact-row', editor).forEach(function (row) {
-      var index = Number(row.dataset.contact);
-      $$('[data-contact-bind]', row).forEach(function (input) { input.oninput = function () { contacts[index][input.dataset.contactBind] = input.value; setDirty('contacts'); }; });
-      $('[data-delete-contact]', row).onclick = function () { contacts.splice(index, 1); setDirty('contacts'); renderContacts(); };
+    editor.innerHTML =
+      '<div class="panel"><div class="panel-head"><div><h2>Контакты</h2><p>Плашки такие же, как на сайте. Меняется только ссылка (у телефона — номер): подпись и тег подстроятся сами.</p></div></div>' +
+      '<div class="ct-admin-grid">' + contacts.map(function (c, i) {
+        return '<div class="ct-card"><div class="ct-card-head">' + CONTACT_ICONS[c.type] + '<div class="cc-t"><span class="cc-l">' + esc(c.label) + '</span><span class="cc-s" data-ct-sub="' + i + '">' + esc(c.value) + '</span></div></div>' +
+          '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
+      }).join('') + '</div>' +
+      '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div id="faqRows">' + faq.map(function (f, i) {
+        return '<div class="faq-admin-item"><div class="faq-admin-head"><b>Вопрос ' + (i + 1) + '</b><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
+          '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
+          '<label class="field"><span>Вопрос · English</span><textarea data-faq="' + i + '.q.en">' + esc(f.q.en) + '</textarea></label>' +
+          '<label class="field"><span>Ответ · Русский</span><textarea data-faq="' + i + '.a.ru">' + esc(f.a.ru) + '</textarea></label>' +
+          '<label class="field"><span>Ответ · English</span><textarea data-faq="' + i + '.a.en">' + esc(f.a.en) + '</textarea></label>' +
+          '</div></div>';
+      }).join('') + '</div></div>';
+    $$('[data-ct-link]', editor).forEach(function (input) {
+      input.oninput = function () {
+        var i = Number(input.dataset.ctLink);
+        var r = contactAuto(contacts[i].type, input.value);
+        contacts[i].href = r.h; contacts[i].value = r.s; contacts[i].label = r.l;
+        var sub = $('[data-ct-sub="' + i + '"]', editor); if (sub) sub.textContent = r.s;
+        setDirty();
+      };
     });
+    $$('[data-faq]', editor).forEach(function (input) {
+      input.oninput = function () {
+        var p = input.getAttribute('data-faq').split('.');
+        faq[Number(p[0])][p[1]][p[2]] = input.value;
+        setDirty();
+      };
+      var fit = function () { input.style.height = 'auto'; input.style.height = (input.scrollHeight + 4) + 'px'; };
+      requestAnimationFrame(fit);
+      input.addEventListener('input', fit);
+    });
+    $$('[data-faq-del]', editor).forEach(function (b) {
+      b.onclick = function () {
+        var i = Number(b.dataset.faqDel);
+        if (!confirm('Удалить вопрос «' + ((faq[i].q.ru || faq[i].q.en || '') + '').slice(0, 60) + '»?')) return;
+        faq.splice(i, 1); setDirty(); renderContacts();
+      };
+    });
+    $('#addFaq').onclick = function () { faq.push({ id: uid(), q: { ru: '', en: '' }, a: { ru: '', en: '' } }); setDirty(); renderContacts(); };
   }
 
   function contactRow(contact, index) {
@@ -860,9 +951,18 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         '</div></section></div>';
     }
     if (active === 'contacts') {
-      frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-contacts"><div><h2>Контакты</h2><div class="pv-contact-list">' +
-        draft.contacts.map(function (c) { return '<div class="pv-contact"><span>' + esc(c.label || typeName(c.type)) + '</span><span>' + esc(c.href) + '</span></div>'; }).join('') +
-        '</div></div></section></div>';
+      frame.innerHTML = '<div class="pv-loading">Загружаем раздел Контакты…</div>';
+      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+        if (active !== 'contacts' || $('#previewModal').classList.contains('is-hidden')) return;
+        try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
+        frame.classList.add('is-live');
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=ct&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр контактов"></iframe></div>';
+        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        fitPreviewScale(frame);
+      }).catch(function (error) {
+        frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
+      });
     }
   }
 

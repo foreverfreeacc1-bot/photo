@@ -280,3 +280,13 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 
 .preview-frame.is-live{display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .pv-langbar [data-pvreplay]{font-size:15px;line-height:1;}
+
+.ct-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:820px;}
+.ct-card{border:1px solid rgba(17,17,17,.18);border-radius:16px;background:rgba(17,17,17,.04);padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.ct-card-head{display:flex;align-items:center;gap:16px;}
+.ct-card-head svg{width:22px;height:22px;flex:none;color:rgba(17,17,17,.85);}
+.ct-card .cc-t{display:flex;flex-direction:column;}
+.ct-card .cc-l{font-size:11px;font-weight:600;letter-spacing:.26em;}
+.ct-card .cc-s{font-size:11px;color:rgba(17,17,17,.55);margin-top:5px;}
+.faq-admin-item{border:1px solid #e3ded2;border-radius:14px;padding:16px 18px;margin-bottom:14px;background:#fbfaf7;}
+.faq-admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
