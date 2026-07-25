@@ -386,13 +386,14 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     }
     if (!Array.isArray(base.portfolio.aboutBlock.stages) || !base.portfolio.aboutBlock.stages.length) {
       base.portfolio.aboutBlock.stages = clone(NATIVE_PF_STAGES).map(function (stage) {
-        return { id: uid(), icon: stage.icon, title: stage.title, text: stage.text };
+        return { id: uid(), icon: stage.icon, iconImage: null, title: stage.title, text: stage.text };
       });
     } else {
       base.portfolio.aboutBlock.stages = base.portfolio.aboutBlock.stages.map(function (stage) {
         return {
           id: stage.id || uid(),
           icon: stage.icon || 'camera',
+          iconImage: stage.iconImage || null,
           title: stage.title || { ru: '', en: '' },
           text: stage.text || { ru: '', en: '' }
         };
@@ -400,8 +401,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     }
     if (!base.work.cards) base.work.cards = [];
     if (!base.work.stagesHead) base.work.stagesHead = {};
-    if (!base.work.stagesHead.title) base.work.stagesHead.title = { ru: '\u042d\u0442\u0430\u043f\u044b \u0441\u044a\u0435\u043c\u043a\u0438', en: 'Shooting Stages' };
-    if (!base.work.stagesHead.sub) base.work.stagesHead.sub = { ru: '\u041e\u0442 \u0437\u0430\u044f\u0432\u043a\u0438 \u0434\u043e \u0433\u043e\u0442\u043e\u0432\u044b\u0445 \u043a\u0430\u0434\u0440\u043e\u0432', en: 'From request to finished photos' };
+    if (!base.work.stagesHead.title) base.work.stagesHead.title = { ru: 'Этапы съемки', en: 'Shooting Stages' };
+    if (!base.work.stagesHead.sub) base.work.stagesHead.sub = { ru: 'От заявки до готовых кадров', en: 'From request to finished photos' };
     if (!base.work.stages) base.work.stages = [];
     if (!base.work.stages.length) {
       base.work.stages = clone(NATIVE_WORK_STAGES).map(function (stage) {
@@ -928,7 +929,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var deviceAspect = { desktop: '16 / 9', tablet: '4 / 3', mobile: '9 / 19' };
     var deviceNote = { desktop: 'две половины рядом', tablet: 'две половины рядом', mobile: 'Portfolio сверху, Work снизу' };
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже — настоящий экран выбранного устройства: такие же пропорции и такое же расположение половин, как на сайте. Фотография одна и та же — меняется только видимая часть кадра.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже — настоящий экран выбранного устройства: такие же пропорции и такое же расположение половин, как на сайте.</p></div></div>' +
       '<div class="screen-bar"><div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
         return '<button type="button" data-screen="' + mode + '" class="' + (mode === screenMode ? 'is-active' : '') + '">' + labels[mode] + '</button>';
       }).join('') + '</div>' +
@@ -944,13 +945,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           (url ? '' : '<span class="pane-empty">Сначала выберите фотографию</span>') + '</div>';
       }).join('') +
       '</div></div>' +
+      '<p class="help is-center">Потяните фотографию внутри половины экрана — так вы выбираете, какая её часть видна на этом устройстве.</p>' +
       '<div class="pick-row">' + ['L', 'R'].map(function (side) {
         var image = data.photo[side];
-        return '<div class="pick-col"><span class="pick-name">' + (side === 'L' ? 'PORTFOLIO' : 'WORK') + '</span>' +
-          '<button class="button button-light" type="button" data-home-upload="' + side + '">' + (image ? '\u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u0444\u043e\u0442\u043e' : '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0441\u0432\u043e\u044e \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044e') + '</button>' +
-          (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">\u0412\u0435\u0440\u043d\u0443\u0442\u044c \u0444\u043e\u0442\u043e \u0441\u0430\u0439\u0442\u0430</button>' : '') + '</div>';
-      }).join('') + '</div>' +
-      '<p class="help">Зажмите половину экрана и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
+        return '<div class="pick-col">' +
+          '<button class="button button-light" type="button" data-home-upload="' + side + '">Выбрать фотографию</button>' +
+          (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</div>';
+      }).join('') + '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
       '<div class="cover-grid">' +
       coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
@@ -1082,6 +1083,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   var openAlbumId = null;
+  var coverMenuId = null;
 
   var NATIVE_ALBUM_PHOTOS = null;
   var NATIVE_WORK_IMAGES = null;
@@ -1128,13 +1130,14 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function albumCover(album) {
     var cover = null;
     album.photos.forEach(function (photo) { if (!cover && photo.id === album.previewId) cover = photo; });
-    return cover || album.photos[0] || null;
+    if (!cover) cover = album.photos[0];
+    return cover;
   }
 
   function albumTile(album, index) {
     var cover = albumCover(album);
     return '<article class="album-tile' + (openAlbumId === album.id ? ' is-open' : '') + '" data-album-tile="' + index + '" draggable="true">' +
-      '<div class="tile-photo"' + (cover ? ' style="background-image:url(' + esc(cover.url) + ')"' : '') + '>' +
+      '<div class="tile-photo" style="' + (cover ? 'background-image:url(' + esc(cover.url) + ')' : '') + '">' +
       '<div class="tile-acts">' +
       '<span class="tile-act tile-grab" title="Перетащите, чтобы изменить порядок">☰</span>' +
       '<button class="tile-act" type="button" data-open-album="' + index + '" title="Редактировать альбом">✎</button>' +
@@ -1145,25 +1148,29 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   function albumPlate(album, lang) {
-    var cover = albumCover(album);
-    return '<article class="cover-plate album-plate">' +
+    return '<article class="cover-plate site-plate">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + album.photos.length + ' фото</span></div>' +
-      '<div class="plate-body"' + (cover ? ' style="background-image:url(' + esc(cover.url) + ')"' : '') + '>' +
-      '<div class="plate-shade"></div>' +
-      '<div class="plate-stack">' +
-      '<div class="ce ce-atitle" data-ace="title.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce ce-adesc" data-ace="desc.' + lang + '" data-multiline spellcheck="false"></div>' +
-      '</div></div></article>';
+      '<div class="plate-body is-album">' +
+      '<div class="ce site-alb-title" data-ace="title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce site-alb-desc" data-ace="desc.' + lang + '" data-multiline spellcheck="false"></div>' +
+      '</div></article>';
   }
 
   function albumEditor(album, index) {
     var coverIndex = album.photos.map(function (x) { return x.id; }).indexOf(album.previewId);
+    var open = coverMenuId === album.id;
     return '<div class="album-editor" data-album="' + index + '">' +
-      '<div class="cover-grid">' + albumPlate(album, 'ru') + albumPlate(album, 'en') + '</div>' +
-      '<div class="divider"></div><div class="upload-grid">' +
+      '<div class="cover-grid is-stack">' + albumPlate(album, 'ru') + albumPlate(album, 'en') + '</div>' +
+      '<div class="divider"></div>' +
+      '<button class="add-tile is-inline" type="button" data-cover-menu><span>★</span> Выбрать обложку альбома</button>' +
+      (open ? ('<div class="cover-menu">' + (album.photos.length ? album.photos.map(function (photo, i) {
+        return '<button class="cover-opt' + (i === (coverIndex < 0 ? 0 : coverIndex) ? ' is-on' : '') + '" type="button" data-cover="' + i + '" style="background-image:url(' + esc(photo.url) + ')"></button>';
+      }).join('') : '<p class="help">Сначала загрузите фотографии.</p>') + '</div>') : '') +
+      '<div class="upload-grid">' +
       album.photos.map(function (photo, i) { return mediaTile(photo, i, coverIndex < 0 ? 0 : coverIndex); }).join('') +
       uploadTile('Перетащить или выбрать фото', true) + '</div>' +
-      '<div class="row-actions"><button class="button button-light" type="button" data-close-album>Готово</button></div></div>';
+      '<div class="row-actions"><button class="button button-light" type="button" data-close-album>Готово</button></div>' +
+      '</div>';
   }
 
   function pfIntroPlate(data, lang) {
@@ -1172,26 +1179,33 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="plate-body is-intro"><div class="ce ce-pfintro" data-pce="intro.' + lang + '" data-multiline spellcheck="false"></div></div></article>';
   }
 
+  function pfIconBox(stage, index) {
+    var img = stage.iconImage;
+    return '<span class="hw-ico' + (img ? ' has-img' : '') + '" data-pf-icon="' + index + '" title="Загрузить значок" style="' + (img ? 'background-image:url(' + esc(img.url) + ')' : '') + '">' + (img ? '' : iconMarkup(stage.icon)) + '</span>';
+  }
+
   function pfAboutBlock(data, lang) {
-    var stages = data.aboutBlock.stages;
+    var about = data.aboutBlock;
     return '<article class="cover-plate site-plate">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'Обо мне' : 'About me') + '</span></div>' +
       '<div class="plate-body is-about">' +
       '<div class="sa-head">' +
-      '<div class="ce ce-pftitle" data-pce="aboutBlock.title.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce ce-pfname" data-pce="aboutBlock.name.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce ce-pftext" data-pce="aboutBlock.text.' + lang + '" data-multiline spellcheck="false"></div>' +
+      '<div class="ce sa-title" data-pce="aboutBlock.title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce sa-name" data-pce="aboutBlock.name.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce sa-text" data-pce="aboutBlock.text.' + lang + '" data-multiline spellcheck="false"></div>' +
       '</div>' +
-      '<div class="sa-items">' + stages.map(function (stage, i) {
+      '<div class="sa-items">' + about.stages.map(function (stage, i) {
         return '<div class="hw-item" data-pf-stage="' + i + '" data-lang="' + lang + '">' +
-          '<span class="hw-rail"><span class="hw-ico">' + iconMarkup(stage.icon) + '</span></span>' +
+          '<span class="hw-rail">' + pfIconBox(stage, i) + '</span>' +
           '<div class="hw-body">' +
-          '<div class="ce ce-hwt" data-sce="title.' + lang + '" spellcheck="false"></div>' +
-          '<div class="ce ce-hwp" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
-          (lang === 'ru' ? '<div class="hw-tools"><small class="icon-label">Значок пункта</small>' + iconPicker(stage.icon) +
-            '<button class="kill-btn" type="button" data-delete-pf-stage title="Удалить пункт">✕</button></div>' : '') +
+          '<div class="ce hw-t" data-sce="title.' + lang + '" spellcheck="false"></div>' +
+          '<div class="ce hw-p" data-sce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
+          (lang === 'ru' ? ('<div class="hw-tools"><button class="text-button" type="button" data-pf-icon-pick="' + i + '">' + (stage.iconImage ? 'Заменить значок' : 'Загрузить значок') + '</button>' +
+            (stage.iconImage ? '<button class="text-button" type="button" data-pf-icon-clear="' + i + '">Убрать значок</button>' : '') +
+            '<button class="kill-btn" type="button" data-delete-pf-stage="' + i + '" title="Удалить пункт">✕</button></div>') : '') +
           '</div></div>';
       }).join('') + '</div>' +
+      (lang === 'ru' ? '<button class="add-tile is-inline" type="button" id="addPfStage"><span>+</span> Добавить пункт</button>' : '') +
       '</div></article>';
   }
 
@@ -1203,72 +1217,87 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     editor.innerHTML =
       '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Так, как на сайте — правьте текст прямо в плашке.</p></div></div>' +
       '<div class="cover-grid is-stack">' + pfIntroPlate(data, 'ru') + pfIntroPlate(data, 'en') + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Так же, как на сайте. Перетащите карточку, чтобы изменить порядок; карандаш — галерея и тексты, крестик — удаление.</p></div>' +
-      '<button class="button button-light" type="button" id="addAlbum">+ Добавить альбом</button></div>' +
-      '<div class="album-grid">' + data.albums.map(albumTile).join('') + '</div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Карточки такие же, как на сайте. Перетаскивайте карточки, чтобы менять порядок.</p></div></div>' +
+      '<div class="album-grid">' + data.albums.map(albumTile).join('') +
+      '<button class="add-tile is-card" type="button" id="addAlbum"><span>+</span> Добавить альбом</button></div>' +
       (openIndex >= 0 ? albumEditor(data.albums[openIndex], openIndex) : '') + '</div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Блок целиком, как на сайте, вместе с пунктами. Нажмите на любой текст и правьте.</p></div></div>' +
-      '<div class="cover-grid is-stack">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div>' +
-      '<button class="add-tile" type="button" id="addPfStage"><span>+</span> Добавить пункт</button></div>';
+      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Точно такой же блок, как на сайте: нажмите на любой текст и правьте. Значок пункта можно загрузить картинкой.</p></div></div>' +
+      '<div class="cover-grid is-stack">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div></div>';
     bindPathEditable(editor, data, 'data-pce', 'portfolio');
+    $('#addAlbum').onclick = function () {
+      var album = { id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] };
+      data.albums.push(album);
+      openAlbumId = album.id;
+      setDirty('portfolio'); renderPortfolio();
+    };
+    var addStage = $('#addPfStage');
+    if (addStage) addStage.onclick = function () {
+      data.aboutBlock.stages.push({ id: uid(), icon: 'star', iconImage: null, title: { ru: 'Новый пункт', en: 'New point' }, text: { ru: 'Описание пункта', en: 'Description' } });
+      setDirty('portfolio'); renderPortfolio();
+    };
     $$('[data-pf-stage]', editor).forEach(function (row) {
       var stage = data.aboutBlock.stages[Number(row.dataset.pfStage)];
       bindPathEditable(row, stage, 'data-sce', 'portfolio');
-      if (row.dataset.lang !== 'ru') return;
-      bindIconPicker(row, stage, 'portfolio', function () { $('.hw-ico', row).innerHTML = iconMarkup(stage.icon); });
-      $('[data-delete-pf-stage]', row).onclick = function () {
-        if (!confirm('Удалить этот пункт?')) return;
-        data.aboutBlock.stages.splice(Number(row.dataset.pfStage), 1);
+    });
+    var pickIcon = function (index) {
+      chooseFiles({ multiple: false }, function (images) {
+        data.aboutBlock.stages[index].iconImage = images[0];
         setDirty('portfolio'); renderPortfolio();
+      });
+    };
+    $$('[data-pf-icon]', editor).forEach(function (box) { box.onclick = function () { pickIcon(Number(box.dataset.pfIcon)); }; });
+    $$('[data-pf-icon-pick]', editor).forEach(function (button) { button.onclick = function () { pickIcon(Number(button.dataset.pfIconPick)); }; });
+    $$('[data-pf-icon-clear]', editor).forEach(function (button) {
+      button.onclick = function () { data.aboutBlock.stages[Number(button.dataset.pfIconClear)].iconImage = null; setDirty('portfolio'); renderPortfolio(); };
+    });
+    $$('[data-delete-pf-stage]', editor).forEach(function (button) {
+      button.onclick = function () {
+        var i = Number(button.dataset.deletePfStage);
+        if (!confirm('Удалить пункт «' + (data.aboutBlock.stages[i].title.ru || 'без названия') + '»?')) return;
+        data.aboutBlock.stages.splice(i, 1); setDirty('portfolio'); renderPortfolio();
       };
     });
-    $('#addAlbum').onclick = function () {
-      var album = { id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] };
-      data.albums.push(album); openAlbumId = album.id;
-      setDirty('portfolio'); renderPortfolio();
-    };
-    $('#addPfStage').onclick = function () {
-      data.aboutBlock.stages.push({ id: uid(), icon: 'star', title: { ru: '', en: '' }, text: { ru: '', en: '' } });
-      setDirty('portfolio'); renderPortfolio();
-    };
     bindAlbumTiles();
-    bindAlbumEditor();
+    if (openIndex >= 0) bindAlbumEditor();
     loadNativeMedia();
   }
 
   function bindAlbumTiles() {
     var editor = $('#editor');
     var grid = $('.album-grid', editor);
-    if (!grid) return;
-    $$('[data-open-album]', grid).forEach(function (button) {
-      button.onclick = function () {
-        var album = draft.portfolio.albums[Number(button.dataset.openAlbum)];
+    var albums = draft.portfolio.albums;
+    $$('[data-open-album]', editor).forEach(function (button) {
+      button.onclick = function (event) {
+        event.stopPropagation();
+        var album = albums[Number(button.dataset.openAlbum)];
         openAlbumId = openAlbumId === album.id ? null : album.id;
+        coverMenuId = null;
         renderPortfolio();
       };
     });
-    $$('[data-del-album]', grid).forEach(function (button) {
-      button.onclick = function () {
-        var index = Number(button.dataset.delAlbum);
-        var album = draft.portfolio.albums[index];
+    $$('[data-del-album]', editor).forEach(function (button) {
+      button.onclick = function (event) {
+        event.stopPropagation();
+        var i = Number(button.dataset.delAlbum);
+        var album = albums[i];
         if (!confirm('Удалить альбом «' + (album.title.ru || 'без названия') + '» со всеми фотографиями?')) return;
-        if (album.id === openAlbumId) openAlbumId = null;
-        draft.portfolio.albums.splice(index, 1);
-        setDirty('portfolio'); renderPortfolio();
+        if (openAlbumId === album.id) openAlbumId = null;
+        albums.splice(i, 1); setDirty('portfolio'); renderPortfolio();
       };
     });
+    if (!grid) return;
     var dragEl = null;
     grid.addEventListener('dragstart', function (event) {
-      var tile = event.target.closest ? event.target.closest('.album-tile') : null;
+      var tile = event.target.closest ? event.target.closest('[data-album-tile]') : null;
       if (!tile) return;
       dragEl = tile; tile.classList.add('is-drag');
       event.dataTransfer.effectAllowed = 'move';
-      try { event.dataTransfer.setData('text/plain', 'album'); } catch (e) {}
+      try { event.dataTransfer.setData('text/plain', 'move'); } catch (e) {}
     });
     grid.addEventListener('dragover', function (event) {
       if (!dragEl) return;
       event.preventDefault();
-      var tile = event.target.closest ? event.target.closest('.album-tile') : null;
+      var tile = event.target.closest ? event.target.closest('[data-album-tile]') : null;
       if (!tile || tile === dragEl) return;
       var rect = tile.getBoundingClientRect();
       var before = (event.clientX - rect.left) < rect.width / 2;
@@ -1277,11 +1306,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     grid.addEventListener('drop', function (event) { if (dragEl) event.preventDefault(); });
     grid.addEventListener('dragend', function () {
       if (!dragEl) return;
-      dragEl.classList.remove('is-drag'); dragEl = null;
-      var order = $$('.album-tile', grid).map(function (tile) { return Number(tile.dataset.albumTile); });
+      dragEl.classList.remove('is-drag');
+      dragEl = null;
+      var order = $$('[data-album-tile]', grid).map(function (tile) { return Number(tile.dataset.albumTile); });
       var changed = order.some(function (v, i) { return v !== i; });
       if (!changed) return;
-      draft.portfolio.albums = order.map(function (i) { return draft.portfolio.albums[i]; });
+      var next = order.map(function (i) { return albums[i]; });
+      albums.splice.apply(albums, [0, albums.length].concat(next));
       setDirty('portfolio'); renderPortfolio();
     });
   }
@@ -1297,112 +1328,137 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       setDirty('portfolio'); renderPortfolio();
     };
     var remaining = Math.max(0, 80 - album.photos.length);
-    $('[data-upload]', root).onclick = function () {
+    var upload = $('[data-upload]', root);
+    if (upload) upload.onclick = function () {
       if (!remaining) return toast('В одном альбоме может быть до 80 фотографий.');
       chooseFiles({ multiple: true, max: remaining }, addImages);
     };
     bindDropZone($('.upload-tile', root), addImages, remaining);
+    $('[data-cover-menu]', root).onclick = function () {
+      coverMenuId = coverMenuId === album.id ? null : album.id;
+      renderPortfolio();
+    };
     $$('[data-cover]', root).forEach(function (button) {
-      button.onclick = function () { album.previewId = album.photos[Number(button.dataset.cover)].id; setDirty('portfolio'); renderPortfolio(); };
+      button.onclick = function () {
+        album.previewId = album.photos[Number(button.dataset.cover)].id;
+        coverMenuId = null;
+        setDirty('portfolio'); renderPortfolio();
+      };
     });
     $$('[data-remove]', root).forEach(function (button) {
       button.onclick = function () {
-        var delIndex = Number(button.dataset.remove);
-        if (!confirm('Удалить фотографию?')) return;
-        var removed = album.photos.splice(delIndex, 1)[0];
+        var i = Number(button.dataset.remove);
+        var target = album.photos[i];
+        if (!confirm('Удалить фотографию «' + ((target && target.name) || 'без названия') + '»?')) return;
+        var removed = album.photos.splice(i, 1)[0];
         if (removed && removed.id === album.previewId) album.previewId = album.photos[0] ? album.photos[0].id : '';
         setDirty('portfolio'); renderPortfolio();
       };
     });
-    $('[data-close-album]', root).onclick = function () { openAlbumId = null; renderPortfolio(); };
+    $('[data-close-album]', root).onclick = function () { openAlbumId = null; coverMenuId = null; renderPortfolio(); };
   }
 
   function renderWork() {
     var work = draft.work;
     var cards = work.cards;
     var editor = $('#editor');
-    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>\u041a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u0443\u0441\u043b\u0443\u0433</h2><p>\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0438 \u0446\u0435\u043d\u0430 \u043f\u0440\u0430\u0432\u044f\u0442\u0441\u044f \u043f\u0440\u044f\u043c\u043e \u0432 \u043f\u043b\u0430\u0448\u043a\u0430\u0445, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435.</p></div></div>' +
-      '<div class="card-list">' + cards.map(workCard).join('') + '</div>' +
-      '<button class="add-tile" type="button" id="addWork"><span>+</span> \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443</button></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>\u042d\u0442\u0430\u043f\u044b \u0441\u044a\u0451\u043c\u043a\u0438</h2><p>\u0411\u043b\u043e\u043a \u0446\u0435\u043b\u0438\u043a\u043e\u043c, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435. \u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u0438\u043b\u0438 \u043f\u043e\u0434\u043f\u0438\u0441\u044c \u0438 \u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u0442\u0435\u043a\u0441\u0442.</p></div></div>' +
+    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>Карточки услуг</h2><p>Карточки такие же, как на сайте. Нажмите на любой текст и правьте.</p></div></div>' +
+      '<div class="svc-list">' + cards.map(workCard).join('') +
+      '<button class="add-tile is-card" type="button" id="addWork"><span>+</span> Добавить карточку</button></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Этапы съёмки</h2><p>Блок целиком, как на сайте. Правятся только заголовки и подписи.</p></div></div>' +
       '<div class="cover-grid is-stack">' + stagesMock(work, 'ru') + stagesMock(work, 'en') + '</div></div>';
-    var add = function () {
-      cards.push({ id: uid(), image: null, title: { ru: '\u041d\u043e\u0432\u0430\u044f \u0443\u0441\u043b\u0443\u0433\u0430', en: 'New service' }, price: { ru: '', en: '' }, features: { ru: [], en: [] } });
-      setDirty(); renderWork();
-      var all = $$('.item-card[data-work]', editor); if (all.length) all[all.length - 1].classList.add('is-open');
+    $('#addWork').onclick = function () {
+      cards.push({ id: uid(), image: null, title: { ru: 'Новая услуга', en: 'New service' }, price: { ru: '', en: '' }, features: { ru: [], en: [] } });
+      setDirty('work'); renderWork();
     };
-    $('#addWork').onclick = add;
     bindWorkCards();
     bindWorkStages();
     loadNativeMedia();
   }
 
-  function workPlate(card, lang) {
-    return '<article class="cover-plate work-plate">' +
-      '<div class="plate-head"><b>' + (lang === 'ru' ? '\u0420\u0443\u0441\u0441\u043a\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f' : 'English') + '</b><span>' + (lang === 'ru' ? '\u0443\u0441\u043b\u0443\u0433\u0430' : 'service') + '</span></div>' +
-      '<div class="plate-body">' +
-      '<div class="ce ce-atitle" data-ace="title.' + lang + '" spellcheck="false"></div>' +
-      '<div class="ce ce-wprice" data-ace="price.' + lang + '" spellcheck="false"></div>' +
+  function workPlate(card, cardIndex, lang) {
+    var list = (card.features && card.features[lang]) || [];
+    return '<article class="svc-plate" data-svc-lang="' + lang + '">' +
+      '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'услуга' : 'service') + '</span></div>' +
+      '<div class="svc-photo" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '<span class="pane-empty">Фотография не выбрана</span>') + '</div>' +
+      '<div class="svc-body">' +
+      '<div class="ce svc-title" data-ace="title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce svc-price" data-ace="price.' + lang + '" spellcheck="false"></div>' +
+      '<ul class="svc-feats">' + list.map(function (item, i) {
+        return '<li><span class="ce svc-feat" data-feat="' + lang + ':' + i + '" spellcheck="false">' + esc(item) + '</span>' +
+          '<button class="kill-btn is-mini" type="button" data-feat-del="' + lang + ':' + i + '" title="Удалить пункт">✕</button></li>';
+      }).join('') + '</ul>' +
+      '<button class="text-button" type="button" data-feat-add="' + lang + '">+ Пункт</button>' +
       '</div></article>';
   }
 
   function workCard(card, cardIndex) {
-    var featureRu = (card.features && card.features.ru || []).join('\n');
-    var featureEn = (card.features && card.features.en || []).join('\n');
-    return '<article class="item-card" data-work="' + cardIndex + '"><div class="item-head"><button class="item-summary" type="button" data-toggle>' +
-      '<span class="item-thumb" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '"></span><span><b>' + esc(card.title.ru || '\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f') + '</b><small>' + esc(card.price.ru || '\u0426\u0435\u043d\u0430 \u043d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d\u0430') + '</small></span><span class="chevron"></span></button>' +
-      '<button class="kill-btn" type="button" data-delete-work title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443" aria-label="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443">\u2715</button></div>' +
-      '<div class="item-body"><div class="cover-grid">' + workPlate(card, 'ru') + workPlate(card, 'en') + '</div>' +
-      '<div class="field-grid" style="margin-top:14px">' +
-      field('\u0427\u0442\u043e \u0432\u0445\u043e\u0434\u0438\u0442 \u00b7 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 (\u043a\u0430\u0436\u0434\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0441 \u043d\u043e\u0432\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438)', featureRu, 'features.ru', 'textarea', '\u0414\u0432\u0430 \u0447\u0430\u0441\u0430 \u0441\u044a\u0451\u043c\u043a\u0438') +
-      field('\u0427\u0442\u043e \u0432\u0445\u043e\u0434\u0438\u0442 \u00b7 English (\u043a\u0430\u0436\u0434\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0441 \u043d\u043e\u0432\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438)', featureEn, 'features.en', 'textarea', 'Two-hour session') + '</div>' +
-      '<div class="divider"></div><div class="screen-card"><h3>\u0424\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044f \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438</h3><div class="screen-photo" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '\u0424\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044f \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d\u0430') + '</div>' +
-      '<button class="button button-light" type="button" data-work-image>' + (card.image ? '\u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c' : '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044e') + '</button></div>' +
-      '</div></article>';
+    return '<section class="svc-card" data-work="' + cardIndex + '">' +
+      '<div class="svc-tools"><button class="button button-light" type="button" data-work-image>' + (card.image ? 'Заменить фотографию' : 'Выбрать фотографию') + '</button>' +
+      '<button class="kill-btn" type="button" data-delete-work title="Удалить карточку">✕</button></div>' +
+      '<div class="svc-pair">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
+      '</section>';
   }
 
   function bindWorkCards() {
-    $$('.item-card[data-work]', $('#editor')).forEach(function (root) {
+    $$('.svc-card[data-work]', $('#editor')).forEach(function (root) {
       var cardIndex = Number(root.dataset.work);
       var card = draft.work.cards[cardIndex];
-      $('[data-toggle]', root).onclick = function () { root.classList.toggle('is-open'); };
       bindPathEditable(root, card, 'data-ace', 'work');
-      $$('[data-bind]', root).forEach(function (input) {
-        input.oninput = function () {
-          var path = input.dataset.bind.split('.');
-          if (path[0] === 'features') {
-            card.features[path[1]] = input.value.split(/\n/).map(function (line) { return line.trim(); }).filter(Boolean);
-          } else {
-            card[path[0]][path[1]] = input.value;
-          }
+      $$('[data-feat]', root).forEach(function (el) {
+        var parts = el.getAttribute('data-feat').split(':');
+        var lang = parts[0];
+        var i = Number(parts[1]);
+        el.setAttribute('contenteditable', 'true');
+        el.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); el.blur(); } });
+        el.addEventListener('input', function () {
+          card.features[lang][i] = el.innerText.replace(/\s+/g, ' ').trim();
           setDirty('work');
+        });
+      });
+      $$('[data-feat-del]', root).forEach(function (button) {
+        button.onclick = function () {
+          var parts = button.dataset.featDel.split(':');
+          card.features[parts[0]].splice(Number(parts[1]), 1);
+          setDirty('work'); renderWork();
+        };
+      });
+      $$('[data-feat-add]', root).forEach(function (button) {
+        button.onclick = function () {
+          var lang = button.dataset.featAdd;
+          if (!card.features[lang]) card.features[lang] = [];
+          card.features[lang].push(lang === 'ru' ? 'Новый пункт' : 'New item');
+          setDirty('work'); renderWork();
         };
       });
       $('[data-work-image]', root).onclick = function () {
         chooseFiles({ multiple: false }, function (images) { card.image = images[0]; setDirty('work'); renderWork(); });
       };
-      $('[data-delete-work]', root).onclick = function () { if (!confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443 \u00ab' + (card.title.ru || '\u0431\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f') + '\u00bb?')) return; draft.work.cards.splice(cardIndex, 1); setDirty('work'); renderWork(); };
+      $('[data-delete-work]', root).onclick = function () {
+        if (!confirm('Удалить карточку «' + (card.title.ru || 'без названия') + '»?')) return;
+        draft.work.cards.splice(cardIndex, 1); setDirty('work'); renderWork();
+      };
     });
   }
 
   function stagesMock(work, lang) {
     return '<article class="cover-plate site-plate">' +
-      '<div class="plate-head"><b>' + (lang === 'ru' ? '\u0420\u0443\u0441\u0441\u043a\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f' : 'English') + '</b><span>' + (lang === 'ru' ? '\u042d\u0442\u0430\u043f\u044b \u0441\u044a\u0435\u043c\u043a\u0438' : 'Shooting stages') + '</span></div>' +
+      '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'Этапы съёмки' : 'Shooting stages') + '</span></div>' +
       '<div class="plate-body is-steps">' +
       '<div class="rdm-heading">' +
-      '<span class="ce rdm-heading-txt" data-wce="stagesHead.title.' + lang + '" spellcheck="false"></span>' +
-      '<span class="ce rdm-heading-sub" data-wce="stagesHead.sub.' + lang + '" spellcheck="false"></span>' +
+      '<div class="ce rdm-heading-txt" data-wce="stagesHead.title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce rdm-heading-sub" data-wce="stagesHead.sub.' + lang + '" spellcheck="false"></div>' +
       '</div>' +
-      '<div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">' +
+      '<div class="rdm-card"><div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">' +
       work.stages.map(function (stage, i) {
         return '<div class="rdm-item" data-work-stage="' + i + '" data-lang="' + lang + '">' +
           '<span class="rdm-dot"><i></i></span>' +
           '<span class="ce rdm-badge" data-wsce="badge.' + lang + '" spellcheck="false"></span>' +
-          '<h4 class="ce" data-wsce="title.' + lang + '" spellcheck="false"></h4>' +
-          '<p class="ce" data-wsce="text.' + lang + '" data-multiline spellcheck="false"></p>' +
+          '<div class="ce rdm-title" data-wsce="title.' + lang + '" spellcheck="false"></div>' +
+          '<div class="ce rdm-text" data-wsce="text.' + lang + '" data-multiline spellcheck="false"></div>' +
           '</div>';
       }).join('') +
-      '</div></div></div></article>';
+      '</div></div></div></div></article>';
   }
 
   function bindWorkStages() {
