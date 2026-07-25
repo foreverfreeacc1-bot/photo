@@ -62,9 +62,10 @@ function defaults() { return { texts: {}, custom: [], rsub: null, title: null, c
 function cleanLangPair(v, max) {
   return { ru: clean(v && v.ru, max), en: clean(v && v.en, max) };
 }
+function validExtImgUrl(h) { return typeof h === 'string' && h.length <= 600 && /^https:\/\/[^\s"'<>]+$/i.test(h); }
 function cleanImage(v) {
   const u = v ? normUploadUrl(v.url) : null;
-  if (!v || !validUploadUrl(u)) return null;
+  if (!v || !(validUploadUrl(u) || validExtImgUrl(u))) return null;
   return {
     id: (typeof v.id === 'string' && /^[a-f0-9-]{36}$/.test(v.id)) ? v.id : crypto.randomUUID(),
     url: u,
@@ -74,6 +75,28 @@ function cleanImage(v) {
 }
 function cleanImages(v, limit) {
   return (Array.isArray(v) ? v.slice(0, limit) : []).map(cleanImage).filter(Boolean);
+}
+const ICON_KEYS_OK = ['camera', 'image', 'book', 'gem', 'star', 'heart', 'pin', 'sun', 'clock', 'check'];
+function cleanIcon(v) { return ICON_KEYS_OK.indexOf(v) >= 0 ? v : 'camera'; }
+function cleanAboutStages(v) {
+  return (Array.isArray(v) ? v.slice(0, 12) : []).map(function (st) {
+    return {
+      id: (st && typeof st.id === 'string' && /^[a-f0-9-]{36}$/.test(st.id)) ? st.id : crypto.randomUUID(),
+      icon: cleanIcon(st && st.icon),
+      iconImage: cleanImage(st && st.iconImage),
+      title: cleanLangPair(st && st.title, 200),
+      text: cleanLangPair(st && st.text, 2000)
+    };
+  }).filter(function (st) { return st.title.ru || st.title.en || st.text.ru || st.text.en; });
+}
+function cleanAboutBlock(v) {
+  v = v && typeof v === 'object' ? v : {};
+  return {
+    title: cleanLangPair(v.title, 120),
+    name: cleanLangPair(v.name, 200),
+    text: cleanLangPair(v.text, 4000),
+    stages: cleanAboutStages(v.stages)
+  };
 }
 function sanitizeAdmin(v) {
   v = v && typeof v === 'object' ? v : {};
@@ -92,9 +115,18 @@ function sanitizeAdmin(v) {
     home: {},
     portfolio: {
       about: cleanLangPair(portfolio.about, 4000),
+      intro: cleanLangPair(portfolio.intro, 1000),
+      aboutBlock: cleanAboutBlock(portfolio.aboutBlock),
       albums: []
     },
-    work: { cards: [], stages: [] },
+    work: {
+      cards: [],
+      stages: [],
+      stagesHead: {
+        title: cleanLangPair(work.stagesHead && work.stagesHead.title, 120),
+        sub: cleanLangPair(work.stagesHead && work.stagesHead.sub, 300)
+      }
+    },
     contacts: []
   };
   ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
@@ -125,10 +157,11 @@ function sanitizeAdmin(v) {
     return {
       id: (album && typeof album.id === 'string' && /^[a-f0-9-]{36}$/.test(album.id)) ? album.id : crypto.randomUUID(),
       title: cleanLangPair(album && album.title, 120),
+      desc: cleanLangPair(album && album.desc, 600),
       previewId: photos.some(function (photo) { return photo.id === preview; }) ? preview : (photos[0] ? photos[0].id : ''),
       photos: photos
     };
-  }).filter(function (album) { return album.title.ru || album.title.en || album.photos.length; });
+  });
   out.work.cards = (Array.isArray(work.cards) ? work.cards.slice(0, 12) : []).map(function (card) {
     const oldDescription = cleanLangPair(card && card.description, 1000);
     const oldSteps = Array.isArray(card && card.steps) ? card.steps : [];
@@ -145,14 +178,19 @@ function sanitizeAdmin(v) {
         en: (Array.isArray(features.en) ? features.en : (oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.en ? [oldDescription.en] : []))).slice(0, 12).map(function (line) { return clean(line, 220); }).filter(Boolean)
       }
     };
-  }).filter(function (card) { return card.title.ru || card.title.en; });
-  out.work.stages = (Array.isArray(work.stages) ? work.stages.slice(0, 8) : []).map(function (stage) {
+  });
+  out.work.stages = (Array.isArray(work.stages) ? work.stages.slice(0, 8) : []).map(function (stage, i) {
+    const badge = cleanLangPair(stage && stage.badge, 60);
+    if (!badge.ru) badge.ru = '\u0428\u0430\u0433 ' + (i + 1);
+    if (!badge.en) badge.en = 'Step ' + (i + 1);
     return {
       id: (stage && typeof stage.id === 'string' && /^[a-f0-9-]{36}$/.test(stage.id)) ? stage.id : crypto.randomUUID(),
+      icon: cleanIcon(stage && stage.icon),
+      badge: badge,
       title: cleanLangPair(stage && stage.title, 100),
       text: cleanLangPair(stage && stage.text, 300)
     };
-  }).filter(function (stage) { return stage.title.ru || stage.title.en || stage.text.ru || stage.text.en; });
+  });
   const iconMap = { telegram: 'tg', instagram: 'ig', max: 'mx', phone: 'ph', email: 'ph', website: 'ph' };
   out.contacts = (Array.isArray(v.contacts) ? v.contacts.slice(0, 10) : []).map(function (contact) {
     const type = ['telegram', 'instagram', 'max', 'phone', 'email', 'website'].indexOf(contact && contact.type) >= 0 ? contact.type : 'website';
