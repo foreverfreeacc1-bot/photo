@@ -1111,7 +1111,7 @@ function setOverlays(t){
   for(const c of chars){const p=smooth(t,c.t0,c.t0+LDUR);c.el.style.opacity=p*(1-gout);c.el.style.transform=`translateY(${lerp(12,0,p)}px)`;c.el.style.filter=`blur(${lerp(8,0,p)+gout*4}px)`;}
   
   const gb=smooth(t,GAL_BACK[0],GAL_BACK[1]);
-  gallery.style.opacity=gb;gallery.style.pointerEvents=(gb>0.95&&t>=END)?'auto':'none';
+  gallery.style.opacity=LOADER_LOOP?0:gb;gallery.style.pointerEvents=(gb>0.95&&t>=END)?'auto':'none';
   const lo=smooth(t,0.5,1.0)*(1-smooth(t,TITLE_OUT[0]-0.2,TITLE_OUT[0]+0.4));loader.style.opacity=lo;var _rl=document.getElementById('reel');if(_rl){var _ro=smooth(t,0.5,1.9)*(1-smooth(t,TITLE_OUT[0]-0.2,TITLE_OUT[0]+0.4));_rl.style.opacity=_ro;_rl.style.transform='translateY('+((1-_ro)*18)+'px)';var _rn=document.getElementById('rname');if(_rn){_rn.style.opacity=_ro;}var _rs=document.getElementById('rsub');if(_rs){_rs.style.opacity=_ro;}}
   const live=t>=END-0.05;stage.classList.toggle('live',live);stage.classList.toggle('split',live);if(!live){stage.classList.remove('hovL');stage.classList.remove('hovR');}
   
@@ -1120,7 +1120,7 @@ function setOverlays(t){
 let start=null,raf=null;
 const LOADER_LOOP=/[?&]cmsLoaderLoop=1/.test(location.search);
 let __loopN=0;
-function frame(now){if(start===null)start=now;let t=SEEK!==null?SEEK:(now-start)/1000;if(LOADER_LOOP){var __le=Math.max(TITLE_OUT[0]+0.45,2.5);var __k=Math.floor(t/__le);if(__k!==__loopN){__loopN=__k;try{document.querySelectorAll('.rn').forEach(function(el){el.style.animation='none';void el.offsetWidth;el.style.animation='';});}catch(e){}}t=t-__k*__le;}if(t>END)t=END;renderGL(t);setOverlays(t);raf=requestAnimationFrame(frame);}
+function frame(now){if(start===null)start=now;let t=SEEK!==null?SEEK:(now-start)/1000;if(LOADER_LOOP){var __le=Math.max(TITLE_OUT[1]+0.4,2.5);var __k=Math.floor(t/__le);if(__k!==__loopN){__loopN=__k;try{document.querySelectorAll('.rn').forEach(function(el){el.style.animation='none';void el.offsetWidth;el.style.animation='';});}catch(e){}}t=t-__k*__le;}if(t>END)t=END;renderGL(t);setOverlays(t);raf=requestAnimationFrame(frame);}
 function play(){cancelAnimationFrame(raf);start=null;raf=requestAnimationFrame(frame);}
 function jumpToEnd(){if(LOADER_LOOP)return;cancelAnimationFrame(raf);start=performance.now()-END*1000;raf=requestAnimationFrame(frame);}
 (function(){const lang=document.getElementById('lang');if(!lang)return;const on=lang.querySelector('.on'),off=lang.querySelector('.off');const items=[];function reg(sel,en){document.querySelectorAll(sel).forEach(function(el){items.push({el:el,ru:el.innerHTML,en:en});});}

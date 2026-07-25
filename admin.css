@@ -271,3 +271,9 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .panel-head p{max-width:none;text-align:justify;}
 .media-tile{transition:transform .18s ease,opacity .18s ease;cursor:grab;}
 .media-tile.is-drag{opacity:.35;transform:scale(.95);}
+
+.pv-scale{margin:0 auto;overflow:hidden;background:#fff;}
+.pv-scale .pv-iframe{transform-origin:top left;}
+.upload-tile.is-full{border-style:solid;border-color:#e3ded2;background:#f6f4ee;padding:14px;}
+.upload-tile.is-full span{display:block;font-size:13px;line-height:1.5;max-width:170px;color:var(--muted);}
+.upload-tile.is-full b{display:block;margin-bottom:6px;color:var(--ink);font-family:var(--serif);font-size:22px;font-weight:400;}

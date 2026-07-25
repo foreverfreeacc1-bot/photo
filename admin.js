@@ -519,11 +519,12 @@
       '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
-      uploadTile('Добавить фотографии', true) + '</div></div>';
+      (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true)) + '</div></div>';
     bindFields(editor, data);
     initRichFields(editor, data);
     enableReorder($('.upload-grid', editor), data.images, function () { renderLoader(); setDirty(); });
-    $('[data-upload]', editor).onclick = function () {
+    var uploadBtn = $('[data-upload]', editor);
+    if (uploadBtn) uploadBtn.onclick = function () {
       chooseFiles({ multiple: true }, function (images) {
         data.images = data.images.concat(images).slice(0, 4);
         setDirty(); renderLoader();
@@ -531,7 +532,7 @@
     };
     $$('[data-cover]', editor).forEach(function (b) { b.remove(); });
     $$('[data-remove]', editor).forEach(function (button) {
-      button.onclick = function () { data.images.splice(Number(button.dataset.remove), 1); setDirty(); renderLoader(); };
+      button.onclick = function () { var image = data.images[Number(button.dataset.remove)]; if (!confirm('Удалить фотографию «' + ((image && image.name) || 'без названия') + '»?')) return; data.images.splice(Number(button.dataset.remove), 1); setDirty(); renderLoader(); };
     });
   }
 
@@ -627,7 +628,7 @@
       });
       $$('[data-remove]', card).forEach(function (button) {
         button.onclick = function () {
-          var removed = album.photos.splice(Number(button.dataset.remove), 1)[0];
+          var delIndex = Number(button.dataset.remove); var delTarget = album.photos[delIndex]; if (!confirm('Удалить фотографию «' + ((delTarget && delTarget.name) || 'без названия') + '»?')) return; var removed = album.photos.splice(delIndex, 1)[0];
           if (removed && removed.id === album.previewId) album.previewId = album.photos[0] ? album.photos[0].id : '';
           setDirty('portfolio'); renderPortfolio();
         };
@@ -782,8 +783,24 @@
         if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
-          '<iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe>';
+          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe></div>';
         $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        var pvBox = $('.pv-scale', frame), pvIfr = $('.pv-iframe', frame);
+        var pvW = device === 'mobile' ? 390 : 1280, pvH = device === 'mobile' ? 800 : 820;
+        var pvFit = function () {
+          if (!document.body.contains(pvBox)) return;
+          var avail = Math.max(220, frame.clientWidth - 16);
+          var k = Math.min(1, avail / pvW);
+          pvIfr.style.width = pvW + 'px';
+          pvIfr.style.height = pvH + 'px';
+          pvIfr.style.transform = 'scale(' + k + ')';
+          pvBox.style.width = Math.round(pvW * k) + 'px';
+          pvBox.style.height = Math.round(pvH * k) + 'px';
+        };
+        if (window.__pvFit) window.removeEventListener('resize', window.__pvFit);
+        window.__pvFit = pvFit;
+        window.addEventListener('resize', pvFit);
+        pvFit();
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
       });
