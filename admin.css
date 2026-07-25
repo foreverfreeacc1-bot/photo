@@ -408,3 +408,13 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .pass-wrap .eye{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:26px;height:26px;border:0;border-radius:6px;background:transparent;cursor:pointer;opacity:.55}
 .pass-wrap .eye:before{content:'';display:block;width:16px;height:16px;margin:0 auto;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 110-8 4 4 0 010 8z'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 110-8 4 4 0 010 8z'/></svg>") center/contain no-repeat}
 .pass-wrap .eye.is-on{opacity:1}
+
+/* ---------- чёрные плашки лоадера ---------- */
+.loader-plate .plate-body{align-items:center;justify-content:center;text-align:center;gap:14px;min-height:170px;padding:26px 18px}
+.ce-loadtitle{font-family:var(--serif);font-size:26px;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;width:100%}
+.ce-loadsub{font-size:11.5px;line-height:1.6;letter-spacing:.1em;text-transform:uppercase;color:#b8b2a8;width:100%}
+.cover-grid.is-phones{margin-top:14px;justify-items:center}
+.loader-plate.is-phone{width:100%;max-width:280px}
+.loader-plate.is-phone .plate-body{min-height:300px;padding:34px 16px}
+.loader-plate.is-phone .ce-loadtitle{font-size:19px;letter-spacing:.12em}
+.loader-plate.is-phone .ce-loadsub{font-size:10.5px}

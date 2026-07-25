@@ -32,7 +32,7 @@
     sub2: { ru: 'Индивидуальный подход, внимание к деталям и естественная эстетика в каждом кадре.', en: 'Individual approach, attention to detail and natural aesthetics in every frame.' }
   };
 
-var CONTACT_ICONS = { telegram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>', instagram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2zm0 1.8a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6zm5.15-3.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg>', max: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720"><path fill="#0a0b0b" d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/></svg>', phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' };
+var CONTACT_ICONS = { telegram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>', instagram: '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2zm0 1.8a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6zm5.15-3.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2z"/></svg>', max: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" aria-hidden="true"><path fill="currentColor" d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/></svg>', phone: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' };
 var FAQ_RU_N = [
     {id:'q1',q:'В каких жанрах вы работаете?',a:'Специализируюсь на портрете, fashion, lifestyle и коммерческой фотографии. Также берусь за личные проекты в жанрах стрит и документальная фотография.'},
     {id:'q2',q:'Сколько времени занимает обработка фотографий?',a:'Стандартный срок — 5-7 рабочих дней после съёмки. Срочная обработка (1-2 дня) доступна за дополнительную плату.'},
@@ -89,11 +89,26 @@ function fmtPhone(raw) {
 
 var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0418\u042f", "en": "COLLECTION"}, "smallL": {"ru": "\u0418\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b", "en": "Selected works"}, "subL": {"ru": "\u041f\u041e\u0414\u0411\u041e\u0420\u041a\u0410 \u041f\u0420\u041e\u0415\u041a\u0422\u041e\u0412, \u041e\u0422\u0420\u0410\u0416\u0410\u042e\u0429\u0418\u0425 \u041c\u041e\u0419 \u0421\u0422\u0418\u041b\u042c,\n\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415 \u041a \u041a\u041e\u041c\u041f\u041e\u0417\u0418\u0426\u0418\u0418 \u0418 \u042d\u041c\u041e\u0426\u0418\u042f\u041c", "en": "A SELECTION OF PROJECTS REFLECTING MY STYLE,\nATTENTION TO COMPOSITION AND EMOTION"}, "subR": {"ru": "\u0414\u0410\u0412\u0410\u0419\u0422\u0415 \u041f\u0420\u0415\u0412\u0420\u0410\u0422\u0418\u041c \u0418\u0414\u0415\u042e \u0412 \u0418\u0421\u0422\u041e\u0420\u0418\u042e,\n\u041a\u041e\u0422\u041e\u0420\u0410\u042f \u0421\u041e\u0425\u0420\u0410\u041d\u0418\u0422 \u0421\u0410\u041c\u042b\u0415 \u0412\u0410\u0416\u041d\u042b\u0415 \u041c\u041e\u041c\u0415\u041d\u0422\u042b", "en": "LET\u2019S TURN AN IDEA INTO A STORY\nTHAT KEEPS THE MOST PRECIOUS MOMENTS"}};
 
+  var NATIVE_PF = {
+    intro: {
+      ru: 'Избранные работы из разных направлений фотографии — от индивидуальных портретов до коммерческих съёмок',
+      en: 'Selected works across different photography genres — from individual portraits to commercial shoots'
+    },
+    aboutBlock: {
+      title: { ru: 'Обо мне', en: 'About Me' },
+      name: { ru: 'Алиса Митерова', en: 'Alisa Miterova' },
+      text: {
+        ru: 'Фотограф из Москвы, создающий визуальные истории с акцентом на эстетику, естественный свет и внимание к деталям. Индивидуальный подход к каждой съемке и стремление к безупречному результату позволяют создавать кадры, которые остаются актуальными вне времени.',
+        en: 'A photographer from Moscow, creating visual stories with a focus on aesthetics, natural light and attention to detail. An individual approach to every shoot and the pursuit of a flawless result allow for images that remain timeless.'
+      }
+    }
+  };
+
   function emptyContent() {
     return {
       loader: { title: clone(NATIVE_LOADER.title), subtitle: clone(NATIVE_LOADER.sub1), subtitle2: clone(NATIVE_LOADER.sub2), subtitleM: clone(NATIVE_LOADER.sub1), images: [] },
       home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null }, texts: clone(NATIVE_HOME) },
-      portfolio: { about: { ru: '', en: '' }, albums: [] },
+      portfolio: { about: { ru: '', en: '' }, intro: clone(NATIVE_PF.intro), aboutBlock: clone(NATIVE_PF.aboutBlock), albums: [] },
       work: { cards: [], stages: [] },
       contacts: [],
       faq: []
@@ -201,6 +216,26 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       return { id: (found && found.id) || uid(), type: d.type, label: auto.l, value: auto.s || value, href: auto.h || href };
     });
     if (!base.portfolio.albums) base.portfolio.albums = [];
+    if (!base.portfolio.intro) base.portfolio.intro = clone(NATIVE_PF.intro);
+    ['ru', 'en'].forEach(function (lang) {
+      if (!String(base.portfolio.intro[lang] || '').trim()) base.portfolio.intro[lang] = NATIVE_PF.intro[lang];
+    });
+    if (!base.portfolio.aboutBlock) base.portfolio.aboutBlock = clone(NATIVE_PF.aboutBlock);
+    ['title', 'name', 'text'].forEach(function (key) {
+      if (!base.portfolio.aboutBlock[key]) base.portfolio.aboutBlock[key] = clone(NATIVE_PF.aboutBlock[key]);
+      ['ru', 'en'].forEach(function (lang) {
+        if (!String(base.portfolio.aboutBlock[key][lang] || '').trim()) base.portfolio.aboutBlock[key][lang] = NATIVE_PF.aboutBlock[key][lang];
+      });
+    });
+    base.portfolio.albums = base.portfolio.albums.map(function (album) {
+      return {
+        id: album.id || uid(),
+        title: album.title || { ru: '', en: '' },
+        desc: album.desc || { ru: '', en: '' },
+        previewId: album.previewId || '',
+        photos: Array.isArray(album.photos) ? album.photos : []
+      };
+    });
     if (!base.work.cards) base.work.cards = [];
     if (!base.work.stages) base.work.stages = [];
     base.work.cards = base.work.cards.map(function (card) {
@@ -546,24 +581,71 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     });
   }
 
+  function loaderPlate(kind, lang) {
+    var langLabel = lang === 'ru' ? 'Русский' : 'English';
+    var kindLabel = kind === 'phone' ? 'Телефон' : 'Широкий экран';
+    return '<article class="cover-plate loader-plate' + (kind === 'phone' ? ' is-phone' : '') + '">' +
+      '<div class="plate-head"><b>' + kindLabel + '</b><span>' + langLabel + '</span></div>' +
+      '<div class="plate-body">' +
+      '<div class="ce ce-loadtitle" data-lce="title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce ce-loadsub" data-lce="' + kind + '.' + lang + '" spellcheck="false"></div>' +
+      '</div></article>';
+  }
+
+  function bindLoaderPlates(root, data) {
+    $$('[data-lce]', root).forEach(function (el) {
+      var key = el.getAttribute('data-lce').split('.');
+      var kind = key[0];
+      var lang = key[1];
+      var read = function () {
+        if (kind === 'title') return data.title[lang] || '';
+        if (kind === 'phone') return data.subtitleM[lang] || '';
+        var value = data.subtitle[lang] || '';
+        if ((data.subtitle2[lang] || '').trim()) value += '\n' + data.subtitle2[lang];
+        return value;
+      };
+      var commit = function (value) {
+        value = String(value).replace(/\r/g, '');
+        if (kind === 'title') data.title[lang] = value.replace(/\s+/g, ' ').trim();
+        else if (kind === 'phone') data.subtitleM[lang] = value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).join('\n');
+        else {
+          var parts = value.split('\n');
+          data.subtitle[lang] = parts[0].trim();
+          data.subtitle2[lang] = parts.slice(1).join(' ').trim();
+        }
+        setDirty();
+      };
+      el.setAttribute('contenteditable', 'true');
+      el.setAttribute('role', 'textbox');
+      el.innerHTML = esc(read()).replace(/\n/g, '<br>');
+      el.addEventListener('paste', function (event) {
+        event.preventDefault();
+        var text = (event.clipboardData || window.clipboardData).getData('text');
+        document.execCommand('insertText', false, String(text));
+      });
+      el.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          if (kind === 'title') { el.blur(); return; }
+          document.execCommand('insertLineBreak');
+        }
+      });
+      el.addEventListener('input', function () { commit(el.innerText); });
+    });
+  }
+
   function renderLoader() {
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается большими буквами. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
-      '<div class="field-grid">' +
-      field('Заголовок · Русский', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
-      field('Заголовок · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
-      richField('Подзаголовок · Русский (Enter — перенос строки)', 'main.ru') +
-      richField('Подзаголовок · English (Enter — перенос строки)', 'main.en') +
-      richField('Подзаголовок для телефона · Русский (Enter — перенос строки)', 'phone.ru') +
-      richField('Подзаголовок для телефона · English (Enter — перенос строки)', 'phone.en') +
-      '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Плашки такие же, как на сайте: нажмите на заголовок или подзаголовок и правьте текст прямо в плашке. Заголовок на сайте всегда показывается большими буквами. В подзаголовке Enter делает перенос строки.</p></div></div>' +
+      '<div class="cover-grid">' + loaderPlate('main', 'ru') + loaderPlate('main', 'en') + '</div>' +
+      '<div class="cover-grid is-phones">' + loaderPlate('phone', 'ru') + loaderPlate('phone', 'en') + '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true, null, data.images.length + ' / 4')) + '</div></div>';
     bindFields(editor, data);
-    initRichFields(editor, data);
+    bindLoaderPlates(editor, data);
     enableReorder($('.upload-grid', editor), data.images, function () { renderLoader(); setDirty(); });
     var uploadBtn = $('[data-upload]', editor);
     if (uploadBtn) uploadBtn.onclick = function () {
@@ -686,7 +768,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="frame-actions"><button class="text-button" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
       '<button class="text-button" type="button" data-frame-reset="R">Work — по центру</button></div>' +
       '<p class="help">Зажмите половину экрана и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Четыре плашки — такие же, как на сайте: слева Portfolio, справа Work, сверху русская версия, снизу английская. Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Ико��ки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
       '<div class="cover-grid">' +
       coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
       coverPlate('L', 'en', data) + coverPlate('R', 'en', data) +
@@ -747,15 +829,27 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var data = draft.portfolio;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>О себе</h2><p>Небольшой живой текст — достаточно двух или трёх предложений.</p></div></div><div class="field-grid">' +
+      '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Короткая подводка, которая показывается на сайте перед списком альбомов.</p></div></div><div class="field-grid">' +
+      field('Строка · Русский', data.intro.ru, 'intro.ru', 'textarea', 'Избранные работы из разных направлений фотографии') +
+      field('Строка · English', data.intro.en, 'intro.en', 'textarea', 'Selected works across different photography genres') +
+      '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Показывается в разделе Portfolio под альбомами: заголовок, имя и текст.</p></div></div><div class="field-grid">' +
+      field('Заголовок · Русский', data.aboutBlock.title.ru, 'aboutBlock.title.ru', 'input', 'Обо мне') +
+      field('Заголовок · English', data.aboutBlock.title.en, 'aboutBlock.title.en', 'input', 'About Me') +
+      field('Имя · Русский', data.aboutBlock.name.ru, 'aboutBlock.name.ru', 'input', 'Алиса Митерова') +
+      field('Имя · English', data.aboutBlock.name.en, 'aboutBlock.name.en', 'input', 'Alisa Miterova') +
+      field('Текст · Русский', data.aboutBlock.text.ru, 'aboutBlock.text.ru', 'textarea', 'Расскажите о себе и своём подходе') +
+      field('Текст · English', data.aboutBlock.text.en, 'aboutBlock.text.en', 'textarea', 'Tell visitors about your approach') +
+      '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Короткий текст о себе</h2><p>Одно-два предложения для шапки раздела Portfolio.</p></div></div><div class="field-grid">' +
       field('Текст · Русский', data.about.ru, 'about.ru', 'textarea', 'Расскажите о себе и своём подходе') +
       field('Текст · English', data.about.en, 'about.en', 'textarea', 'Tell visitors about your approach') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Первый кадр с отметкой «Превью» будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Добавляйте альбомы, меняйте названия, описания и фотографии. Первый кадр с отметкой «Превью» будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
       '<div class="album-list">' + (data.albums.length ? data.albums.map(albumCard).join('') : emptyBlock('Альбомов пока нет', 'Добавьте первый альбом и загрузите фотографии.', 'Создать альбом', 'emptyAlbum')) + '</div></div>';
     bindFields(editor, data);
     var add = function () {
-      data.albums.push({ id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, previewId: '', photos: [] });
+      data.albums.push({ id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] });
       setDirty(); renderPortfolio();
       var cards = $$('.item-card', editor); if (cards.length) cards[cards.length - 1].classList.add('is-open');
     };
@@ -772,7 +866,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<span><b>' + esc(album.title.ru || 'Без названия') + '</b><small>' + album.photos.length + ' фото</small></span><span class="chevron"></span></button>' +
       '<div class="item-body"><div class="field-grid">' +
       field('Название · Русский', album.title.ru, 'album.title.ru', 'input', 'Название альбома') +
-      field('Название · English', album.title.en, 'album.title.en', 'input', 'Album title') + '</div>' +
+      field('Название · English', album.title.en, 'album.title.en', 'input', 'Album title') +
+      field('Описание · Русский', (album.desc || {}).ru || '', 'album.desc.ru', 'textarea', 'О чём этот альбом') +
+      field('Описание · English', (album.desc || {}).en || '', 'album.desc.en', 'textarea', 'What this album is about') + '</div>' +
       '<div class="divider"></div><div class="upload-grid">' +
       album.photos.map(function (photo, index) { return mediaTile(photo, index, coverIndex < 0 ? 0 : coverIndex); }).join('') + uploadTile('Перетащить или выбрать фото', true) + '</div>' +
       '<div class="row-actions"><button class="button button-danger" type="button" data-delete-album>Удалить альбом</button></div></div></article>';
@@ -785,8 +881,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       $('[data-toggle]', card).onclick = function () { card.classList.toggle('is-open'); };
       $$('[data-bind]', card).forEach(function (input) {
         input.oninput = function () {
-          if (input.dataset.bind.indexOf('.ru') > -1) album.title.ru = input.value;
-          else album.title.en = input.value;
+          var path = input.dataset.bind.replace(/^album\./, '').split('.');
+          var target = album;
+          for (var i = 0; i < path.length - 1; i++) {
+            if (!target[path[i]] || typeof target[path[i]] !== 'object') target[path[i]] = {};
+            target = target[path[i]];
+          }
+          target[path[path.length - 1]] = input.value;
           setDirty('portfolio');
         };
       });
@@ -963,7 +1064,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
       }).join('') + '</div>' +
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные во��росы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные ��о��росы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
         return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
@@ -1260,7 +1361,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var user = $('#naUser').value.trim();
     var pass = $('#naPass').value;
     if (!user) { toast('Укажите логин'); return; }
-    if (pass.length < 8) { toast('Пароль должен быть не короче 8 символов'); return; }
+    if (pass.length < 8) { toast('Пароль должен быть не короче 8 ��имволов'); return; }
     api('admin-add', { method: 'POST', json: { name: name, tag: tag, user: user, password: pass } }).then(function () {
       toast('Администратор создан');
       $('#naName').value = ''; if ($('#naTag')) $('#naTag').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
