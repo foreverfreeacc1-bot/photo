@@ -387,7 +387,26 @@
 
   function initRichFields(root, data) {
     $$('.field-rich', root).forEach(function (el) {
-      var lang = el.getAttribute('data-rich');
+      var key = el.getAttribute('data-rich').split('.');
+      var kind = key[0];
+      var lang = key[1];
+      var read = function () {
+        if (kind === 'phone') return data.subtitleM[lang] || '';
+        var value = data.subtitle[lang] || '';
+        if ((data.subtitle2[lang] || '').trim()) value += '\n' + data.subtitle2[lang];
+        return value;
+      };
+      var commit = function (value) {
+        value = String(value);
+        if (kind === 'phone') {
+          data.subtitleM[lang] = value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).join('\n');
+        } else {
+          var parts = value.split('\n');
+          data.subtitle[lang] = parts[0].trim();
+          data.subtitle2[lang] = parts.slice(1).join(' ').trim();
+        }
+        setDirty();
+      };
       var renderRich = function (value) {
         el.innerHTML = '';
         String(value).split('\n').forEach(function (part, i) {
@@ -412,12 +431,6 @@
         }
         return out;
       };
-      var commit = function (value) {
-        var parts = String(value).split('\n');
-        data.subtitle[lang] = parts[0].trim();
-        data.subtitle2[lang] = parts.slice(1).join(' ').trim();
-        setDirty();
-      };
       var caretEnd = function () {
         var range = document.createRange();
         range.selectNodeContents(el);
@@ -439,8 +452,8 @@
       });
       el.addEventListener('input', function () {
         var raw = serialize();
-        if (raw.indexOf('/n') >= 0) {
-          var value = raw.replace(/ ?\/n ?/g, '\n');
+        if (/\/[nN]/.test(raw)) {
+          var value = raw.replace(/ ?\/[nN] ?/g, '\n');
           renderRich(value);
           caretEnd();
           commit(value);
@@ -448,9 +461,46 @@
         }
         commit(raw);
       });
-      var initial = data.subtitle[lang] || '';
-      if ((data.subtitle2[lang] || '').trim()) initial += '\n' + data.subtitle2[lang];
-      renderRich(initial);
+      renderRich(read());
+    });
+  }
+
+  function enableReorder(grid, list, done) {
+    if (!grid) return;
+    $$('.media-tile', grid).forEach(function (tile, i) {
+      tile.setAttribute('draggable', 'true');
+      tile.dataset.index = i;
+    });
+    var dragEl = null;
+    grid.addEventListener('dragstart', function (event) {
+      var tile = event.target.closest ? event.target.closest('.media-tile') : null;
+      if (!tile) return;
+      dragEl = tile;
+      tile.classList.add('is-drag');
+      event.dataTransfer.effectAllowed = 'move';
+      try { event.dataTransfer.setData('text/plain', 'reorder'); } catch (e) {}
+    });
+    grid.addEventListener('dragover', function (event) {
+      if (!dragEl) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      var tile = event.target.closest ? event.target.closest('.media-tile') : null;
+      if (!tile || tile === dragEl) return;
+      var rect = tile.getBoundingClientRect();
+      var before = (event.clientX - rect.left) < rect.width / 2;
+      grid.insertBefore(dragEl, before ? tile : tile.nextSibling);
+    });
+    grid.addEventListener('drop', function (event) { if (dragEl) event.preventDefault(); });
+    grid.addEventListener('dragend', function () {
+      if (!dragEl) return;
+      dragEl.classList.remove('is-drag');
+      dragEl = null;
+      var order = $$('.media-tile', grid).map(function (tile) { return Number(tile.dataset.index); });
+      var changed = order.some(function (v, i) { return v !== i; });
+      if (!changed) return;
+      var next = order.map(function (i) { return list[i]; });
+      list.splice.apply(list, [0, list.length].concat(next));
+      done();
     });
   }
 
@@ -462,16 +512,17 @@
       '<div class="field-grid">' +
       field('Заголовок · Русский', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
       field('Заголовок · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
-      richField('Подзаголовок · Русский («/n» — перенос строки на десктопе)', 'ru') +
-      richField('Подзаголовок · English («/n» — line break)', 'en') +
-      field('Подзаголовок для телефона · Русский', data.subtitleM.ru, 'subtitleM.ru', 'textarea', '') +
-      field('Подзаголовок для телефона · English', data.subtitleM.en, 'subtitleM.en', 'textarea', '') +
+      richField('Подзаголовок · Русский («/n» — перенос строки)', 'main.ru') +
+      richField('Подзаголовок · English («/n» — перенос строки)', 'main.en') +
+      richField('Подзаголовок для телефона · Русский («/n» — перенос строки)', 'phone.ru') +
+      richField('Подзаголовок для телефона · English («/n» — перенос строки)', 'phone.en') +
       '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       uploadTile('Добавить фотографии', true) + '</div></div>';
     bindFields(editor, data);
     initRichFields(editor, data);
+    enableReorder($('.upload-grid', editor), data.images, function () { renderLoader(); setDirty(); });
     $('[data-upload]', editor).onclick = function () {
       chooseFiles({ multiple: true }, function (images) {
         data.images = data.images.concat(images).slice(0, 4);

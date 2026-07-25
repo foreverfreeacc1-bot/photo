@@ -267,3 +267,7 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .field-rich:focus{outline:2px solid var(--ink);outline-offset:2px;}
 .nl-chip{display:inline-block;background:#000;color:#fff;border-radius:4px;padding:0 7px;margin:0 5px;font-size:10px;line-height:1.7;vertical-align:baseline;user-select:none;}
 .field textarea{min-height:96px;}
+
+.panel-head p{max-width:none;text-align:justify;}
+.media-tile{transition:transform .18s ease,opacity .18s ease;cursor:grab;}
+.media-tile.is-drag{opacity:.35;transform:scale(.95);}
