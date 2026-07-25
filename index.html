@@ -1288,7 +1288,7 @@ function build(k){
  var d=SECS[k];if(!d)return;
  if(k==='pf'&&curCol!==null){buildCol(d,e);return;}
  if(k==='pf'||k==='wk'){ttl.innerHTML='<span class="sv-plq">'+d.title+'</span><span class="sv-sub">'+(k==='pf'?(e?'Best projects and favorite shots':'Лучшие проекты и любимые кадры'):(e?'Collaboration details and service pricing':'Детали сотрудничества и стоимость услуг'))+'</span>';}else{ttl.textContent=d.title;}grid.className='sv-grid'+(k==='wk'?' wk-grid':'');
- grid.innerHTML=(k==='pf'?'<p class="sv-intro">'+(e?'Selected works across different photography genres — from individual portraits to commercial shoots':'Избранные работы из разных направлений фотографии — от индивидуальных портретов до коммерческих съёмок')+'</p>':'')+d.items.map(function(it,i){if(k==='wk'){var feats=(e?(it[5]||[]):(it[4]||[]));var featsHtml=feats.length?'<ul class="wk-feats">'+feats.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul>':'';var titleLines=(e?it[1]:it[0]).split('\n');var titleHtml=titleLines.join(' ');return '<div class="scard wkc" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s">'+'<span class="wkimg"><span class="simg"></span></span>'+'<div class="wk-info">'+  '<span class="wkcap">'+titleHtml+'</span>'+featsHtml+(it[2]?'<span class="wkprice">'+(e?it[3]:it[2])+'</span>':'')+'<span class="wkgo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>'+'</div>'+'</div>';}return '<div class="scard" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s"><span class="simg"></span><span class="snum">0'+(i+1)+'</span><span class="scap">'+(k==='pf'?(e?it[1]:it[0]).replace(/ /g,'<br>'):(e?it[1]:it[0]))+'</span>'+(k==='wk'&&it[2]?'<span class="sprice">'+(e?it[3]:it[2])+'</span>':'')+(k==='pf'?'<span class="s-go">'+(e?'VIEW':'СМОТРЕТЬ')+'</span>':'')+'</div>';}).join('');
+ grid.innerHTML=(k==='pf'?'<p class="sv-intro">'+pfIntroTxt(e)+'</p>':'')+d.items.map(function(it,i){if(k==='wk'){var feats=(e?(it[5]||[]):(it[4]||[]));var featsHtml=feats.length?'<ul class="wk-feats">'+feats.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul>':'';var titleLines=(e?it[1]:it[0]).split('\n');var titleHtml=titleLines.join(' ');return '<div class="scard wkc" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s">'+'<span class="wkimg"><span class="simg"></span></span>'+'<div class="wk-info">'+  '<span class="wkcap">'+titleHtml+'</span>'+featsHtml+(it[2]?'<span class="wkprice">'+(e?it[3]:it[2])+'</span>':'')+'<span class="wkgo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>'+'</div>'+'</div>';}return '<div class="scard" style="animation-delay:'+(0.08+i*0.1).toFixed(2)+'s"><span class="simg"></span><span class="snum">0'+(i+1)+'</span><span class="scap">'+(k==='pf'?(e?it[1]:it[0]).replace(/ /g,'<br>'):(e?it[1]:it[0]))+'</span>'+(k==='wk'&&it[2]?'<span class="sprice">'+(e?it[3]:it[2])+'</span>':'')+(k==='pf'?'<span class="s-go">'+(e?'VIEW':'СМОТРЕТЬ')+'</span>':'')+'</div>';}).join('');
  grid.querySelectorAll('.simg').forEach(function(el,i){if(k==='pf'&&COLPH[i]&&COLPH[i].length){el.style.backgroundImage='url("'+COLPH[i][0]+'")';return;}if(k==='wk'&&WKPH[i]){el.style.backgroundImage='url("'+WKPH[i]+'")';return;}if(!pool.length)return;var pi=(d.off+i)%pool.length;el.style.backgroundImage='url("'+pool[pi]+'")';if(poolPos&&poolPos[pi])el.style.backgroundPosition=poolPos[pi];});
  if(k==='pf'){Array.prototype.forEach.call(grid.querySelectorAll('.scard'),function(c,ci){c.addEventListener('click',function(){openCol(ci);});});}
  if(info){if(k==='wk'){info.innerHTML=stagesHtml(e);info.hidden=false;}else if(k==='pf'){info.innerHTML=(e?'<div class="col-scroll-sep"><span class="col-scroll-hint">Scroll to see more</span><span class="col-scroll-line"></span></div>':'<div class="col-scroll-sep"><span class="col-scroll-hint">Листайте<br>ниже</span><span class="col-scroll-line"></span></div>')+'<div class="col-about-reveal" id="colAboutReveal">'+aboutHtml(e)+'</div>';info.hidden=false;info.appendChild(pfBtns(e));(function(){var svEl=document.getElementById('secview');var charsEl=document.getElementById('scrollChars');if(!charsEl||!svEl)return;var txt=isEn()?'SCROLL DOWN':'ЛИСТАЙ ВНИЗ';var chars=txt.split('');var ci=Math.floor(chars.length/2);chars.forEach(function(c,i){var s=document.createElement('span');s.className='col-scroll-char';s.textContent=c===' '?' ':c;if(c===' ')s.style.width='0.35em';s.dataset.dist=String(i-ci);charsEl.appendChild(s);});var revEl=document.getElementById('colAboutReveal');var sepEl=document.getElementById('colScrollSep');function upd(){if(!sepEl)return;var scrolled=svEl.scrollTop;var svH=svEl.clientHeight;var prog=Math.min(1,Math.max(0,(scrolled-(sepEl.offsetTop-svH))/(svH*0.55)));if(revEl){var op=Math.min(1,Math.max(0,(prog-0.1)/0.7));var ty=Math.round(60*(1-prog)*10)/10;revEl.style.opacity=op;revEl.style.transform='translateY('+ty+'px)';}}svEl.addEventListener('scroll',upd,{passive:true});upd();})();}else{info.hidden=true;info.innerHTML='';}}
@@ -1334,6 +1334,76 @@ function infoHtml(k,e){
 var backGone=false,backT=null;
 window.openSec=function(k){cursec=k;curCol=null;var ns=document.getElementById('navSec');if(ns){var nsm={pf:'PORTFOLIO',wk:'WORK',ct:(isEn()?'CONTACTS':'КОНТАКТЫ')};ns.classList.remove('gone');ns.classList.remove('out');ns.style.maxWidth='';var br=document.getElementById('brand');if(br){br.dataset.sec=k;}if(nsm[k]){ns.textContent=nsm[k];ns.classList.remove('anim');void ns.offsetWidth;ns.classList.add('anim');}else{ns.textContent='';ns.classList.remove('anim');}}if(window.__navShift)window.__navShift();document.querySelectorAll('.ntab').forEach(function(b){b.classList.toggle('act',b.getAttribute('data-sec')===k);});var _ab=document.querySelector('.ntab.act');if(_ab){_ab.classList.remove('ntab-play');void _ab.offsetWidth;_ab.classList.add('ntab-play');setTimeout(function(){_ab.classList.remove('ntab-play');},500);}build(k);sv.scrollTop=0;updProg();sv.classList.add('open');sv.setAttribute('aria-hidden','false');document.body.classList.add('sec-open');if(backGone){sv.classList.add('noback');}else{sv.classList.remove('noback');clearTimeout(backT);backT=setTimeout(function(){backGone=true;if(curCol===null)sv.classList.add('noback');setTimeout(updProg,1000);},5000);}};
 window.closeSec=function(){var ns2=document.getElementById('navSec');if(ns2&&ns2.textContent){ns2.classList.remove('anim');ns2.style.maxWidth=ns2.offsetWidth+'px';requestAnimationFrame(function(){requestAnimationFrame(function(){ns2.classList.add('out');ns2.style.maxWidth='0px';});});setTimeout(function(){if(!document.body.classList.contains('sec-open')){ns2.classList.add('gone');}ns2.classList.remove('out');ns2.style.maxWidth='';},850);}clearTimeout(backT);backGone=false;cursec=null;curCol=null;var br2=document.getElementById('brand');if(br2){delete br2.dataset.sec;}sv.classList.remove('open');sv.setAttribute('aria-hidden','true');document.body.classList.remove('sec-open');if(window.innerWidth<=640){var _rSt=document.getElementById('stage');if(_rSt&&_rSt.classList.contains('split')){_rSt.classList.remove('split');requestAnimationFrame(function(){requestAnimationFrame(function(){var _cls=_rSt.querySelectorAll('.cl');_cls.forEach(function(el){el.style.animationDelay='.08s';});var _ct2=_rSt.querySelectorAll('.covtxt .ct2');_ct2.forEach(function(el){el.style.opacity='1';el.style.animation='none';});_rSt.classList.add('split');_rSt.classList.add('re-entry');void _rSt.offsetWidth;_ct2.forEach(function(el){el.style.opacity='';el.style.animation='';});setTimeout(function(){var _ct2x=_rSt.querySelectorAll('.covtxt .ct2');_ct2x.forEach(function(el){el.style.animation='none';el.style.opacity='1';});var _cia=_rSt.querySelectorAll('#cicons a,#mobSocBar a');_cia.forEach(function(el){el.style.animation='none';el.style.opacity='1';});_rSt.classList.remove('re-entry');_cls.forEach(function(el){el.style.animationDelay='';});},900);});});}}};
+var __RICH=null;
+var __aboutOrig=aboutHtml,__stagesOrig=stagesHtml;
+var RIC={
+camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>',
+image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
+book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+gem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>',
+star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6.1.8-4.4 4.3 1.1 6.1-5.4-2.9-5.4 2.9 1.1-6.1L3.3 9.4l6.1-.8z"/></svg>',
+heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6.5a5 5 0 0 0-7 0l-.9.9-1-.9a5 5 0 1 0-7 7l8 8 8-8a5 5 0 0 0 0-7z"/></svg>',
+pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>'
+};
+function ricon(k){return RIC[k]||RIC.camera;}
+function rL(v,e){if(!v)return '';return (e?(v.en||v.ru):(v.ru||v.en))||'';}
+function rBr(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function pfIntroTxt(e){
+ var pf=__RICH&&__RICH.portfolio;var t=pf&&pf.intro?rL(pf.intro,e):'';
+ if(t)return rBr(t);
+ return e?'Selected works across different photography genres — from individual portraits to commercial shoots':'Избранные работы из разных направлений фотографии — от индивидуальных портретов до коммерческих съёмок';
+}
+aboutHtml=function(e){
+ try{
+  var ab=__RICH&&__RICH.portfolio&&__RICH.portfolio.aboutBlock;
+  if(!ab||!ab.stages||!ab.stages.length)return __aboutOrig(e);
+  var m='<section class="hw"><div class="hw-wrap"><div class="hw-head"><span class="hw-badge">'+rBr(rL(ab.title,e))+'</span><h2 class="hw-h2">'+rBr(rL(ab.name,e))+'</h2><p class="hw-sub">'+rBr(rL(ab.text,e))+'</p></div><ol class="hw-list">';
+  ab.stages.forEach(function(st,i){
+   var last=i===ab.stages.length-1;
+   var ico=(st.iconImage&&st.iconImage.url)?'<span class="hw-ico" style="background-image:url(&quot;'+st.iconImage.url+'&quot;);background-size:cover;background-position:center"></span>':'<span class="hw-ico">'+ricon(st.icon)+'</span>';
+   m+='<li class="hw-item"><div class="hw-rail">'+ico+(last?'':'<span class="hw-vline"></span>')+'</div><div class="hw-body'+(last?' hw-last':'')+'"><h3>'+rBr(rL(st.title,e))+'</h3><p>'+rBr(rL(st.text,e))+'</p></div></li>';
+  });
+  return m+'</ol></div></section>';
+ }catch(_e){return __aboutOrig(e);}
+};
+stagesHtml=function(e){
+ try{
+  var wk=__RICH&&__RICH.work;
+  if(!wk||!wk.stages||!wk.stages.length)return __stagesOrig(e);
+  var hd=wk.stagesHead||{};
+  var h='<div class="rdm-heading"><span class="rdm-heading-txt">'+rBr(rL(hd.title,e))+'</span><span class="rdm-heading-sub">'+rBr(rL(hd.sub,e))+'</span></div>'+'<section class="rdm"><div class="rdm-card"><div class="rdm-body"><div class="rdm-rel"><div class="rdm-line"></div><div class="rdm-row">';
+  wk.stages.forEach(function(st,i){
+   h+='<div class="rdm-item rdm-seq rdm-seq-'+(i+1)+'" style="animation-delay:'+(i*0.15)+'s"><span class="rdm-dot"><i></i></span><span class="rdm-badge">'+rBr(rL(st.badge,e))+'</span><h4>'+rBr(rL(st.title,e))+'</h4><p>'+rBr(rL(st.text,e))+'</p></div>';
+  });
+  return h+'</div></div></div></div>'+'<div class="rdm-btn-wrap">'+'<button class="rdm-btn rdm-btn--white" onclick="openSec(\'pf\')">'+(e?'View Portfolio':'Перейти в Портфолио')+'</button>'+'<button class="rdm-btn rdm-btn--black" onclick="openSec(\'ct\')">'+(e?'Book a Shoot':'Забронировать съёмку')+'</button></div></section>';
+ }catch(_e){return __stagesOrig(e);}
+};
+window.__cmsRich=function(rich){
+ try{
+  if(!rich)return;
+  __RICH=rich;
+  var pf=rich.portfolio||{},wk=rich.work||{};
+  if(pf.albums&&pf.albums.length){
+   COLPH=pf.albums.map(function(a){
+    var ph=(a.photos||[]).slice();
+    if(a.previewId){for(var i=0;i<ph.length;i++){if(ph[i]&&ph[i].id===a.previewId){ph.unshift(ph.splice(i,1)[0]);break;}}}
+    return ph.map(function(x){return x&&x.url?x.url:'';}).filter(function(u){return !!u;});
+   });
+   SECS.pf.items=pf.albums.map(function(a){var t=a.title||{};return [t.ru||t.en||'',t.en||t.ru||''];});
+  }
+  if(wk.cards&&wk.cards.length){
+   WKPH=wk.cards.map(function(c){return c&&c.image&&c.image.url?c.image.url:'';});
+   SECS.wk.items=wk.cards.map(function(c){
+    var t=c.title||{},pr=c.price||{},f=c.features||{};
+    return [t.ru||'',t.en||t.ru||'',pr.ru||'',pr.en||pr.ru||'',f.ru||[],f.en||f.ru||[]];
+   });
+  }
+  if(window.__refreshSec)window.__refreshSec();
+ }catch(_e){}
+};
 window.__refreshSec=function(){if(cursec){var ns=document.getElementById('navSec');if(ns&&ns.textContent){var nsm={pf:'PORTFOLIO',wk:'WORK',ct:(isEn()?'CONTACTS':'КОНТАКТЫ')};if(nsm[cursec])ns.textContent=nsm[cursec];}build(cursec);updProg();}};
 back.addEventListener('click',function(){if(window.__pfInCol&&window.__pfInCol()){window.__pfCloseCol();}else{window.closeSec();}});
 function brandHit(e){if(e.clientY>140)return false;var b=document.getElementById('brand');if(!b)return false;var r=document.createRange();r.selectNodeContents(b);var rc=r.getBoundingClientRect();if(!rc||!rc.width)return false;return e.clientX>=rc.left-14&&e.clientX<=rc.right+14&&e.clientY>=rc.top-10&&e.clientY<=rc.bottom+10;}
@@ -1369,6 +1439,7 @@ if(c.secs&&window.__cmsSecs)window.__cmsSecs(c.secs);
 if(c.contacts&&c.contacts.length&&window.__cmsContacts)window.__cmsContacts(c.contacts);
 if(c.faq){window.__cmsFaqData=c.faq;if(window.__cmsFaq)window.__cmsFaq(c.faq);}
 if(c.gallery&&c.gallery.length&&window.__cmsPool)window.__cmsPool(c.gallery);
+if(c.admin&&window.__cmsRich)window.__cmsRich(c.admin);
 }catch(e){}}).catch(function(){});})();</script>
 <script>(function(){var wc=document.getElementById('wcirc'),lb=document.querySelector('#ctR .wlabel');if(!wc||!lb)return;var GAP=14;function pos(){try{var r=lb.getBoundingClientRect();if(!r.width)return;wc.style.setProperty('--wcr',Math.round(window.innerWidth-r.left+GAP)+'px');}catch(e){}}window.addEventListener('resize',pos);try{new MutationObserver(function(){pos();setTimeout(pos,120);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}catch(e){}pos();setTimeout(pos,400);setTimeout(pos,1200);setTimeout(pos,3000);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){setTimeout(pos,50);});})();</script>
 <script>
