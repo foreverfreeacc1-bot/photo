@@ -22,7 +22,10 @@
         <label class="sr-only" for="loginName">Логин</label>
         <input id="loginName" autocomplete="username" placeholder="Логин" required>
         <label class="sr-only" for="loginPassword">Пароль</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required>
+        <div class="lg-pass">
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required>
+          <button id="passEye" class="pass-eye" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.3 9.5-6.3 9.5 6.3 9.5 6.3-3.5 6.3-9.5 6.3S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/><line class="eye-slash" x1="4.5" y1="19.5" x2="19.5" y2="4.5"/></svg></button>
+        </div>
         <button class="lg-btn" type="submit">Войти</button>
       </form>
       <p id="loginError" class="lg-err" role="alert"></p>
@@ -32,20 +35,23 @@
   <div id="adminApp" class="app-shell is-hidden">
     <aside class="sidebar">
       <div class="brand">
-        <span class="mark" aria-hidden="true">AM</span>
-        <span><b>Alisa Miterova</b><small>Управление сайтом</small></span>
+        <span class="brand-name">ALISA MITEROVA</span>
+        <small class="brand-sub">Управление сайтом</small>
       </div>
       <nav id="mainNav" class="nav" aria-label="Разделы админ-панели"></nav>
       <div class="sidebar-foot">
-        <button id="magicLink" class="text-button" type="button">Ссылка для входа</button>
-        <button id="logout" class="text-button" type="button">Выйти</button>
+        <div class="foot-icons">
+          <button id="magicLink" class="foot-icon" type="button" title="Ссылка для входа" aria-label="Ссылка для входа"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg></button>
+          <button id="openSettings" class="foot-icon" type="button" title="Настройки" aria-label="Настройки"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .32 1.76l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.6 1.6 0 0 0-1.76-.32 1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.09a1.6 1.6 0 0 0-1-1.47 1.6 1.6 0 0 0-1.76.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.6 1.6 0 0 0 .32-1.76 1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.09a1.6 1.6 0 0 0 1.47-1 1.6 1.6 0 0 0-.32-1.76l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.6 1.6 0 0 0 1.76.32h.09a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.09a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.76-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.6 1.6 0 0 0-.32 1.76v.09a1.6 1.6 0 0 0 1.47 1H21a2 2 0 1 1 0 4h-.09a1.6 1.6 0 0 0-1.47 1z"/></svg></button>
+        </div>
+        <button id="logout" class="logout-btn" type="button">Выйти</button>
       </div>
     </aside>
 
     <header class="mobile-head">
       <button id="menuToggle" class="icon-button" type="button" aria-label="Открыть меню" aria-expanded="false"><i></i><i></i></button>
-      <span class="mark">AM</span>
-      <button class="icon-button preview-shortcut" type="button" data-preview aria-label="Открыть предпросмотр"><span class="eye-icon"></span></button>
+      <span class="brand-name brand-name-m">ALISA MITEROVA</span>
+      <button class="icon-button preview-shortcut" type="button" data-preview aria-label="Открыть предпросмотр"><svg class="eye-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.3 9.5-6.3 9.5 6.3 9.5 6.3-3.5 6.3-9.5 6.3S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg></button>
     </header>
 
     <main class="workspace">
@@ -57,7 +63,7 @@
         </div>
         <div class="head-actions">
           <span id="draftState" class="draft-state">Все изменения сохранены</span>
-          <button class="button button-light" type="button" data-preview><span class="eye-icon"></span> Предпросмотр</button>
+          <button class="button button-light" type="button" data-preview><svg class="eye-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.3 9.5-6.3 9.5 6.3 9.5 6.3-3.5 6.3-9.5 6.3S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg> Предпросмотр</button>
           <button id="publish" class="button button-dark" type="button">Опубликовать</button>
         </div>
       </header>
@@ -87,6 +93,40 @@
         <p>Так раздел будет выглядеть после публикации.</p>
         <button id="publishFromPreview" class="button button-dark" type="button">Всё хорошо — опубликовать</button>
       </footer>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">Панель управления</p>
+          <h2 id="settingsTitle">Настройки</h2>
+        </div>
+        <button id="closeSettings" class="icon-button close-button" type="button" aria-label="Закрыть"></button>
+      </header>
+      <div class="settings-body">
+        <section class="set-block">
+          <h3>Администраторы</h3>
+          <p class="set-note">Каждый администратор входит под своим логином и паролем и может редактировать сайт.</p>
+          <div id="adminList" class="admin-list"></div>
+          <div class="admin-add">
+            <input id="naName" placeholder="Имя (например: Алиса)" maxlength="60" autocomplete="off">
+            <input id="naUser" placeholder="Логин (латиница и цифры)" maxlength="40" autocomplete="off">
+            <input id="naPass" type="password" placeholder="Пароль (не короче 8 символов)" autocomplete="new-password">
+            <button id="addAdmin" class="button button-dark" type="button">Создать администратора</button>
+          </div>
+        </section>
+        <section class="set-block">
+          <h3>Сменить пароль</h3>
+          <p class="set-note">Новый пароль для аккаунта, под которым вы сейчас вошли.</p>
+          <div class="admin-add">
+            <input id="cpOld" type="password" placeholder="Текущий пароль" autocomplete="current-password">
+            <input id="cpNew" type="password" placeholder="Новый пароль (не короче 8 символов)" autocomplete="new-password">
+            <button id="changePass" class="button button-dark" type="button">Поменять пароль</button>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 

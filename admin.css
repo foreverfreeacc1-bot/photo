@@ -301,3 +301,37 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .ph-badge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;}
 .frame-box{width:100%;background-size:cover;background-position:50% 50%;background-color:#eae6dd;border:1px solid var(--line);border-radius:8px;cursor:grab;display:flex;align-items:center;justify-content:center;color:#8a8578;font-size:12px;user-select:none;touch-action:none;max-height:440px;}
 .frame-box:active{cursor:grabbing;}
+
+/* ─── Патч 20: шапка, вход, настройки ─── */
+@font-face{font-family:'CormorantLight';src:url('/cormorant-light.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
+.brand{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:2px 8px 30px}
+.brand-name{font-family:'CormorantLight',Georgia,serif;font-weight:400;font-size:19px;letter-spacing:.3em;white-space:nowrap;color:var(--ink)}
+.brand-sub{color:var(--muted);font-size:9px;letter-spacing:.34em;text-transform:uppercase}
+.mobile-head .brand-name{font-size:14px;letter-spacing:.2em}
+.foot-icons{display:flex;gap:8px}
+.foot-icon{display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);cursor:pointer;transition:color .2s,border-color .2s}
+.foot-icon:hover{color:var(--ink);border-color:#b7b2a8}
+.logout-btn{margin-top:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:var(--red);color:#fff;font:inherit;font-size:12px;font-weight:500;letter-spacing:.05em;cursor:pointer;transition:opacity .2s}
+.logout-btn:hover{opacity:.85}
+.logout-btn:disabled{opacity:.5;cursor:default}
+.lg-pass{position:relative;width:100%}
+.lg-pass input{padding-right:46px}
+.pass-eye{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:transparent;color:#8a8578;cursor:pointer}
+.pass-eye:hover{color:var(--ink)}
+.eye-slash{display:none}
+.pass-eye.is-on .eye-slash{display:inline}
+.settings-card{width:min(680px,100%);max-height:calc(100vh - 36px);display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.settings-body{overflow:auto;padding:20px;display:grid;gap:26px}
+.set-block h3{margin:0 0 4px;font-family:var(--serif);font-size:20px;font-weight:400}
+.set-note{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.6}
+.admin-list{display:grid;gap:8px;margin-bottom:14px}
+.admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.admin-row b{display:block;font-size:13px;font-weight:500}
+.admin-row small{display:block;margin-top:2px;color:var(--muted);font-size:10px;letter-spacing:.04em}
+.ar-you{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#e7e3da;color:#6a6559;font-size:9px;letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
+.ar-del{padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--red);font:inherit;font-size:11px;cursor:pointer}
+.ar-del:hover{background:var(--red);border-color:var(--red);color:#fff}
+.admin-add{display:grid;gap:8px}
+.admin-add input{width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font:inherit;font-size:13px}
+.admin-add input:focus{border-color:#a09c96}
+.admin-add .button{justify-self:start}

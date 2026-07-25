@@ -1119,6 +1119,63 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       window.prompt('Скопируйте ссылку. Она действует 15 минут:', link);
     }).catch(function (error) { toast(error.message); });
   };
+  var passEyeBtn = $('#passEye');
+  if (passEyeBtn) passEyeBtn.onclick = function () {
+    var inp = $('#loginPassword');
+    var show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    this.classList.toggle('is-on', show);
+    this.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+    inp.focus();
+  };
+  function closeSettings() { $('#settingsModal').classList.add('is-hidden'); }
+  function renderAdminList() {
+    $('#adminList').innerHTML = '<p class="set-note">Загружаю список…</p>';
+    api('admins').then(function (result) {
+      var rows = (result.admins || []).map(function (a) {
+        return '<div class="admin-row"><div><b>' + esc(a.name || a.user) + (a.you ? '<span class="ar-you">это вы</span>' : '') + '</b><small>' + esc(a.user) + (a.root ? ' · владелец' : '') + '</small></div>' +
+          (a.root ? '' : '<button type="button" class="ar-del" data-admin-del="' + esc(a.id) + '">Удалить</button>') + '</div>';
+      }).join('');
+      $('#adminList').innerHTML = rows || '<p class="set-note">Пока только владелец.</p>';
+      $$('#adminList [data-admin-del]').forEach(function (button) {
+        button.onclick = function () {
+          if (!window.confirm('Удалить этого администратора? Он больше не сможет войти в панель.')) return;
+          api('admin-del', { method: 'POST', json: { id: button.dataset.adminDel } })
+            .then(function () { toast('Администратор удалён'); renderAdminList(); })
+            .catch(function (error) { toast(error.message); });
+        };
+      });
+    }).catch(function (error) {
+      $('#adminList').innerHTML = '<p class="set-note">' + esc(error.message) + '</p>';
+    });
+  }
+  $('#openSettings').onclick = function () {
+    $('#settingsModal').classList.remove('is-hidden');
+    renderAdminList();
+  };
+  $('#closeSettings').onclick = closeSettings;
+  $('#settingsModal').onclick = function (event) { if (event.target === this) closeSettings(); };
+  $('#addAdmin').onclick = function () {
+    var name = $('#naName').value.trim();
+    var user = $('#naUser').value.trim();
+    var pass = $('#naPass').value;
+    if (!user) { toast('Укажите логин'); return; }
+    if (pass.length < 8) { toast('Пароль должен быть не короче 8 символов'); return; }
+    api('admin-add', { method: 'POST', json: { name: name, user: user, password: pass } }).then(function () {
+      toast('Администратор создан');
+      $('#naName').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
+      renderAdminList();
+    }).catch(function (error) { toast(error.message); });
+  };
+  $('#changePass').onclick = function () {
+    var oldPass = $('#cpOld').value;
+    var newPass = $('#cpNew').value;
+    if (newPass.length < 8) { toast('Новый пароль должен быть не короче 8 символов'); return; }
+    api('password', { method: 'POST', json: { old: oldPass, password: newPass } }).then(function () {
+      toast('Пароль обновлён. Теперь входите с новым паролем.');
+      $('#cpOld').value = ''; $('#cpNew').value = '';
+    }).catch(function (error) { toast(error.message); });
+  };
   $('#menuToggle').onclick = function () {
     var open = document.body.classList.toggle('menu-open');
     this.setAttribute('aria-expanded', String(open));
@@ -1138,7 +1195,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   $('#cancelPublish').onclick = closeConfirm;
   $('#confirmPublish').onclick = publish;
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') { closePreview(); closeConfirm(); document.body.classList.remove('menu-open'); }
+    if (event.key === 'Escape') { closePreview(); closeConfirm(); closeSettings(); document.body.classList.remove('menu-open'); }
   });
   window.addEventListener('beforeunload', function (event) {
     if (!Object.keys(dirtySections).length) return;
@@ -1153,6 +1210,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $('#publish').disabled = true;
     $('#publishFromPreview').disabled = true;
     $('#magicLink').classList.add('is-hidden');
+    $('#openSettings').classList.add('is-hidden');
     $('#logout').textContent = 'Локальный просмотр';
     $('#logout').disabled = true;
     return;

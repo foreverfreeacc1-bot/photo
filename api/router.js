@@ -238,15 +238,16 @@ async function writeContentJson(c) {
 }
 
 /* ---------- сессии / CSRF (stateless, подпись HMAC) ---------- */
-function makeSession() { const exp = Date.now() + TTL; return exp + '.' + hmac('sess.' + exp); }
+function b64u(v) { return Buffer.from(String(v), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function unb64u(v) { try { return Buffer.from(String(v).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'); } catch (e) { return ''; } }
+function makeSession(user) { const exp = Date.now() + TTL; const eu = b64u(user || ''); return exp + '.' + eu + '.' + hmac('sess.' + exp + '.' + eu); }
 function getSession(req) {
   const m = /(?:^|;\s*)cms_s=([^;]+)/.exec(String(req.headers.cookie || ''));
   if (!m) return null;
   const p = m[1].split('.');
-  if (p.length !== 2 || !/^\d+$/.test(p[0])) return null;
-  if (Number(p[0]) < Date.now()) return null;
-  if (!safeEq(p[1], hmac('sess.' + p[0]))) return null;
-  return { exp: p[0] };
+  if (p.length === 3 && /^\d+$/.test(p[0]) && Number(p[0]) >= Date.now() && safeEq(p[2], hmac('sess.' + p[0] + '.' + p[1]))) return { exp: p[0], user: unb64u(p[1]) };
+  if (p.length === 2 && /^\d+$/.test(p[0]) && Number(p[0]) >= Date.now() && safeEq(p[1], hmac('sess.' + p[0]))) return { exp: p[0], user: '' };
+  return null;
 }
 function csrfOf(exp) { return hmac('csrf.' + exp).slice(0, 48); }
 function verifyPass(p) {
@@ -257,6 +258,35 @@ function verifyPass(p) {
     const got = crypto.scryptSync(String(p || ''), parts[0], want.length || 64);
     return want.length === got.length && crypto.timingSafeEqual(want, got);
   } catch (e) { return false; }
+}
+function verifyHash(p, hash) {
+  try {
+    const parts = String(hash || '').split('$');
+    if (parts.length !== 2) return false;
+    const want = Buffer.from(parts[1], 'hex');
+    const got = crypto.scryptSync(String(p || ''), parts[0], want.length || 64);
+    return want.length === got.length && crypto.timingSafeEqual(want, got);
+  } catch (e) { return false; }
+}
+function hashPass(p) { const salt = crypto.randomBytes(9).toString('hex'); return salt + '$' + crypto.scryptSync(String(p), salt, 64).toString('hex'); }
+
+/* ---------- администраторы: хранятся в cms/admins.json ---------- */
+async function readAdmins() {
+  try {
+    const r = await store('GET', 'cms/admins.json');
+    if (r.ok) {
+      const j = JSON.parse(await r.text());
+      return {
+        admins: (Array.isArray(j.admins) ? j.admins : []).filter(function (a) { return a && typeof a.user === 'string' && typeof a.hash === 'string'; }),
+        rootHash: typeof j.rootHash === 'string' ? j.rootHash : ''
+      };
+    }
+  } catch (e) { console.error('CMS admins read:', e && e.message); }
+  return { admins: [], rootHash: '' };
+}
+async function writeAdmins(acc) {
+  const r = await store('PUT', 'cms/admins.json', JSON.stringify(acc), 'application/json');
+  if (!r.ok) throw new Error('storage write ' + r.status);
 }
 
 /* ---------- лимит попыток входа (в рамках тёплого инстанса) ---------- */
@@ -431,15 +461,24 @@ module.exports = async function handler(req, res) {
     if (p === 'login' && method === 'POST') {
       if (tooMany(ip)) return send(res, 429, { error: 'Слишком много попыток. Подождите 15 минут.' });
       const j = await readBody(req);
-      const okU = safeEq(clean(j.u, 80), ADMIN_USER);
-      const okP = verifyPass(j.p);
-      if (!okU || !okP) {
+      const u = clean(j.u, 80);
+      const acc = await readAdmins();
+      let uid = '';
+      let passOk = false;
+      if (safeEq(u, ADMIN_USER)) {
+        passOk = acc.rootHash ? verifyHash(j.p, acc.rootHash) : verifyPass(j.p);
+      }
+      if (!passOk) {
+        const found = acc.admins.filter(function (a) { return safeEq(u, a.user); })[0];
+        if (found && verifyHash(j.p, found.hash)) { passOk = true; uid = found.user; }
+      }
+      if (!passOk) {
         fail(ip);
         console.error('CMS login FAIL ip=' + ip);
         await new Promise(function (r) { setTimeout(r, 350); });
         return send(res, 401, { error: 'Неверный логин или пароль' });
       }
-      const tok = makeSession();
+      const tok = makeSession(uid);
       res.setHeader('Set-Cookie', 'cms_s=' + tok + '; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=' + Math.floor(TTL / 1000));
       console.error('CMS login OK ip=' + ip);
       return send(res, 200, { ok: true, csrf: csrfOf(tok.split('.')[0]) });
@@ -457,7 +496,7 @@ module.exports = async function handler(req, res) {
       const t = String(j.t || '').split('.');
       const okT = t.length === 2 && /^\d+$/.test(t[0]) && Number(t[0]) > Date.now() && safeEq(t[1], hmac('magic.' + t[0]));
       if (!okT) { fail(ip); console.error('CMS magic FAIL ip=' + ip); return send(res, 401, { error: 'Ссылка недействительна или устарела' }); }
-      const tok = makeSession();
+      const tok = makeSession('');
       res.setHeader('Set-Cookie', 'cms_s=' + tok + '; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=' + Math.floor(TTL / 1000));
       console.error('CMS magic login OK ip=' + ip);
       return send(res, 200, { ok: true, csrf: csrfOf(tok.split('.')[0]) });
@@ -468,7 +507,22 @@ module.exports = async function handler(req, res) {
     if (!sess) return send(res, 401, { error: 'Не авторизован' });
 
     if (p === 'state' && method === 'GET') {
-      return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp) });
+      let me = { user: ADMIN_USER || 'admin', name: 'Владелец', root: true };
+      if (sess.user) {
+        const accS = await readAdmins();
+        const meRec = accS.admins.filter(function (a) { return a.user === sess.user; })[0];
+        if (!meRec) return send(res, 401, { error: 'Не авторизован' });
+        me = { user: meRec.user, name: meRec.name || meRec.user, root: false };
+      }
+      return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp), me: me });
+    }
+
+    if (p === 'admins' && method === 'GET') {
+      const accL = await readAdmins();
+      const list = [{ id: 'root', name: 'Владелец', user: ADMIN_USER || 'admin', root: true, you: !sess.user }].concat(accL.admins.map(function (a) {
+        return { id: a.id, name: a.name || a.user, user: a.user, root: false, you: sess.user === a.user };
+      }));
+      return send(res, 200, { admins: list });
     }
 
     /* изменяющие запросы — проверка CSRF */
@@ -480,6 +534,53 @@ module.exports = async function handler(req, res) {
     if (p === 'magic' && method === 'POST') {
       const exp = Date.now() + 15 * 60 * 1000;
       return send(res, 200, { token: exp + '.' + hmac('magic.' + exp), ttlMin: 15 });
+    }
+
+    /* администраторы: создание, удаление, смена пароля */
+    if (p === 'admin-add' && method === 'POST') {
+      const j = await readBody(req);
+      const name = clean(j.name, 60);
+      const user = clean(j.user, 40);
+      const pass = String(j.password || '');
+      if (!/^[a-zA-Z0-9._@-]{3,40}$/.test(user)) return send(res, 400, { error: 'Логин: 3–40 символов — латиница, цифры, точки, дефисы' });
+      if (pass.length < 8) return send(res, 400, { error: 'Пароль должен быть не короче 8 символов' });
+      const acc = await readAdmins();
+      if (safeEq(user, ADMIN_USER) || acc.admins.some(function (a) { return a.user === user; })) return send(res, 400, { error: 'Такой логин уже занят' });
+      if (acc.admins.length >= 20) return send(res, 400, { error: 'Слишком много администраторов (до 20)' });
+      acc.admins.push({ id: crypto.randomUUID(), name: name || user, user: user, hash: hashPass(pass), createdAt: Date.now() });
+      await writeAdmins(acc);
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === 'admin-del' && method === 'POST') {
+      const j = await readBody(req);
+      const id = clean(j.id, 60);
+      if (!id || id === 'root') return send(res, 400, { error: 'Владельца удалить нельзя' });
+      const acc = await readAdmins();
+      const count0 = acc.admins.length;
+      acc.admins = acc.admins.filter(function (a) { return a.id !== id; });
+      if (acc.admins.length === count0) return send(res, 404, { error: 'Администратор не найден' });
+      await writeAdmins(acc);
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === 'password' && method === 'POST') {
+      const j = await readBody(req);
+      const pass = String(j.password || '');
+      if (pass.length < 8) return send(res, 400, { error: 'Новый пароль должен быть не короче 8 символов' });
+      const acc = await readAdmins();
+      if (sess.user) {
+        const meRec = acc.admins.filter(function (a) { return a.user === sess.user; })[0];
+        if (!meRec) return send(res, 404, { error: 'Аккаунт не найден' });
+        if (!verifyHash(j.old, meRec.hash)) return send(res, 403, { error: 'Текущий пароль не подходит' });
+        meRec.hash = hashPass(pass);
+      } else {
+        const okOld = acc.rootHash ? verifyHash(j.old, acc.rootHash) : verifyPass(j.old);
+        if (!okOld) return send(res, 403, { error: 'Текущий пароль не подходит' });
+        acc.rootHash = hashPass(pass);
+      }
+      await writeAdmins(acc);
+      return send(res, 200, { ok: true });
     }
 
     /* загрузка фото с автоматической lossless-конвертацией в AVIF */
