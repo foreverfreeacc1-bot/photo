@@ -549,7 +549,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается БОЛЬШИМИ буквами. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Ниже — реальный текст сайта: сотрите и напишите свой. Заголовок на сайте всегда показывается большими буквами. Английские поля — для версии сайта на английском (переключатель EN).</p></div></div>' +
       '<div class="field-grid">' +
       field('Заголовок · Русский', data.title.ru, 'title.ru', 'input', 'ALISA MITEROVA') +
       field('Заголовок · English', data.title.en, 'title.en', 'input', 'ALISA MITEROVA') +
@@ -558,7 +558,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       richField('Подзаголовок для телефона · Русский (Enter — перенос строки)', 'phone.ru') +
       richField('Подзаголовок для телефона · English (Enter — перенос строки)', 'phone.en') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в благородном чёрно-белом — это фирменная эстетика лоадера: любая фотография смотрится цельно и стильно. Очерёдность фотографий можно менять, просто перетаскивая кадры мышкой.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера: любая фотография смотрится цельно и стильно. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true)) + '</div></div>';
     bindFields(editor, data);
@@ -692,10 +692,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var editor = $('#editor');
     editor.innerHTML =
       '<div class="panel"><div class="panel-head"><div><h2>О себе</h2><p>Небольшой живой текст — достаточно двух или трёх предложений.</p></div></div><div class="field-grid">' +
-      field('Русский', data.about.ru, 'about.ru', 'textarea', 'Расскажите о себе и своём подходе') +
-      field('English', data.about.en, 'about.en', 'textarea', 'Tell visitors about your approach') +
+      field('Текст · Русский', data.about.ru, 'about.ru', 'textarea', 'Расскажите о себе и своём подходе') +
+      field('Текст · English', data.about.en, 'about.en', 'textarea', 'Tell visitors about your approach') +
       '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Первый кадр с отметкой «Превью» будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Первый кадр с отметкой «Превью�� будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
       '<div class="album-list">' + (data.albums.length ? data.albums.map(albumCard).join('') : emptyBlock('Альбомов пока нет', 'Добавьте первый альбом и загрузите фотографии.', 'Создать альбом', 'emptyAlbum')) + '</div></div>';
     bindFields(editor, data);
     var add = function () {
@@ -715,8 +715,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<button class="item-summary" type="button" data-toggle><span class="item-thumb" style="' + (cover ? 'background-image:url(' + esc(cover.url) + ')' : '') + '"></span>' +
       '<span><b>' + esc(album.title.ru || 'Без названия') + '</b><small>' + album.photos.length + ' фото</small></span><span class="chevron"></span></button>' +
       '<div class="item-body"><div class="field-grid">' +
-      field('Название', album.title.ru, 'album.title.ru', 'input', 'Название альбома') +
-      field('Title · English', album.title.en, 'album.title.en', 'input', 'Album title') + '</div>' +
+      field('Название · Русский', album.title.ru, 'album.title.ru', 'input', 'Название альбома') +
+      field('Название · English', album.title.en, 'album.title.en', 'input', 'Album title') + '</div>' +
       '<div class="divider"></div><div class="upload-grid">' +
       album.photos.map(function (photo, index) { return mediaTile(photo, index, coverIndex < 0 ? 0 : coverIndex); }).join('') + uploadTile('Перетащить или выбрать фото', true) + '</div>' +
       '<div class="row-actions"><button class="button button-danger" type="button" data-delete-album>Удалить альбом</button></div></div></article>';
@@ -788,14 +788,14 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     return '<article class="item-card" data-work="' + cardIndex + '"><button class="item-summary" type="button" data-toggle>' +
       '<span class="item-thumb" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '"></span><span><b>' + esc(card.title.ru || 'Без названия') + '</b><small>' + esc(card.price.ru || 'Цена не указана') + '</small></span><span class="chevron"></span></button>' +
       '<div class="item-body"><div class="field-grid">' +
-      field('Название', card.title.ru, 'title.ru', 'input', 'Портретная съёмка') +
-      field('Title · English', card.title.en, 'title.en', 'input', 'Portrait session') + '</div>' +
+      field('Название · Русский', card.title.ru, 'title.ru', 'input', 'Портретная съёмка') +
+      field('Название · English', card.title.en, 'title.en', 'input', 'Portrait session') + '</div>' +
       '<div class="field-grid" style="margin-top:14px">' +
-      field('Стоимость', card.price.ru, 'price.ru', 'input', 'от 15 000 ₽') +
-      field('Price · English', card.price.en, 'price.en', 'input', 'from 15,000 ₽') + '</div>' +
+      field('Стоимость · Русский', card.price.ru, 'price.ru', 'input', 'от 15 000 ₽') +
+      field('Стоимость · English', card.price.en, 'price.en', 'input', 'from 15,000 ₽') + '</div>' +
       '<div class="field-grid" style="margin-top:14px">' +
-      field('Что входит · каждый пункт с новой строки', featureRu, 'features.ru', 'textarea', 'Два часа съёмки\nПомощь с образом') +
-      field('Included · one item per line', featureEn, 'features.en', 'textarea', 'Two-hour session\nStyling guidance') + '</div>' +
+      field('Что входит · Русский (каждый пункт с новой строки)', featureRu, 'features.ru', 'textarea', 'Два часа съёмки\nПомощь с образом') +
+      field('Что входит · English (каждый пункт с новой строки)', featureEn, 'features.en', 'textarea', 'Two-hour session\nStyling guidance') + '</div>' +
       '<div class="divider"></div><div class="screen-card"><h3>Фотография карточки</h3><div class="screen-photo" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : 'Фотография не выбрана') + '</div>' +
       '<button class="button button-light" type="button" data-work-image>' + (card.image ? 'Заменить' : 'Выбрать фотографию') + '</button></div>' +
       '<div class="row-actions"><button class="button button-danger" type="button" data-delete-work>Удалить карточку</button></div></div></article>';
@@ -827,11 +827,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function workStageRow(stage, index) {
     return '<article class="item-card is-open" data-work-stage="' + index + '"><div class="item-body" style="display:block;padding-top:18px">' +
       '<div class="field-grid">' +
-      field('Название этапа', stage.title.ru, 'stage.title.ru', 'input', 'Подготовка') +
-      field('Stage title · English', stage.title.en, 'stage.title.en', 'input', 'Preparation') + '</div>' +
+      field('Название этапа · Русский', stage.title.ru, 'stage.title.ru', 'input', 'Подготовка') +
+      field('Название этапа · English', stage.title.en, 'stage.title.en', 'input', 'Preparation') + '</div>' +
       '<div class="field-grid" style="margin-top:14px">' +
-      field('Короткое пояснение', stage.text.ru, 'stage.text.ru', 'input', 'Собираем образы и референсы') +
-      field('Description · English', stage.text.en, 'stage.text.en', 'input', 'We prepare looks and references') + '</div>' +
+      field('Короткое пояснение · Русский', stage.text.ru, 'stage.text.ru', 'input', 'Собираем образы и референсы') +
+      field('Короткое пояснение · English', stage.text.en, 'stage.text.en', 'input', 'We prepare looks and references') + '</div>' +
       '<div class="row-actions"><button class="button button-danger" type="button" data-delete-work-stage>Удалить этап</button></div></div></article>';
   }
 
@@ -901,7 +901,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var faq = draft.faq;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Контакты</h2><p>Плашки такие же, как на сайте. Меняется только ссылка (у телефона — номер): подпись и тег подстроятся сами.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Контакты</h2><p>Изменяется только ссылка (у телефона — номер): подпись и тег подстроятся сами.</p></div></div>' +
       '<div class="ct-admin-grid">' + contacts.map(function (c, i) {
         return '<div class="ct-card"><div class="ct-card-head">' + CONTACT_ICONS[c.type] + '<div class="cc-t"><span class="cc-l">' + esc(c.label) + '</span><span class="cc-s" data-ct-sub="' + i + '">' + esc(c.value) + '</span></div></div>' +
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
