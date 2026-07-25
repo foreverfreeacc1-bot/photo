@@ -935,9 +935,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</article>';
       }).join('') + '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже — настоящий экран выбранного устройства: такие же пропорции и такое же расположение половин, как на сайте. Фотография одна и та же — меняется только видимая часть кадра.</p></div></div>' +
-      '<div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
+      '<div class="screen-bar"><div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
         return '<button type="button" data-screen="' + mode + '" class="' + (mode === screenMode ? 'is-active' : '') + '">' + labels[mode] + '</button>';
       }).join('') + '</div>' +
+      '<div class="frame-actions"><button class="frame-chip" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
+      '<button class="frame-chip" type="button" data-frame-reset="R">Work — по центру</button></div></div>' +
       '<div class="device-wrap"><div class="device-mock' + (screenMode === 'mobile' ? ' is-stacked' : '') + '" style="aspect-ratio:' + deviceAspect[screenMode] + '">' +
       ['L', 'R'].map(function (side) {
         var image = data.photo[side];
@@ -948,8 +950,6 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           (url ? '' : '<span class="pane-empty">Сначала выберите фотографию</span>') + '</div>';
       }).join('') +
       '</div></div>' +
-      '<div class="frame-actions"><button class="frame-chip" type="button" data-frame-reset="L">Portfolio — по центру</button>' +
-      '<button class="frame-chip" type="button" data-frame-reset="R">Work — по центру</button></div>' +
       '<p class="help">Зажмите половину экрана и двигайте — так вы выбираете, какая часть фотографии видна на этом устройстве.</p></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
       '<div class="cover-grid">' +
@@ -1107,38 +1107,84 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="row-actions"><button class="button button-danger" type="button" data-delete-pf-stage>Удалить пункт</button></div></div></article>';
   }
 
+  var NATIVE_ALBUM_PHOTOS = null;
+  var NATIVE_WORK_IMAGES = null;
+  var nativeMediaLoading = false;
+
+  function loadNativeMedia() {
+    if (nativeMediaLoading || NATIVE_ALBUM_PHOTOS || NATIVE_WORK_IMAGES) return;
+    nativeMediaLoading = true;
+    fetch('/', { credentials: 'omit' }).then(function (r) { return r.text(); }).then(function (html) {
+      var m = html.match(/var COLPH=(\[\[[\s\S]*?\]\]);/);
+      if (m) {
+        NATIVE_ALBUM_PHOTOS = m[1].split('],[').map(function (chunk) {
+          return chunk.match(/https?:\/\/[^'"]+/g) || [];
+        });
+      }
+      var w = html.match(/var WKPH=(\[[\s\S]*?\]);/);
+      if (w) NATIVE_WORK_IMAGES = w[1].match(/https?:\/\/[^'"]+/g) || [];
+      nativeMediaLoading = false;
+      applyNativeMedia();
+    }).catch(function () { nativeMediaLoading = false; });
+  }
+
+  function applyNativeMedia() {
+    var changed = false;
+    if (NATIVE_ALBUM_PHOTOS) {
+      draft.portfolio.albums.forEach(function (album, i) {
+        if (!album.photos.length && NATIVE_ALBUM_PHOTOS[i] && NATIVE_ALBUM_PHOTOS[i].length) {
+          album.photos = NATIVE_ALBUM_PHOTOS[i].map(function (url) { return { id: uid(), url: url, name: '' }; });
+          if (!album.previewId && album.photos[0]) album.previewId = album.photos[0].id;
+          changed = true;
+        }
+      });
+    }
+    if (NATIVE_WORK_IMAGES) {
+      draft.work.cards.forEach(function (card, i) {
+        if (!card.image && NATIVE_WORK_IMAGES[i]) { card.image = { id: uid(), url: NATIVE_WORK_IMAGES[i], name: '' }; changed = true; }
+      });
+    }
+    if (!changed) return;
+    if (active === 'portfolio') renderPortfolio();
+    if (active === 'work') renderWork();
+  }
+
+  function pfIntroPlate(data, lang) {
+    return '<article class="cover-plate site-plate">' +
+      '<div class="plate-head"><b>' + (lang === 'ru' ? '\u0420\u0443\u0441\u0441\u043a\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f' : 'English') + '</b><span>' + (lang === 'ru' ? '\u041f\u041e\u0420\u0422\u0424\u041e\u041b\u0418\u041e' : 'PORTFOLIO') + '</span></div>' +
+      '<div class="plate-body is-intro"><div class="ce ce-pfintro" data-pce="intro.' + lang + '" data-multiline spellcheck="false"></div></div></article>';
+  }
+
+  function pfAboutPlate(data, lang) {
+    return '<article class="cover-plate site-plate">' +
+      '<div class="plate-head"><b>' + (lang === 'ru' ? '\u0420\u0443\u0441\u0441\u043a\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f' : 'English') + '</b><span>' + (lang === 'ru' ? '\u041e\u0431\u043e \u043c\u043d\u0435' : 'About me') + '</span></div>' +
+      '<div class="plate-body is-about">' +
+      '<div class="ce ce-pftitle" data-pce="aboutBlock.title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce ce-pfname" data-pce="aboutBlock.name.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce ce-pftext" data-pce="aboutBlock.text.' + lang + '" data-multiline spellcheck="false"></div>' +
+      '</div></article>';
+  }
+
   function renderPortfolio() {
     var data = draft.portfolio;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Короткая подводка перед списком альбомов.</p></div></div><div class="field-grid">' +
-      field('Строка · Русский', data.intro.ru, 'intro.ru', 'textarea', 'Избранные работы из разных направлений фотографии') +
-      field('Строка · English', data.intro.en, 'intro.en', 'textarea', 'Selected works across different photography genres') +
-      '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Каждый альбом показан такой же плашкой, как на сайте: название и описание правятся прямо в плашке. Первый кадр с отметкой «Превью» будет обложкой подраздела.</p></div><button id="addAlbum" class="button button-light" type="button">Добавить альбом</button></div>' +
-      '<div class="album-list">' + (data.albums.length ? data.albums.map(albumCard).join('') : emptyBlock('Альбомов пока нет', 'Добавьте первый альбом и загрузите фотографии.', 'Создать альбом', 'emptyAlbum')) + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Заголовок, имя и описание под альбомами.</p></div></div><div class="field-grid">' +
-      field('Заголовок · Русский', data.aboutBlock.title.ru, 'aboutBlock.title.ru', 'input', 'Обо мне') +
-      field('Заголовок · English', data.aboutBlock.title.en, 'aboutBlock.title.en', 'input', 'About Me') +
-      field('Имя · Русский', data.aboutBlock.name.ru, 'aboutBlock.name.ru', 'input', 'Алиса Митерова') +
-      field('Имя · English', data.aboutBlock.name.en, 'aboutBlock.name.en', 'input', 'Alisa Miterova') +
-      field('Описание · Русский', data.aboutBlock.text.ru, 'aboutBlock.text.ru', 'textarea', 'Расскажите о себе') +
-      field('Описание · English', data.aboutBlock.text.en, 'aboutBlock.text.en', 'textarea', 'Tell visitors about your approach') +
-      '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Пункты блока «Обо мне»</h2><p>Те самые пункты со значками: оборудование, обработка, локации. Значок выбирается из набора.</p></div><button id="addPfStage" class="button button-light" type="button">Добавить пункт</button></div>' +
-      '<div class="stage-list">' + data.aboutBlock.stages.map(pfStageRow).join('') + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Короткий текст о себе</h2><p>Одно-два предложения для шапки раздела Portfolio.</p></div></div><div class="field-grid">' +
-      field('Текст · Русский', data.about.ru, 'about.ru', 'textarea', 'Расскажите о себе и своём подходе') +
-      field('Текст · English', data.about.en, 'about.en', 'textarea', 'Tell visitors about your approach') +
-      '</div></div>';
-    bindFields(editor, data);
-    var add = function () {
-      data.albums.push({ id: uid(), title: { ru: 'Новый альбом', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] });
+      '<div class="panel"><div class="panel-head"><div><h2>\u0421\u0442\u0440\u043e\u043a\u0430 \u043d\u0430\u0434 \u0430\u043b\u044c\u0431\u043e\u043c\u0430\u043c\u0438</h2><p>\u0422\u0430\u043a, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435 \u2014 \u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u0442\u0435\u043a\u0441\u0442 \u043f\u0440\u044f\u043c\u043e \u0432 \u043f\u043b\u0430\u0448\u043a\u0435.</p></div></div>' +
+      '<div class="cover-grid is-loader">' + pfIntroPlate(data, 'ru') + pfIntroPlate(data, 'en') + '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>\u0410\u043b\u044c\u0431\u043e\u043c\u044b</h2><p>\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0438 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u044f\u0442\u0441\u044f \u043f\u0440\u044f\u043c\u043e \u0432 \u043f\u043b\u0430\u0448\u043a\u0435. \u041f\u0435\u0440\u0432\u044b\u0439 \u043a\u0430\u0434\u0440 \u0441 \u043e\u0442\u043c\u0435\u0442\u043a\u043e\u0439 \u00ab\u041f\u0440\u0435\u0432\u044c\u044e\u00bb \u0431\u0443\u0434\u0435\u0442 \u043e\u0431\u043b\u043e\u0436\u043a\u043e\u0439.</p></div></div>' +
+      '<div class="album-list">' + data.albums.map(albumCard).join('') + '</div>' +
+      '<button class="add-tile" type="button" id="addAlbum"><span>+</span> \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0430\u043b\u044c\u0431\u043e\u043c</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>\u0411\u043b\u043e\u043a \u00ab\u041e\u0431\u043e \u043c\u043d\u0435\u00bb</h2><p>\u0422\u043e\u0447\u043d\u043e \u0442\u0430\u043a\u043e\u0439 \u0436\u0435 \u0431\u043b\u043e\u043a, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435: \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u043b\u044e\u0431\u043e\u0439 \u0442\u0435\u043a\u0441\u0442 \u0438 \u043f\u0440\u0430\u0432\u044c\u0442\u0435.</p></div></div>' +
+      '<div class="cover-grid is-loader">' + pfAboutPlate(data, 'ru') + pfAboutPlate(data, 'en') + '</div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>\u041f\u0443\u043d\u043a\u0442\u044b \u0431\u043b\u043e\u043a\u0430 \u00ab\u041e\u0431\u043e \u043c\u043d\u0435\u00bb</h2><p>\u0422\u0435 \u0441\u0430\u043c\u044b\u0435 \u043f\u0443\u043d\u043a\u0442\u044b \u0441\u043e \u0437\u043d\u0430\u0447\u043a\u0430\u043c\u0438: \u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435, \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430, \u043b\u043e\u043a\u0430\u0446\u0438\u0438.</p></div></div>' +
+      '<div class="stage-list">' + data.aboutBlock.stages.map(pfStageRow).join('') + '</div>' +
+      '<button class="add-tile" type="button" id="addPfStage"><span>+</span> \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u0443\u043d\u043a\u0442</button></div>';
+    bindPathEditable(editor, data, 'data-pce', 'portfolio');
+    $('#addAlbum').onclick = function () {
+      data.albums.push({ id: uid(), title: { ru: '\u041d\u043e\u0432\u044b\u0439 \u0430\u043b\u044c\u0431\u043e\u043c', en: 'New album' }, desc: { ru: '', en: '' }, previewId: '', photos: [] });
       setDirty('portfolio'); renderPortfolio();
       var cards = $$('.item-card[data-album]', editor); if (cards.length) cards[cards.length - 1].classList.add('is-open');
     };
-    $('#addAlbum').onclick = add;
-    var emptyButton = $('#emptyAlbum'); if (emptyButton) emptyButton.onclick = add;
     $('#addPfStage').onclick = function () {
       data.aboutBlock.stages.push({ id: uid(), icon: 'star', title: { ru: '', en: '' }, text: { ru: '', en: '' } });
       setDirty('portfolio'); renderPortfolio();
@@ -1153,18 +1199,19 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       };
     });
     bindAlbumCards();
+    loadNativeMedia();
   }
 
   function albumCard(album, albumIndex) {
     var coverIndex = album.photos.map(function (x) { return x.id; }).indexOf(album.previewId);
     var cover = coverIndex >= 0 ? album.photos[coverIndex] : album.photos[0];
     return '<article class="item-card" data-album="' + albumIndex + '">' +
-      '<button class="item-summary" type="button" data-toggle><span class="item-thumb" style="' + (cover ? 'background-image:url(' + esc(cover.url) + ')' : '') + '"></span>' +
-      '<span><b>' + esc(album.title.ru || 'Без названия') + '</b><small>' + album.photos.length + ' фото</small></span><span class="chevron"></span></button>' +
+      '<div class="item-head"><button class="item-summary" type="button" data-toggle><span class="item-thumb" style="' + (cover ? 'background-image:url(' + esc(cover.url) + ')' : '') + '"></span>' +
+      '<span><b>' + esc(album.title.ru || '\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f') + '</b><small>' + album.photos.length + ' \u0444\u043e\u0442\u043e</small></span><span class="chevron"></span></button>' +
+      '<button class="kill-btn" type="button" data-delete-album title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0430\u043b\u044c\u0431\u043e\u043c" aria-label="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0430\u043b\u044c\u0431\u043e\u043c">\u2715</button></div>' +
       '<div class="item-body"><div class="cover-grid">' + albumPlate(album, 'ru') + albumPlate(album, 'en') + '</div>' +
       '<div class="divider"></div><div class="upload-grid">' +
-      album.photos.map(function (photo, index) { return mediaTile(photo, index, coverIndex < 0 ? 0 : coverIndex); }).join('') + uploadTile('Перетащить или выбрать фото', true) + '</div>' +
-      '<div class="row-actions"><button class="button button-danger" type="button" data-delete-album>Удалить альбом</button></div></div></article>';
+      album.photos.map(function (photo, index) { return mediaTile(photo, index, coverIndex < 0 ? 0 : coverIndex); }).join('') + uploadTile('\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u044c \u0438\u043b\u0438 \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0444\u043e\u0442\u043e', true) + '</div></div></article>';
   }
 
   function bindAlbumCards() {
@@ -1205,17 +1252,18 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var work = draft.work;
     var cards = work.cards;
     var editor = $('#editor');
-    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>\u041a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u0443\u0441\u043b\u0443\u0433</h2><p>\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0438 \u0446\u0435\u043d\u0430 \u043f\u0440\u0430\u0432\u044f\u0442\u0441\u044f \u043f\u0440\u044f\u043c\u043e \u0432 \u043f\u043b\u0430\u0448\u043a\u0430\u0445, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435.</p></div><button id="addWork" class="button button-light" type="button">\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443</button></div>' +
-      '<div class="card-list">' + (cards.length ? cards.map(workCard).join('') : emptyBlock('\u041a\u0430\u0440\u0442\u043e\u0447\u0435\u043a \u043f\u043e\u043a\u0430 \u043d\u0435\u0442', '\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0443\u0441\u043b\u0443\u0433\u0443, \u0434\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044e \u0438 \u043f\u0435\u0440\u0435\u0447\u0438\u0441\u043b\u0438\u0442\u0435, \u0447\u0442\u043e \u0432\u0445\u043e\u0434\u0438\u0442.', '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443', 'emptyWork')) + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>\u042d\u0442\u0430\u043f\u044b \u0441\u044a\u0451\u043c\u043a\u0438</h2><p>\u041f\u043e\u0440\u044f\u0434\u043e\u043a \u043f\u043e\u0434 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0430\u043c\u0438: \u043f\u043e\u0434\u043f\u0438\u0441\u044c \u0448\u0430\u0433\u0430, \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435, \u043f\u043e\u044f\u0441\u043d\u0435\u043d\u0438\u0435 \u0438 \u0437\u043d\u0430\u0447\u043e\u043a.</p></div><button id="addStage" class="button button-light" type="button">\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u044d\u0442\u0430\u043f</button></div>' +
-      '<div class="steps">' + work.stages.map(workStageRow).join('') + '</div></div>';
+    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>\u041a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u0443\u0441\u043b\u0443\u0433</h2><p>\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0438 \u0446\u0435\u043d\u0430 \u043f\u0440\u0430\u0432\u044f\u0442\u0441\u044f \u043f\u0440\u044f\u043c\u043e \u0432 \u043f\u043b\u0430\u0448\u043a\u0430\u0445, \u043a\u0430\u043a \u043d\u0430 \u0441\u0430\u0439\u0442\u0435.</p></div></div>' +
+      '<div class="card-list">' + cards.map(workCard).join('') + '</div>' +
+      '<button class="add-tile" type="button" id="addWork"><span>+</span> \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>\u042d\u0442\u0430\u043f\u044b \u0441\u044a\u0451\u043c\u043a\u0438</h2><p>\u041f\u043e\u0440\u044f\u0434\u043e\u043a \u043f\u043e\u0434 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0430\u043c\u0438: \u043f\u043e\u0434\u043f\u0438\u0441\u044c \u0448\u0430\u0433\u0430, \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435, \u043f\u043e\u044f\u0441\u043d\u0435\u043d\u0438\u0435 \u0438 \u0437\u043d\u0430\u0447\u043e\u043a.</p></div></div>' +
+      '<div class="steps">' + work.stages.map(workStageRow).join('') + '</div>' +
+      '<button class="add-tile" type="button" id="addStage"><span>+</span> \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u044d\u0442\u0430\u043f</button></div>';
     var add = function () {
       cards.push({ id: uid(), image: null, title: { ru: '\u041d\u043e\u0432\u0430\u044f \u0443\u0441\u043b\u0443\u0433\u0430', en: 'New service' }, price: { ru: '', en: '' }, features: { ru: [], en: [] } });
       setDirty(); renderWork();
       var all = $$('.item-card[data-work]', editor); if (all.length) all[all.length - 1].classList.add('is-open');
     };
     $('#addWork').onclick = add;
-    var emptyButton = $('#emptyWork'); if (emptyButton) emptyButton.onclick = add;
     $('#addStage').onclick = function () {
       var n = work.stages.length + 1;
       work.stages.push({ id: uid(), icon: 'check', badge: { ru: '\u0428\u0430\u0433 ' + n, en: 'Step ' + n }, title: { ru: '', en: '' }, text: { ru: '', en: '' } });
@@ -1223,6 +1271,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     };
     bindWorkCards();
     bindWorkStages();
+    loadNativeMedia();
   }
 
   function workPlate(card, lang) {
@@ -1237,15 +1286,16 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function workCard(card, cardIndex) {
     var featureRu = (card.features && card.features.ru || []).join('\n');
     var featureEn = (card.features && card.features.en || []).join('\n');
-    return '<article class="item-card" data-work="' + cardIndex + '"><button class="item-summary" type="button" data-toggle>' +
+    return '<article class="item-card" data-work="' + cardIndex + '"><div class="item-head"><button class="item-summary" type="button" data-toggle>' +
       '<span class="item-thumb" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '"></span><span><b>' + esc(card.title.ru || '\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f') + '</b><small>' + esc(card.price.ru || '\u0426\u0435\u043d\u0430 \u043d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d\u0430') + '</small></span><span class="chevron"></span></button>' +
+      '<button class="kill-btn" type="button" data-delete-work title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443" aria-label="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443">\u2715</button></div>' +
       '<div class="item-body"><div class="cover-grid">' + workPlate(card, 'ru') + workPlate(card, 'en') + '</div>' +
       '<div class="field-grid" style="margin-top:14px">' +
       field('\u0427\u0442\u043e \u0432\u0445\u043e\u0434\u0438\u0442 \u00b7 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 (\u043a\u0430\u0436\u0434\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0441 \u043d\u043e\u0432\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438)', featureRu, 'features.ru', 'textarea', '\u0414\u0432\u0430 \u0447\u0430\u0441\u0430 \u0441\u044a\u0451\u043c\u043a\u0438') +
       field('\u0427\u0442\u043e \u0432\u0445\u043e\u0434\u0438\u0442 \u00b7 English (\u043a\u0430\u0436\u0434\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0441 \u043d\u043e\u0432\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438)', featureEn, 'features.en', 'textarea', 'Two-hour session') + '</div>' +
       '<div class="divider"></div><div class="screen-card"><h3>\u0424\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044f \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438</h3><div class="screen-photo" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '\u0424\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044f \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d\u0430') + '</div>' +
       '<button class="button button-light" type="button" data-work-image>' + (card.image ? '\u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c' : '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044e') + '</button></div>' +
-      '<div class="row-actions"><button class="button button-danger" type="button" data-delete-work>\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443</button></div></div></article>';
+      '</div></article>';
   }
 
   function bindWorkCards() {
@@ -1268,7 +1318,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       $('[data-work-image]', root).onclick = function () {
         chooseFiles({ multiple: false }, function (images) { card.image = images[0]; setDirty('work'); renderWork(); });
       };
-      $('[data-delete-work]', root).onclick = function () { draft.work.cards.splice(cardIndex, 1); setDirty('work'); renderWork(); };
+      $('[data-delete-work]', root).onclick = function () { if (!confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443 \u00ab' + (card.title.ru || '\u0431\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f') + '\u00bb?')) return; draft.work.cards.splice(cardIndex, 1); setDirty('work'); renderWork(); };
     });
   }
 
