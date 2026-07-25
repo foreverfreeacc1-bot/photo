@@ -9,8 +9,8 @@
   --green:#edf3ec;
   --green-ink:#346538;
   --sidebar:248px;
-  --sans:'Montserrat','Helvetica Neue',Arial,sans-serif;
-  --serif:'Instrument Serif','Playfair Display',Georgia,serif;
+  --sans:'AdminLatin','Montserrat','Helvetica Neue',Arial,sans-serif;
+  --serif:'AdminLatin','Instrument Serif','Playfair Display',Georgia,serif;
 }
 *{box-sizing:border-box}
 html,body{min-height:100%;margin:0}
@@ -305,13 +305,13 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 /* ─── Патч 20: шапка, вход, настройки ─── */
 @font-face{font-family:'CormorantLight';src:url('/cormorant-light.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
 .brand{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:2px 8px 30px}
-.brand-name{font-family:'CormorantLight',Georgia,serif;font-weight:400;font-size:19px;letter-spacing:.3em;white-space:nowrap;color:var(--ink)}
+.brand-name{font-family:'CormorantLight',Georgia,serif;font-weight:400;font-size:20px;letter-spacing:.12em;white-space:nowrap;color:var(--ink)}
 .brand-sub{color:var(--muted);font-size:9px;letter-spacing:.34em;text-transform:uppercase}
-.mobile-head .brand-name{font-size:14px;letter-spacing:.2em}
+.mobile-head .brand-name{font-size:15px;letter-spacing:.1em}
 .foot-icons{display:flex;gap:8px}
 .foot-icon{display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);cursor:pointer;transition:color .2s,border-color .2s}
 .foot-icon:hover{color:var(--ink);border-color:#b7b2a8}
-.logout-btn{margin-top:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:var(--red);color:#fff;font:inherit;font-size:12px;font-weight:500;letter-spacing:.05em;cursor:pointer;transition:opacity .2s}
+.logout-btn{margin-top:10px;width:auto;align-self:flex-start;padding:6px 14px;border:0;border-radius:7px;background:var(--red);color:#fff;font:inherit;font-size:11px;font-weight:500;letter-spacing:.04em;cursor:pointer;transition:opacity .2s}
 .logout-btn:hover{opacity:.85}
 .logout-btn:disabled{opacity:.5;cursor:default}
 .lg-pass{position:relative;width:100%}
@@ -335,3 +335,6 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .admin-add input{width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font:inherit;font-size:13px}
 .admin-add input:focus{border-color:#a09c96}
 .admin-add .button{justify-self:start}
+
+/* ─── Патч 21: латиница шрифтом сайта ─── */
+@font-face{font-family:'AdminLatin';src:url('/cormorant-light.ttf') format('truetype');unicode-range:U+0041-005A,U+0061-007A;font-weight:100 900;font-style:normal;font-display:swap}
