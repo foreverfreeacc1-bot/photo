@@ -277,3 +277,6 @@ textarea{min-height:94px;resize:vertical;line-height:1.6}
 .upload-tile.is-full{border-style:solid;border-color:#e3ded2;background:#f6f4ee;padding:14px;}
 .upload-tile.is-full span{display:block;font-size:13px;line-height:1.5;max-width:170px;color:var(--muted);}
 .upload-tile.is-full b{display:block;margin-bottom:6px;color:var(--ink);font-family:var(--serif);font-size:22px;font-weight:400;}
+
+.preview-frame.is-live{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.pv-langbar [data-pvreplay]{font-size:15px;line-height:1;}

@@ -32,10 +32,12 @@
     sub2: { ru: 'Индивидуальный подход, внимание к деталям и естественная эстетика в каждом кадре.', en: 'Individual approach, attention to detail and natural aesthetics in every frame.' }
   };
 
+var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0418\u042f", "en": "COLLECTION"}, "smallL": {"ru": "\u0418\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b", "en": "Selected works"}, "subL": {"ru": "\u041f\u041e\u0414\u0411\u041e\u0420\u041a\u0410 \u041f\u0420\u041e\u0415\u041a\u0422\u041e\u0412, \u041e\u0422\u0420\u0410\u0416\u0410\u042e\u0429\u0418\u0425 \u041c\u041e\u0419 \u0421\u0422\u0418\u041b\u042c,\n\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415 \u041a \u041a\u041e\u041c\u041f\u041e\u0417\u0418\u0426\u0418\u0418 \u0418 \u042d\u041c\u041e\u0426\u0418\u042f\u041c", "en": "A SELECTION OF PROJECTS REFLECTING MY STYLE,\nATTENTION TO COMPOSITION AND EMOTION"}, "subR": {"ru": "\u0414\u0410\u0412\u0410\u0419\u0422\u0415 \u041f\u0420\u0415\u0412\u0420\u0410\u0422\u0418\u041c \u0418\u0414\u0415\u042e \u0412 \u0418\u0421\u0422\u041e\u0420\u0418\u042e,\n\u041a\u041e\u0422\u041e\u0420\u0410\u042f \u0421\u041e\u0425\u0420\u0410\u041d\u0418\u0422 \u0421\u0410\u041c\u042b\u0415 \u0412\u0410\u0416\u041d\u042b\u0415 \u041c\u041e\u041c\u0415\u041d\u0422\u042b", "en": "LET\u2019S TURN AN IDEA INTO A STORY\nTHAT KEEPS THE MOST PRECIOUS MOMENTS"}};
+
   function emptyContent() {
     return {
       loader: { title: clone(NATIVE_LOADER.title), subtitle: clone(NATIVE_LOADER.sub1), subtitle2: clone(NATIVE_LOADER.sub2), subtitleM: clone(NATIVE_LOADER.sub1), images: [] },
-      home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null } },
+      home: { desktop: { L: null, R: null }, tablet: { L: null, R: null }, mobile: { L: null, R: null }, texts: clone(NATIVE_HOME) },
       portfolio: { about: { ru: '', en: '' }, albums: [] },
       work: { cards: [], stages: [] },
       contacts: []
@@ -104,7 +106,12 @@
       ['desktop', 'tablet', 'mobile'].forEach(function (mode) {
         base.home[mode] = Object.assign(base.home[mode], c.home[mode] || {});
       });
+      if (c.home.texts) base.home.texts = Object.assign(base.home.texts, c.home.texts);
     }
+    Object.keys(NATIVE_HOME).forEach(function (k) {
+      var v = base.home.texts[k];
+      if (!v || (!String(v.ru || '').trim() && !String(v.en || '').trim())) base.home.texts[k] = clone(NATIVE_HOME[k]);
+    });
     if (c.portfolio) base.portfolio = Object.assign(base.portfolio, c.portfolio);
     if (c.work) base.work = Object.assign(base.work, c.work);
     if (Array.isArray(c.contacts)) base.contacts = c.contacts;
@@ -552,7 +559,17 @@
           '<div class="screen-photo" style="' + (image ? 'background-image:url(' + esc(image.url) + ')' : '') + '">' + (image ? '' : 'Фотография не выбрана') + '</div>' +
           '<button class="button button-light" type="button" data-home-upload="' + side + '">' + (image ? 'Заменить' : 'Выбрать фотографию') + '</button>' +
           (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Убрать фотографию</button>' : '') + '</article>';
-      }).join('') + '</div><p class="help">Подсказка: на телефоне лучше работают вертикальные кадры, на компьютере — горизонтальные.</p></div>';
+      }).join('') + '</div><p class="help">Подсказка: на телефоне лучше работают вертикальные кадры, на компьютере — горизонтальные.</p></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Это реальные тексты главной страницы — сотрите и напишите свои. Русские поля слева, английские справа — для английской версии сайта. Перенос строки — клавиша Enter.</p></div></div><div class="field-grid">' +
+      field('Надзаголовок над PORTFOLIO · Русский', data.texts.tagL.ru, 'texts.tagL.ru', 'textarea', '') +
+      field('Надзаголовок над PORTFOLIO · English', data.texts.tagL.en, 'texts.tagL.en', 'textarea', '') +
+      field('Подпись под PORTFOLIO · Русский', data.texts.smallL.ru, 'texts.smallL.ru', 'textarea', '') +
+      field('Подпись под PORTFOLIO · English', data.texts.smallL.en, 'texts.smallL.en', 'textarea', '') +
+      field('Подзаголовок PORTFOLIO (внизу) · Русский', data.texts.subL.ru, 'texts.subL.ru', 'textarea', '') +
+      field('Подзаголовок PORTFOLIO (внизу) · English', data.texts.subL.en, 'texts.subL.en', 'textarea', '') +
+      field('Подзаголовок WORK (внизу) · Русский', data.texts.subR.ru, 'texts.subR.ru', 'textarea', '') +
+      field('Подзаголовок WORK (внизу) · English', data.texts.subR.en, 'texts.subR.en', 'textarea', '') +
+      '</div></div>';
     $$('[data-screen]', editor).forEach(function (button) { button.onclick = function () { screenMode = button.dataset.screen; renderHome(); }; });
     $$('[data-home-upload]', editor).forEach(function (button) {
       button.onclick = function () {
@@ -563,6 +580,7 @@
     $$('[data-home-remove]', editor).forEach(function (button) {
       button.onclick = function () { data[screenMode][button.dataset.homeRemove] = null; setDirty(); renderHome(); };
     });
+    bindFields(editor, data);
   }
 
   function renderPortfolio() {
@@ -773,6 +791,26 @@
 
   var previewLang = 'ru';
 
+  function fitPreviewScale(frame) {
+    var pvBox = $('.pv-scale', frame), pvIfr = $('.pv-iframe', frame);
+    if (!pvBox || !pvIfr) return;
+    var pvW = device === 'mobile' ? 390 : 1280, pvH = device === 'mobile' ? 800 : 820;
+    var pvFit = function () {
+      if (!document.body.contains(pvBox)) return;
+      var avail = Math.max(220, frame.clientWidth - 16);
+      var k = Math.min(1, avail / pvW);
+      pvIfr.style.width = pvW + 'px';
+      pvIfr.style.height = pvH + 'px';
+      pvIfr.style.transform = 'scale(' + k + ')';
+      pvBox.style.width = Math.round(pvW * k) + 'px';
+      pvBox.style.height = Math.round(pvH * k) + 'px';
+    };
+    if (window.__pvFit) window.removeEventListener('resize', window.__pvFit);
+    window.__pvFit = pvFit;
+    window.addEventListener('resize', pvFit);
+    pvFit();
+  }
+
   function renderPreview() {
     var frame = $('#previewFrame');
     frame.className = 'preview-frame ' + device;
@@ -782,32 +820,29 @@
       api('preview-content', { method: 'POST', json: draft }).then(function (result) {
         if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+        frame.classList.add('is-live');
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button><button type="button" data-pvreplay title="Воспроизвести снова" aria-label="Воспроизвести снова">⟳</button></div>' +
           '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe></div>';
         $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
-        var pvBox = $('.pv-scale', frame), pvIfr = $('.pv-iframe', frame);
-        var pvW = device === 'mobile' ? 390 : 1280, pvH = device === 'mobile' ? 800 : 820;
-        var pvFit = function () {
-          if (!document.body.contains(pvBox)) return;
-          var avail = Math.max(220, frame.clientWidth - 16);
-          var k = Math.min(1, avail / pvW);
-          pvIfr.style.width = pvW + 'px';
-          pvIfr.style.height = pvH + 'px';
-          pvIfr.style.transform = 'scale(' + k + ')';
-          pvBox.style.width = Math.round(pvW * k) + 'px';
-          pvBox.style.height = Math.round(pvH * k) + 'px';
-        };
-        if (window.__pvFit) window.removeEventListener('resize', window.__pvFit);
-        window.__pvFit = pvFit;
-        window.addEventListener('resize', pvFit);
-        pvFit();
+        $('[data-pvreplay]', frame).onclick = function () { var f = $('.pv-iframe', frame); if (f) f.src = '/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now(); };
+        fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
       });
     }
     if (active === 'home') {
-      var left = imageForHome('L'), right = imageForHome('R');
-      frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-home"><article style="' + (left ? 'background-image:url(' + esc(left.url) + ')' : '') + '"><h2>Portfolio</h2></article><article style="' + (right ? 'background-image:url(' + esc(right.url) + ')' : '') + '"><h2>Work</h2></article></section></div>';
+      frame.innerHTML = '<div class="pv-loading">Загружаем настоящую главную…</div>';
+      api('preview-content', { method: 'POST', json: draft }).then(function (result) {
+        if (active !== 'home' || $('#previewModal').classList.contains('is-hidden')) return;
+        try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
+        frame.classList.add('is-live');
+        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
+          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр главной"></iframe></div>';
+        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        fitPreviewScale(frame);
+      }).catch(function (error) {
+        frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
+      });
     }
     if (active === 'portfolio') {
       frame.innerHTML = '<div class="pv-site">' + nav + '<section class="pv-portfolio"><header class="pv-heading"><h2>Portfolio</h2><p>' + esc(draft.portfolio.about.ru || 'Здесь появится ваш текст о себе.') + '</p></header><div class="pv-albums">' +

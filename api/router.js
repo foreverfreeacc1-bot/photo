@@ -101,6 +101,13 @@ function sanitizeAdmin(v) {
     const item = home[mode] || {};
     out.home[mode] = { L: cleanImage(item.L), R: cleanImage(item.R) };
   });
+  const homeTexts = home.texts || {};
+  out.home.texts = {
+    tagL: cleanLangPair(homeTexts.tagL, 120),
+    smallL: cleanLangPair(homeTexts.smallL, 200),
+    subL: cleanLangPair(homeTexts.subL, 500),
+    subR: cleanLangPair(homeTexts.subR, 500)
+  };
   out.portfolio.albums = (Array.isArray(portfolio.albums) ? portfolio.albums.slice(0, 12) : []).map(function (album) {
     const photos = cleanImages(album && album.photos, 80);
     const preview = clean(album && album.previewId, 40);
@@ -288,6 +295,17 @@ function publicContent(c, req) {
   }
   if (richCovers && Object.keys(richCovers).length) out.covers = richCovers;
   else if (c.covers && Object.keys(c.covers).length) out.covers = c.covers;
+  if (rich && rich.home && rich.home.texts) {
+    const homeSel = { tagL: ['#ctL .ctag', '#cfL .ctag'], smallL: ['#ctL .ct1i', '#cfL .ct1i'], subL: ['#ctL .ct2', '#cfL .ct2'], subR: ['#ctR .ct2', '#cfR .ct2'] };
+    const brify = function (x) { return String(x || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); };
+    Object.keys(homeSel).forEach(function (key) {
+      const pair = rich.home.texts[key];
+      if (!pair || (!pair.ru && !pair.en)) return;
+      homeSel[key].forEach(function (sel) {
+        texts.push({ sel: sel, ru: brify(pair.ru), en: brify(pair.en), rep: 0 });
+      });
+    });
+  }
   if (rich && rich.portfolio.albums.length) {
     out.secs = Object.assign({}, c.secs || {});
     out.secs.pf = { items: rich.portfolio.albums.map(function (album) { return [album.title.ru, album.title.en]; }) };
