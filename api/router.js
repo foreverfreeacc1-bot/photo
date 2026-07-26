@@ -281,6 +281,103 @@ async function store(method, key, body, type) {
   if (USE_R2) return r2(method === 'POST' ? 'PUT' : method, key, body, type);
   return sb(method === 'PUT' ? 'POST' : method, BUCKET + '/' + key, body, type);
 }
+/* список объектов R2 (ListObjectsV2) для подсчёта занятого места */
+async function r2List(prefix, token) {
+  const host = R2_ACCOUNT_ID + '.r2.cloudflarestorage.com';
+  const uri = '/' + R2_BUCKET;
+  const parts = ['list-type=2', 'max-keys=1000', 'prefix=' + encodeURIComponent(prefix || '')];
+  if (token) parts.push('continuation-token=' + encodeURIComponent(token));
+  const qs = parts.sort().join('&');
+  const amzDate = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const shortDate = amzDate.slice(0, 8);
+  const payloadHash = crypto.createHash('sha256').update('').digest('hex');
+  const headers = { host: host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': amzDate };
+  const signedNames = Object.keys(headers).sort();
+  const canonical = ['GET', uri, qs, signedNames.map(function (x) { return x + ':' + headers[x]; }).join('\n') + '\n', signedNames.join(';'), payloadHash].join('\n');
+  const scope = shortDate + '/auto/s3/aws4_request';
+  const toSign = ['AWS4-HMAC-SHA256', amzDate, scope, crypto.createHash('sha256').update(canonical, 'utf8').digest('hex')].join('\n');
+  let k = hmacRaw('AWS4' + R2_SECRET_ACCESS_KEY, shortDate);
+  k = hmacRaw(k, 'auto'); k = hmacRaw(k, 's3'); k = hmacRaw(k, 'aws4_request');
+  const signature = crypto.createHmac('sha256', k).update(toSign, 'utf8').digest('hex');
+  const res = await fetch('https://' + host + uri + '?' + qs, {
+    method: 'GET',
+    headers: {
+      Authorization: 'AWS4-HMAC-SHA256 Credential=' + R2_ACCESS_KEY_ID + '/' + scope + ', SignedHeaders=' + signedNames.join(';') + ', Signature=' + signature,
+      'x-amz-content-sha256': payloadHash,
+      'x-amz-date': amzDate
+    }
+  });
+  if (!res.ok) throw new Error('R2 list ' + res.status);
+  return res.text();
+}
+
+async function storageUsage() {
+  const out = { used: 0, files: 0, source: 'content' };
+  if (LOCAL_STORE) {
+    const dir = pathLocal.join(LOCAL_DIR, 'cms');
+    try {
+      const names = fsLocal.existsSync(dir) ? fsLocal.readdirSync(dir) : [];
+      names.forEach(function (n) {
+        if (n === 'content.json') return;
+        const st = fsLocal.statSync(pathLocal.join(dir, n));
+        if (st.isFile()) { out.used += st.size; out.files += 1; }
+      });
+      out.source = 'local';
+      return out;
+    } catch (e) { console.error('CMS usage local:', e && e.message); }
+  } else if (USE_R2) {
+    try {
+      let token = '';
+      let guard = 0;
+      do {
+        const xml = await r2List('cms/', token);
+        const sizes = xml.match(/<Size>(\d+)<\/Size>/g) || [];
+        sizes.forEach(function (s) { out.used += Number(s.replace(/[^0-9]/g, '')) || 0; });
+        out.files += (xml.match(/<Key>/g) || []).length;
+        const more = /<IsTruncated>true<\/IsTruncated>/.test(xml);
+        const nt = xml.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/);
+        token = more && nt ? nt[1] : '';
+      } while (token && ++guard < 30);
+      out.source = 'r2';
+      return out;
+    } catch (e) { console.error('CMS usage r2:', e && e.message); }
+  } else if (SB_URL && SB_KEY) {
+    try {
+      const rr = await fetch(SB_URL + '/storage/v1/object/list/' + BUCKET, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + SB_KEY, apikey: SB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix: 'cms/', limit: 1000, offset: 0 })
+      });
+      if (rr.ok) {
+        const arr = await rr.json();
+        (Array.isArray(arr) ? arr : []).forEach(function (o) {
+          const sz = o && o.metadata && Number(o.metadata.size);
+          if (o && o.name === 'content.json') return;
+          if (sz) { out.used += sz; out.files += 1; }
+        });
+        out.source = 'supabase';
+        return out;
+      }
+    } catch (e) { console.error('CMS usage supabase:', e && e.message); }
+  }
+  /* фолбэк: сумма размеров из content.json */
+  try {
+    const c = await readContent();
+    const seen = {};
+    (function walk(node) {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node)) { node.forEach(walk); return; }
+      if (typeof node.url === 'string' && Number(node.size) && !seen[node.url]) {
+        seen[node.url] = 1;
+        out.used += Number(node.size);
+        out.files += 1;
+      }
+      Object.keys(node).forEach(function (key) { walk(node[key]); });
+    })(c);
+  } catch (e) { console.error('CMS usage content:', e && e.message); }
+  return out;
+}
+
 async function readContent() {
   try {
     const r = await store('GET', 'cms/content.json');
@@ -583,6 +680,11 @@ module.exports = async function handler(req, res) {
         me = { user: meRec.user, name: meRec.name || meRec.user, root: false };
       }
       return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp), me: me });
+    }
+
+    if (p === 'storage' && method === 'GET') {
+      const usage = await storageUsage();
+      return send(res, 200, { used: usage.used, files: usage.files, source: usage.source, limit: 10 * 1024 * 1024 * 1024 });
     }
 
     if (p === 'admins' && method === 'GET') {

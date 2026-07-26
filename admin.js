@@ -2047,15 +2047,30 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $$('#setTabs [data-set-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.setTab === name); });
     $$('[data-set-pane]').forEach(function (p) { p.classList.toggle('is-active', p.dataset.setPane === name); });
   }
-  function renderStorage() {
-    var used = usedBytes();
-    var free = Math.max(0, STORAGE_LIMIT - used);
-    var pct = Math.round(used / STORAGE_LIMIT * 1000) / 10;
+  function fmtSize(bytes) {
+    var b = Number(bytes) || 0;
+    if (b >= 1024 * 1024 * 1024) return (b / (1024 * 1024 * 1024)).toFixed(2).replace('.', ',') + ' ГБ';
+    if (b >= 1024 * 1024) return (b / (1024 * 1024)).toFixed(1).replace('.', ',') + ' МБ';
+    if (b >= 1024) return Math.round(b / 1024) + ' КБ';
+    return b + ' Б';
+  }
+  function paintStorage(used, limit, files) {
+    limit = limit || STORAGE_LIMIT;
+    var free = Math.max(0, limit - used);
+    var pct = Math.round(used / limit * 1000) / 10;
     if (pct > 100) pct = 100;
     var fill = $('#stgFill');
     if (fill) fill.style.width = (used > 0 && pct < 1.5 ? 1.5 : pct) + '%';
-    if ($('#stgUsed')) $('#stgUsed').textContent = fmtGb(used) + ' (' + String(pct).replace('.', ',') + '%)';
-    if ($('#stgFree')) $('#stgFree').textContent = fmtGb(free);
+    if ($('#stgUsed')) $('#stgUsed').textContent = fmtSize(used) + ' (' + String(pct).replace('.', ',') + '%)';
+    if ($('#stgFree')) $('#stgFree').textContent = fmtSize(free);
+    if ($('#stgAll')) $('#stgAll').textContent = fmtSize(limit);
+    if ($('#stgFiles')) $('#stgFiles').textContent = files === undefined || files === null ? '\u2014' : String(files);
+  }
+  function renderStorage() {
+    paintStorage(usedBytes(), STORAGE_LIMIT, null);
+    api('storage').then(function (r) {
+      if (r && r.limit) paintStorage(Number(r.used) || 0, Number(r.limit), r.files);
+    }).catch(function () {});
   }
   $$('#setTabs [data-set-tab]').forEach(function (b) {
     b.onclick = function () { setSettingsTab(b.dataset.setTab); if (b.dataset.setTab === 'storage') renderStorage(); };

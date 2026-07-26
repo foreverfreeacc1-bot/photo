@@ -959,3 +959,30 @@ html,*{scrollbar-color:#d8d2c8 transparent}
 .stg-legend span{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .stg-legend b{font-size:14px;font-weight:500}
 @media (max-width:640px){.stg-legend{grid-template-columns:1fr}.set-tabs{padding:12px 16px 0}.settings-body{padding:16px}}
+
+
+/* ===== правки 39 ===== */
+/* красная точка в своём слоте — иконка автоперевода не ездит */
+@keyframes adm-dot-ring{0%,100%{box-shadow:0 0 0 3px rgba(166,58,58,.16)}50%{box-shadow:0 0 0 6px rgba(166,58,58,.05)}}
+.mobile-head .mh-flags{position:relative;gap:8px;padding-right:15px}
+.mobile-head .mh-dot{display:block;position:absolute;right:0;top:50%;margin:0;opacity:0;animation:none;transform:translateY(-50%) scale(.2);transition:opacity .3s ease,transform .32s cubic-bezier(.2,.9,.2,1)}
+.mobile-head .mh-dot.is-on{opacity:1;transform:translateY(-50%) scale(1);animation:adm-dot-ring 1.9s ease-in-out infinite}
+.mobile-head .mh-flag{transition:transform .3s cubic-bezier(.2,.9,.2,1),background-color .2s ease,color .2s ease,border-color .2s ease}
+/* открытое меню выше шапки */
+@media (max-width:900px){
+  .sidebar{z-index:60}
+  body.menu-open .mobile-head{z-index:5}
+}
+/* карточки услуг: по две в строку */
+.svc-plate.wkc{max-width:none}
+.svc-list{display:flex;flex-direction:column;gap:20px;align-items:stretch}
+body.tr-auto .svc-list{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+body.tr-auto .svc-list #addWork{grid-column:1 / -1;justify-self:start}
+@media (max-width:900px){body.tr-auto .svc-list{display:flex;flex-direction:column}}
+/* чёрный чекбокс автоперевода */
+.switch-row input[type="checkbox"]{-webkit-appearance:none;appearance:none;width:18px;height:18px;flex:0 0 18px;margin:0;border:1px solid #111;border-radius:4px;background:#fff;cursor:pointer;position:relative;transition:background-color .2s ease,border-color .2s ease}
+.switch-row input[type="checkbox"]:checked{background:#111;border-color:#111}
+.switch-row input[type="checkbox"]:checked:after{content:"";position:absolute;left:5px;top:2px;width:5px;height:9px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+.switch-row{cursor:pointer}
+/* «Вопросы и ответы (FAQ)» — одним шрифтом */
+.h2-uni{font-family:Georgia,'Times New Roman',serif;letter-spacing:-.01em}
