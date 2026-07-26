@@ -141,7 +141,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       },
       "price": {
         "ru": "12 000 ₽",
-        "en": "12,000 ₽"
+        "en": "12,000 RUB"
       },
       "features": {
         "ru": [
@@ -167,7 +167,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       },
       "price": {
         "ru": "от 9 000 ₽",
-        "en": "from 9,000 ₽"
+        "en": "from 9,000 RUB"
       },
       "features": {
         "ru": [
@@ -193,7 +193,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       },
       "price": {
         "ru": "от 12 000 ₽",
-        "en": "from 12,000 ₽"
+        "en": "from 12,000 RUB"
       },
       "features": {
         "ru": [
@@ -219,7 +219,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       },
       "price": {
         "ru": "от 60 000 ₽",
-        "en": "from 60,000 ₽"
+        "en": "from 60,000 RUB"
       },
       "features": {
         "ru": [
@@ -284,7 +284,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           id: uid(),
           image: photos[1],
           title: { ru: 'Портретная съёмка', en: 'Portrait session' },
-          price: { ru: 'от 15 000 ₽', en: 'from 15,000 ₽' },
+          price: { ru: 'от 15 000 ₽', en: 'from 15,000 RUB' },
           features: {
             ru: ['Два часа съёмки', 'Помощь с образом', 'Готовая онлайн-галерея'],
             en: ['Two-hour session', 'Styling guidance', 'Finished online gallery']
@@ -432,7 +432,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         id: card.id || uid(),
         image: card.image || null,
         title: card.title || { ru: '', en: '' },
-        price: typeof card.price === 'string' ? { ru: card.price, en: card.price } : (card.price || { ru: '', en: '' }),
+        price: (function (p) { var v = typeof p === 'string' ? { ru: p, en: p } : (p || { ru: '', en: '' }); return { ru: v.ru || '', en: rubEn(v.en || '') }; })(card.price),
         features: card.features || {
           ru: oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.ru ? [oldDescription.ru] : []),
           en: oldSteps.length ? oldSteps.map(function (step) { return [step.title, step.text].filter(Boolean).join(' — '); }) : (oldDescription.en ? [oldDescription.en] : [])
@@ -467,7 +467,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           id: uid(),
           image: null,
           title: { ru: item[0] || '', en: item[1] || '' },
-          price: { ru: item[2] || '', en: item[3] || item[2] || '' },
+          price: { ru: item[2] || '', en: rubEn(item[3] || item[2] || '') },
           features: { ru: item[4] || [], en: item[5] || [] }
         };
       });
@@ -516,6 +516,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $('#draftState').textContent = 'Есть неопубликованные изменения';
     $('#draftState').classList.add('changed');
     renderNav();
+    syncMobileFlags();
   }
 
   function clearDirty() {
@@ -523,6 +524,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $('#draftState').textContent = 'Все изменения сохранены';
     $('#draftState').classList.remove('changed');
     renderNav();
+    syncMobileFlags();
   }
 
   function renderNav() {
@@ -599,12 +601,15 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     new MutationObserver(function () { fillSizes(document); }).observe(document.getElementById('editor'), { childList: true, subtree: true });
   } catch (e) {}
 
-  function mediaTile(image, index, coverIndex) {
+  function rubEn(value) { return String(value == null ? '' : value).replace(/₽/g, 'RUB'); }
+
+  function mediaTile(image, index, coverIndex, sortable) {
     var size = fmtSize(image.size);
-    return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + '" title="' + esc(image.name || '') + '">' +
+    return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + (sortable ? ' is-sortable' : '') + '"' + (sortable ? ' draggable="true" data-photo-idx="' + index + '"' : '') + ' title="' + esc(image.name || '') + '">' +
       '<img src="' + esc(image.url) + '" alt="' + esc(image.name || 'Загруженная фотография') + '" title="' + esc(image.name || '') + '">' +
       '<button class="tile-del" type="button" data-remove="' + index + '" title="Удалить" aria-label="Удалить">&minus;</button>' +
       '<div class="tile-meta"><span class="tile-name" title="' + esc(image.name || '') + '">' + esc(image.name || 'Без названия') + '</span>' + (size ? '<span class="tile-size">' + size + '</span>' : '<span class="tile-size" data-lazy-size="' + esc(image.url) + '">…</span>') + '</div>' +
+      (sortable ? '<div class="tile-ord"><button class="move-btn" type="button" data-move="' + index + ':-1" title="Влево">\u2039</button><span>' + (index + 1) + '</span><button class="move-btn" type="button" data-move="' + index + ':1" title="Вправо">\u203a</button></div>' : '') +
       '<div class="media-actions">' +
       '<button class="media-action" type="button" data-cover="' + index + '">Превью</button>' +
       '</div></article>';
@@ -1014,7 +1019,20 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   var ceReg = [];
   function autoTrOn() { try { return localStorage.getItem(AUTO_TR_KEY) === '1'; } catch (e) { return false; } }
   function setAutoTr(on) { try { localStorage.setItem(AUTO_TR_KEY, on ? '1' : '0'); } catch (e) {} syncAutoTrUi(); }
-  function syncAutoTrUi() { document.body.classList.toggle('tr-auto', autoTrOn()); }
+  function syncAutoTrUi() {
+    document.body.classList.toggle('tr-auto', autoTrOn());
+    var flag = $('#mhTr');
+    if (flag) {
+      flag.classList.toggle('is-on', autoTrOn());
+      flag.setAttribute('aria-pressed', autoTrOn() ? 'true' : 'false');
+      flag.setAttribute('title', autoTrOn() ? 'Автоперевод включён' : 'Автоперевод выключен');
+    }
+  }
+
+  function syncMobileFlags() {
+    var dot = $('#mhDot');
+    if (dot) dot.hidden = !Object.keys(dirtySections).length;
+  }
   function translateRu(text) {
     return api('translate', { method: 'POST', json: { q: String(text || '') } }).then(function (r) { return (r && r.text) || ''; });
   }
@@ -1231,7 +1249,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         return '<button class="cover-opt' + (i === (coverIndex < 0 ? 0 : coverIndex) ? ' is-on' : '') + '" type="button" data-cover="' + i + '" style="background-image:url(' + esc(photo.url) + ')"></button>';
       }).join('') : '<p class="help">Сначала загрузите фотографии.</p>') + '</div>') : '') +
       '<div class="upload-grid">' +
-      album.photos.map(function (photo, i) { return mediaTile(photo, i, coverIndex < 0 ? 0 : coverIndex); }).join('') +
+      album.photos.map(function (photo, i) { return mediaTile(photo, i, coverIndex < 0 ? 0 : coverIndex, true); }).join('') +
       uploadTile('Перетащить или выбрать фото', true) + '</div>' +
       '<div class="row-actions"><button class="button button-light" type="button" data-close-album>Готово</button></div>' +
       '</div>';
@@ -1420,6 +1438,46 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         setDirty('portfolio'); renderPortfolio();
       };
     });
+    (function () {
+      function movePhoto(from, to) {
+        if (from === to || from < 0 || to < 0 || from >= album.photos.length || to >= album.photos.length) return;
+        var moved = album.photos.splice(from, 1)[0];
+        album.photos.splice(to, 0, moved);
+        setDirty('portfolio'); renderPortfolio();
+      }
+      $$('[data-move]', root).forEach(function (button) {
+        button.onclick = function (event) {
+          event.stopPropagation();
+          var parts = button.getAttribute('data-move').split(':');
+          movePhoto(Number(parts[0]), Number(parts[0]) + Number(parts[1]));
+        };
+      });
+      var dragFrom = -1;
+      $$('.media-tile.is-sortable', root).forEach(function (tile) {
+        tile.addEventListener('dragstart', function (event) {
+          dragFrom = Number(tile.getAttribute('data-photo-idx'));
+          tile.classList.add('is-drag');
+          try { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(dragFrom)); } catch (e) {}
+        });
+        tile.addEventListener('dragend', function () {
+          tile.classList.remove('is-drag');
+          $$('.media-tile', root).forEach(function (t) { t.classList.remove('is-drop'); });
+        });
+        tile.addEventListener('dragover', function (event) {
+          event.preventDefault();
+          try { event.dataTransfer.dropEffect = 'move'; } catch (e) {}
+          tile.classList.add('is-drop');
+        });
+        tile.addEventListener('dragleave', function () { tile.classList.remove('is-drop'); });
+        tile.addEventListener('drop', function (event) {
+          event.preventDefault();
+          tile.classList.remove('is-drop');
+          var from = dragFrom;
+          try { var dt = event.dataTransfer.getData('text/plain'); if (dt !== '') from = Number(dt); } catch (e) {}
+          movePhoto(from, Number(tile.getAttribute('data-photo-idx')));
+        });
+      });
+    })();
     $('[data-close-album]', root).onclick = function () { openAlbumId = null; coverMenuId = null; renderPortfolio(); };
   }
 
@@ -1931,10 +1989,28 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       $('#cpOld').value = ''; $('#cpNew').value = '';
     }).catch(function (error) { toast(error.message); });
   };
-  $('#menuToggle').onclick = function () {
+  $('#menuToggle').onclick = function (event) {
+    event.stopPropagation();
     var open = document.body.classList.toggle('menu-open');
     this.setAttribute('aria-expanded', String(open));
   };
+  document.addEventListener('click', function (event) {
+    if (!document.body.classList.contains('menu-open')) return;
+    var target = event.target;
+    if (target.closest && (target.closest('.sidebar') || target.closest('#menuToggle'))) return;
+    document.body.classList.remove('menu-open');
+    $('#menuToggle').setAttribute('aria-expanded', 'false');
+  });
+  if ($('#mhTr')) $('#mhTr').onclick = function () {
+    var on = !autoTrOn();
+    setAutoTr(on);
+    var cb = $('#autoTr');
+    if (cb) cb.checked = on;
+    render();
+    toast(on ? 'Автоперевод включён' : 'Автоперевод выключен');
+  };
+  syncAutoTrUi();
+  syncMobileFlags();
   $$('[data-preview]').forEach(function (button) { button.onclick = openPreview; });
   $('#closePreview').onclick = closePreview;
   $('#previewModal').onclick = function (event) { if (event.target === this) closePreview(); };

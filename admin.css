@@ -776,3 +776,78 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 body.tr-auto [data-plang="en"]{display:none !important}
 body.tr-auto .cover-grid,body.tr-auto .cover-grid.is-stack,body.tr-auto .cover-grid.is-phones,body.tr-auto .svc-pair{grid-template-columns:1fr}
 body.tr-auto .plate-head b{opacity:.65}
+
+/* ===== правки 35 ===== */
+/* плашка «Управление» вплотную к имени, как на сайте */
+.mobile-head .mh-brand{gap:5px}
+.mobile-head .brand-name-m{text-indent:0;margin-right:-.18em}
+.mobile-head .brand-sub-m{padding:3px 6px;font-size:6px;letter-spacing:.16em}
+
+/* индикаторы в мобильной шапке */
+.mh-flags{display:none}
+.mobile-head .mh-flags{display:flex;align-items:center;gap:8px;margin-left:auto;position:relative;z-index:2}
+.mobile-head [data-preview]{margin-left:0}
+.mh-flag{position:relative;display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:0;background:var(--surface);color:var(--muted);cursor:pointer;transition:color .2s,border-color .2s,background-color .2s,transform .15s}
+.mh-flag:active{transform:scale(.94)}
+.mh-flag .mh-flag-mark{position:absolute;right:-3px;bottom:-3px;width:8px;height:8px;border:1px solid #fff;border-radius:50%;background:#b9b5ad;transition:background-color .2s}
+.mh-flag.is-on{border-color:#111;background:#111;color:#fff}
+.mh-flag.is-on .mh-flag-mark{background:#2f9e63}
+.mh-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(166,58,58,.16);animation:adm-pulse 1.8s ease-in-out infinite}
+.mh-dot[hidden]{display:none}
+@keyframes adm-pulse{0%,100%{box-shadow:0 0 0 3px rgba(166,58,58,.16)}50%{box-shadow:0 0 0 5px rgba(166,58,58,.05)}}
+
+/* перетаскивание фото в альбоме */
+.media-tile.is-sortable{cursor:grab}
+.media-tile.is-sortable:active{cursor:grabbing}
+.media-tile.is-drop{outline:2px solid #111;outline-offset:-2px}
+.media-tile .tile-ord{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;padding:3px 6px;background:rgba(20,20,20,.78);color:#fff;font-family:var(--sans);font-size:8px;font-weight:600;letter-spacing:.1em;opacity:0;transition:opacity .2s}
+.media-tile.is-cover .tile-ord{top:auto;bottom:44px}
+.media-tile:hover .tile-ord,.media-tile:focus-within .tile-ord{opacity:1}
+.media-tile .move-btn{width:16px;height:16px;display:grid;place-items:center;padding:0;border:0;background:transparent;color:#fff;font-size:11px;line-height:1;cursor:pointer;opacity:.8}
+.media-tile .move-btn:hover{opacity:1}
+
+/* плавные переходы во всёй админке */
+@keyframes adm-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes adm-fade{from{opacity:0}to{opacity:1}}
+.editor{animation:adm-in .34s cubic-bezier(.16,1,.3,1) both}
+.editor .panel{animation:adm-in .42s cubic-bezier(.16,1,.3,1) both}
+.editor .panel:nth-of-type(2){animation-delay:.05s}
+.editor .panel:nth-of-type(3){animation-delay:.1s}
+.editor .panel:nth-of-type(4){animation-delay:.14s}
+.panel{transition:border-color .25s ease,box-shadow .25s ease}
+.panel:hover{box-shadow:0 10px 30px rgba(0,0,0,.03)}
+.album-editor,.svc-card,.item-card,.cover-menu,.icon-menu{animation:adm-in .3s cubic-bezier(.16,1,.3,1) both}
+.nav button{transition:background-color .22s ease,color .22s ease,transform .16s ease,padding-left .2s ease}
+.nav button:hover{padding-left:13px}
+.nav button:active{transform:scale(.99)}
+.nav .nav-dot{transition:background-color .25s ease,transform .25s ease}
+.nav button.has-change .nav-dot{transform:scale(1.15)}
+.button,.icon-button,.text-button,.kill-btn,.add-tile,.frame-chip,.media-action,.device-switch button,.pv-replay,.foot-icon,.logout-btn,.cover-opt,.icon-opt,.tile-del{transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .15s ease,opacity .2s ease}
+.button:active,.icon-button:active,.kill-btn:active,.add-tile:active,.frame-chip:active,.device-switch button:active,.pv-replay:active{transform:translateY(1px)}
+.add-tile:hover{background:rgba(17,17,17,.03)}
+.media-tile:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.07)}
+.cover-plate,.site-plate,.svc-plate{transition:box-shadow .28s ease,transform .28s ease}
+.cover-plate:hover,.site-plate:hover,.svc-plate:hover{box-shadow:0 14px 34px rgba(0,0,0,.06)}
+.modal{animation:adm-fade .22s ease both}
+.modal-panel{animation:adm-in .3s cubic-bezier(.16,1,.3,1) both}
+.preview-frame{transition:width .35s cubic-bezier(.16,1,.3,1),opacity .25s ease}
+.confirm-card{animation:adm-in .26s cubic-bezier(.16,1,.3,1) both}
+#draftState{transition:color .25s ease,opacity .25s ease}
+
+/* затемнение под открытым меню: клик вне закрывает */
+@media(max-width:900px){
+  body.menu-open:after{content:'';position:fixed;inset:0;z-index:19;background:rgba(24,23,21,.34);animation:adm-fade .2s ease both}
+}
+
+/* мобильный предпросмотр: аккуратный крестик и ровные кнопки */
+@media(max-width:640px){
+  .modal-head{position:relative;display:block;padding:12px 12px 14px}
+  .modal-head h2{padding-right:44px}
+  .preview-actions{display:block;width:100%;margin-top:12px}
+  .preview-actions .close-button{position:absolute;top:9px;right:10px;width:34px;height:34px;align-self:auto;margin:0}
+  .pv-controls{display:flex;flex-direction:row;align-items:flex-end;gap:8px;width:100%}
+  .pv-group{flex:1 1 0;min-width:0}
+  .pv-controls .device-switch{width:100%}
+  .pv-controls .device-switch button{flex:1 1 0;padding:8px 4px;font-size:8.5px;letter-spacing:.08em}
+  .pv-replay{width:100%;margin-top:8px}
+}
