@@ -881,3 +881,35 @@ body.tr-auto .plate-head b{opacity:.65}
 /* иконка автоперевода без зелёной точки: только метка «ON» */
 .mh-flag .mh-flag-mark{right:-4px;bottom:-4px;width:auto;height:auto;min-width:12px;padding:1px 3px;border:1px solid #fff;border-radius:0;background:#111;color:#fff;font-family:var(--sans);font-size:5.5px;font-weight:600;letter-spacing:.06em;line-height:1;font-style:normal;text-align:center;display:none}
 .mh-flag.is-on .mh-flag-mark{display:block;background:#111}
+
+/* ===== правки 37 ===== */
+/* плашка «Управление» ещё ближе к имени */
+.mobile-head .mh-brand{gap:0}
+.mobile-head .brand-name-m{margin-right:-.26em}
+.mobile-head .brand-sub-m{margin-left:1px;padding:4px 8px;font-size:7.5px;letter-spacing:.2em}
+
+/* красная точка: мягкое появление */
+@keyframes adm-dot-in{0%{opacity:0;transform:scale(.2)}60%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}
+.mh-dot{animation:adm-dot-in .34s cubic-bezier(.2,.9,.2,1) both,adm-pulse 1.8s ease-in-out .34s infinite}
+
+/* иконка автоперевода над кнопками на декстопе */
+.head-actions{flex-wrap:wrap;justify-content:flex-end}
+.head-flags{flex:0 0 100%;display:flex;justify-content:flex-end;margin:0 0 8px}
+.head-flags .mh-flag{display:grid;place-items:center;width:32px;height:32px}
+
+/* мобильная шапка следует за прокруткой + полоса прогресса */
+.mh-progress{display:none}
+@media (max-width:900px){
+  .head-flags{display:none}
+  .mobile-head{position:sticky;top:0;z-index:40;background:rgba(247,246,243,.94);-webkit-backdrop-filter:saturate(150%) blur(12px);backdrop-filter:saturate(150%) blur(12px);transition:box-shadow .3s ease,background-color .3s ease}
+  .mobile-head.is-stuck{box-shadow:0 6px 22px rgba(23,23,22,.10);background:rgba(247,246,243,.98)}
+  .mobile-head .mh-progress{display:block;position:absolute;left:0;bottom:-1px;height:2px;width:0;background:#111;transition:width .12s linear;pointer-events:none}
+}
+
+/* оформленная линия прокрутки */
+html{scrollbar-width:thin;scrollbar-color:#c7c1b7 transparent}
+*{scrollbar-width:thin;scrollbar-color:#c7c1b7 transparent}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cfc9c0;border-radius:999px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#171716;background-clip:content-box}

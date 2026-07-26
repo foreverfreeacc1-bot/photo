@@ -854,10 +854,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var data = draft.loader;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Заголовок на сайте всегда показывается большими буквами. В подзаголовке Enter делает перенос строки.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Текст на входе</h2><p>Заголовок автоматически отображается прописными буквами. Для переноса строки в подзаголовке используйте клавишу Enter.</p></div></div>' +
       '<div class="cover-grid is-loader">' + loaderPlate('main', 'ru') + loaderPlate('main', 'en') + '</div>' +
       '<div class="cover-grid is-phones">' + loaderPlate('phone', 'ru') + loaderPlate('phone', 'en') + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Показываются в маленьком квадрате по центру экрана, кадр обрезается по центру — подойдёт любой формат. От 1 до 4 фото. На сайте кадры показываются в чёрно-белом — это особенность лоадера. Очерёдность фотографий можно менять, просто перетаскивая кадры.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Фотографии в центре</h2><p>Фотографии отображаются в небольшом квадрате по центру экрана. Изображение автоматически обрезается по центру, поэтому подойдёт любой формат кадра. Можно загрузить от 1 до 4 фотографий. На сайте они отображаются в чёрно-белом цвете — это особенность лоадера и не влияет на оригиналы. Порядок фотографий можно изменить в любой момент, просто перетащив их мышью.</p></div></div>' +
       '<div class="upload-grid">' + data.images.map(function (image, index) { return mediaTile(image, index, -1); }).join('') +
       (data.images.length >= 4 ? '<div class="upload-tile is-full"><span><b>4 / 4</b>Достигнуто максимальное количество фотографий</span></div>' : uploadTile('Добавить фотографии', true, null, data.images.length + ' / 4')) + '</div></div>';
     bindFields(editor, data);
@@ -958,7 +958,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var deviceAspect = { desktop: '16 / 9', tablet: '4 / 3', mobile: '9 / 19' };
     var deviceNote = { desktop: 'две половины рядом', tablet: 'две половины рядом', mobile: 'Portfolio сверху, Work снизу' };
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже — настоящий экран выбранного устройства: такие же пропорции и такое же расположение половин, как на сайте.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Кадр под каждый экран</h2><p>Ниже показано, как фотографии будут выглядеть на выбранном устройстве — с теми же пропорциями, кадрированием и расположением, что и на сайте.</p></div></div>' +
       '<div class="screen-bar"><div class="screen-tabs">' + ['desktop', 'tablet', 'mobile'].map(function (mode) {
         return '<button type="button" data-screen="' + mode + '" class="' + (mode === screenMode ? 'is-active' : '') + '">' + labels[mode] + '</button>';
       }).join('') + '</div>' +
@@ -981,7 +981,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           (image ? '<button class="text-button" type="button" data-home-remove="' + side + '">Вернуть фото сайта</button>' : '') + '</div>';
       }).join('') + '</div>' +
       '<p class="help is-center">Потяните фотографию внутри половины экрана — так вы выбираете, какая её часть видна на этом устройстве.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Нажмите на любой текст и правьте его прямо в плашке. Иконки соцсетей, подпись со звёздочкой и подпись рядом с плюсом заданы макетом и не меняются.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Заголовки и подписи</h2><p>Все изменяемые тексты доступны прямо в макете. Некоторые элементы являются частью дизайна и остаются неизменными.</p></div></div>' +
       '<div class="cover-grid">' +
       coverPlate('L', 'ru', data) + coverPlate('R', 'ru', data) +
       coverPlate('L', 'en', data) + coverPlate('R', 'en', data) +
@@ -1045,14 +1045,15 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function setAutoTr(on) { try { localStorage.setItem(AUTO_TR_KEY, on ? '1' : '0'); } catch (e) {} syncAutoTrUi(); }
   function syncAutoTrUi() {
     document.body.classList.toggle('tr-auto', autoTrOn());
-    var flag = $('#mhTr');
-    if (flag) {
+    ['#mhTr', '#trDesk'].forEach(function (selector) {
+      var flag = $(selector);
+      if (!flag) return;
       flag.classList.toggle('is-on', autoTrOn());
       flag.setAttribute('aria-pressed', autoTrOn() ? 'true' : 'false');
       flag.setAttribute('title', autoTrOn() ? 'Автоперевод включён' : 'Автоперевод выключен');
       var mark = flag.querySelector('.mh-flag-mark');
       if (mark) mark.textContent = autoTrOn() ? 'ON' : '';
-    }
+    });
   }
 
   function syncMobileFlags() {
@@ -1324,13 +1325,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var openIndex = -1;
     data.albums.forEach(function (album, i) { if (album.id === openAlbumId) openIndex = i; });
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Так, как на сайте — правьте текст прямо в плашке.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Текст отображается над альбомами и помогает кратко представить ваше портфолио.</p></div></div>' +
       '<div class="cover-grid is-stack">' + pfIntroPlate(data, 'ru') + pfIntroPlate(data, 'en') + '</div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Карточки такие же, как на сайте. Перетаскивайте карточки, чтобы менять порядок.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Управляйте альбомами в том виде, в котором их увидят посетители. Перетаскивайте карточки, чтобы изменить порядок.</p></div></div>' +
       '<div class="album-grid">' + data.albums.map(albumTile).join('') + '</div>' +
       '<button class="add-tile is-inline is-strip" type="button" id="addAlbum"><span>+</span> Добавить альбом</button>' +
       (openIndex >= 0 ? albumEditor(data.albums[openIndex], openIndex) : '') + '</div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Точно такой же блок, как на сайте: нажмите на любой текст и правьте. Значок пункта можно загрузить картинкой.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Редактируйте содержимое блока сразу в макете. Для каждого пункта можно загрузить собственную иконку.</p></div></div>' +
       '<div class="cover-grid is-column">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div></div>';
     bindPathEditable(editor, data, 'data-pce', 'portfolio');
     $('#addAlbum').onclick = function () {
@@ -1511,10 +1512,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var work = draft.work;
     var cards = work.cards;
     var editor = $('#editor');
-    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>Карточки услуг</h2><p>Карточки такие же, как на сайте. Нажмите на любой текст и правьте.</p></div></div>' +
+    editor.innerHTML = '<div class="panel"><div class="panel-head"><div><h2>Карточки услуг</h2><p>Настройте карточки услуг в том виде, в котором их увидят посетители сайта.</p></div></div>' +
       '<div class="svc-list">' + cards.map(workCard).join('') +
       '<button class="add-tile is-inline" type="button" id="addWork"><span>+</span> Добавить карточку</button></div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Этапы съёмки</h2><p>Блок целиком, как на сайте. Правятся только заголовки и подписи.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Этапы съёмки</h2><p>Настройте названия этапов и их описания. Остальные элементы блока соответствуют дизайну сайта.</p></div></div>' +
       '<div class="cover-grid is-column">' + stagesMock(work, 'ru') + stagesMock(work, 'en') + '</div></div>';
     $('#addWork').onclick = function () {
       cards.push({ id: uid(), image: null, title: { ru: 'Новая услуга', en: 'New service' }, price: { ru: '', en: '' }, features: { ru: [], en: [] } });
@@ -1665,13 +1666,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var faq = draft.faq;
     var editor = $('#editor');
     editor.innerHTML =
-      '<div class="panel"><div class="panel-head"><div><h2>Контакты</h2><p>Изменяется только ссылка (у телефона — номер): подпись и тег подстроятся сами.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2>Контакты</h2><p>Укажите актуальные ссылки и номер телефона — остальные элементы блока обновятся автоматически.</p></div></div>' +
       '<div class="ct-admin-grid">' + contacts.map(function (c, i) {
         return '<div class="ct-card"><div class="ct-card-head">' + CONTACT_ICONS[c.type] + '<div class="cc-t"><span class="cc-l">' + esc(c.label) + '</span><span class="cc-s" data-ct-sub="' + i + '">' + esc(c.value) + '</span></div></div>' +
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
       }).join('') + '</div>' +
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2 class="h2-uni">Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2 class="h2-uni">Вопросы и ответы (FAQ)</h2><p>Замените существующие вопросы своими или отредактируйте текущие.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
         return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
@@ -2076,14 +2077,35 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     document.body.classList.remove('menu-open');
     $('#menuToggle').setAttribute('aria-expanded', 'false');
   });
-  if ($('#mhTr')) $('#mhTr').onclick = function () {
-    var on = !autoTrOn();
-    setAutoTr(on);
-    var cb = $('#autoTr');
-    if (cb) cb.checked = on;
-    render();
-    toast(on ? 'Автоперевод включён' : 'Автоперевод выключен');
-  };
+  ['#mhTr', '#trDesk'].forEach(function (selector) {
+    var button = $(selector);
+    if (!button) return;
+    button.onclick = function () {
+      var on = !autoTrOn();
+      setAutoTr(on);
+      var cb = $('#autoTr');
+      if (cb) cb.checked = on;
+      render();
+      toast(on ? 'Автоперевод включён' : 'Автоперевод выключен');
+    };
+  });
+  (function () {
+    var head = document.querySelector('.mobile-head');
+    if (!head) return;
+    var bar = $('#mhProgress');
+    function onScroll() {
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      head.classList.toggle('is-stuck', y > 4);
+      if (bar) {
+        var total = (document.documentElement.scrollHeight - window.innerHeight) || 1;
+        var ratio = Math.max(0, Math.min(1, y / total));
+        bar.style.width = (ratio * 100).toFixed(2) + '%';
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+  })();
   syncAutoTrUi();
   syncMobileFlags();
   $$('[data-preview]').forEach(function (button) { button.onclick = openPreview; });

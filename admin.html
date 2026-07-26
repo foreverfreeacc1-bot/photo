@@ -52,6 +52,7 @@
       <button id="menuToggle" class="navicon-m" type="button" aria-label="Открыть меню" aria-expanded="false"><i></i><i></i><i></i></button>
       <span class="mh-brand"><span class="brand-name brand-name-m">ALISA MITEROVA</span><small class="brand-sub brand-sub-m">Управление</small></span>
       <span class="mh-flags"><button id="mhTr" class="mh-flag" type="button" title="Автоперевод" aria-label="Автоперевод" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.6 2.6 15 0 18"/><path d="M12 3C9.4 5.6 9.4 18 12 21"/></svg><i class="mh-flag-mark"></i></button><span id="mhDot" class="mh-dot" hidden title="Есть неопубликованные изменения"></span></span><button class="icon-button preview-shortcut" type="button" data-preview aria-label="Открыть предпросмотр"><svg class="eye-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.3 9.5-6.3 9.5 6.3 9.5 6.3-3.5 6.3-9.5 6.3S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg></button>
+      <span class="mh-progress" id="mhProgress" aria-hidden="true"></span>
     </header>
 
     <main class="workspace">
@@ -62,6 +63,7 @@
           <p id="sectionNote" class="section-note"></p>
         </div>
         <div class="head-actions">
+          <div class="head-flags"><button id="trDesk" class="mh-flag tr-desk" type="button" title="Автоперевод" aria-label="Автоперевод" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3c2.5 2.6 2.5 15.4 0 18"></path><path d="M12 3c-2.5 2.6-2.5 15.4 0 18"></path></svg><i class="mh-flag-mark"></i></button></div>
           <span id="draftState" class="draft-state">Все изменения сохранены</span>
           <button class="button button-light" type="button" data-preview><svg class="eye-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.3 9.5-6.3 9.5 6.3 9.5 6.3-3.5 6.3-9.5 6.3S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg> Предпросмотр</button>
           <button id="publish" class="button button-dark" type="button">Опубликовать</button>
