@@ -66,6 +66,10 @@ function fmtPhone(raw) {
 
   function contactAuto(type, raw) {
     var v = String(raw || '').trim();
+    if (type === 'email' || /^mailto:/i.test(v) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      var em = v.replace(/^mailto:/i, '').trim();
+      return { l: 'EMAIL', s: em, h: em ? 'mailto:' + em : '' };
+    }
     if (type === 'phone') {
       var fp = fmtPhone(v);
       var pd = fp.replace(/\D/g, '');
@@ -603,6 +607,21 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function rubEn(value) { return String(value == null ? '' : value).replace(/₽/g, 'RUB'); }
 
+  var STORAGE_LIMIT = 10 * 1024 * 1024 * 1024;
+
+  function usedBytes() {
+    var total = 0;
+    (function walk(node) {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node)) { node.forEach(walk); return; }
+      if (typeof node.url === 'string' && typeof node.size === 'number') total += node.size;
+      Object.keys(node).forEach(function (key) { walk(node[key]); });
+    })(draft);
+    return total;
+  }
+
+  function fmtGb(bytes) { return (bytes / (1024 * 1024 * 1024)).toFixed(2).replace('.', ',') + ' ГБ'; }
+
   function mediaTile(image, index, coverIndex, sortable) {
     var size = fmtSize(image.size);
     return '<article class="media-tile ' + (index === coverIndex ? 'is-cover' : '') + (sortable ? ' is-sortable' : '') + '"' + (sortable ? ' draggable="true" data-photo-idx="' + index + '"' : '') + ' title="' + esc(image.name || '') + '">' +
@@ -637,6 +656,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       return /^image\//i.test(file.type || '') || /\.(avif|gif|heic|heif|jpe?g|png|tiff?|webp)$/i.test(file.name || '');
     });
     if (!list.length) return Promise.reject(new Error('Перетащите фотографии, а не другие файлы.'));
+    var addBytes = list.reduce(function (sum, file) { return sum + (file.size || 0); }, 0);
+    var usedNow = usedBytes();
+    if (usedNow + addBytes > STORAGE_LIMIT) {
+      return Promise.reject(new Error('Лимит 10 ГБ исчерпан (занято ' + fmtGb(usedNow) + '). Удалите часть фотографий и попробуйте снова.'));
+    }
     var results = [];
     var total = list.length;
     var savedTiles = null;
@@ -848,7 +872,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     };
     $$('[data-cover]', editor).forEach(function (b) { b.remove(); });
     $$('[data-remove]', editor).forEach(function (button) {
-      button.onclick = function () { var image = data.images[Number(button.dataset.remove)]; if (!confirm('Удалить фотографию «' + ((image && image.name) || 'без названия') + '»?')) return; data.images.splice(Number(button.dataset.remove), 1); setDirty(); renderLoader(); };
+      button.onclick = function () { var image = data.images[Number(button.dataset.remove)]; if (needConfirm('home-photo-' + button.dataset.remove, { eyebrow: 'Удаление', title: 'Удалить фотографию?', text: '«' + ((image && image.name) || 'Без названия') + '» будет убрана из раздела.', ok: 'Удалить', danger: true }, function () { button.onclick(); })) return; data.images.splice(Number(button.dataset.remove), 1); setDirty(); renderLoader(); };
     });
   }
 
@@ -1026,6 +1050,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       flag.classList.toggle('is-on', autoTrOn());
       flag.setAttribute('aria-pressed', autoTrOn() ? 'true' : 'false');
       flag.setAttribute('title', autoTrOn() ? 'Автоперевод включён' : 'Автоперевод выключен');
+      var mark = flag.querySelector('.mh-flag-mark');
+      if (mark) mark.textContent = autoTrOn() ? 'ON' : '';
     }
   }
 
@@ -1301,8 +1327,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<div class="panel"><div class="panel-head"><div><h2>Строка над альбомами</h2><p>Так, как на сайте — правьте текст прямо в плашке.</p></div></div>' +
       '<div class="cover-grid is-stack">' + pfIntroPlate(data, 'ru') + pfIntroPlate(data, 'en') + '</div></div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Альбомы</h2><p>Карточки такие же, как на сайте. Перетаскивайте карточки, чтобы менять порядок.</p></div></div>' +
-      '<div class="album-grid">' + data.albums.map(albumTile).join('') +
-      '<button class="add-tile is-card" type="button" id="addAlbum"><span>+</span> Добавить альбом</button></div>' +
+      '<div class="album-grid">' + data.albums.map(albumTile).join('') + '</div>' +
+      '<button class="add-tile is-inline is-strip" type="button" id="addAlbum"><span>+</span> Добавить альбом</button>' +
       (openIndex >= 0 ? albumEditor(data.albums[openIndex], openIndex) : '') + '</div>' +
       '<div class="panel"><div class="panel-head"><div><h2>Блок «Обо мне»</h2><p>Точно такой же блок, как на сайте: нажмите на любой текст и правьте. Значок пункта можно загрузить картинкой.</p></div></div>' +
       '<div class="cover-grid is-column">' + pfAboutBlock(data, 'ru') + pfAboutBlock(data, 'en') + '</div></div>';
@@ -1336,7 +1362,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $$('[data-delete-pf-stage]', editor).forEach(function (button) {
       button.onclick = function () {
         var i = Number(button.dataset.deletePfStage);
-        if (!confirm('Удалить пункт «' + (data.aboutBlock.stages[i].title.ru || 'без названия') + '»?')) return;
+        if (needConfirm('pf-stage-' + i, { eyebrow: 'Удаление', title: 'Удалить пункт?', text: 'Пункт «' + (data.aboutBlock.stages[i].title.ru || 'Без названия') + '» исчезнет из блока «Обо мне».', ok: 'Удалить', danger: true }, function () { button.onclick(); })) return;
         data.aboutBlock.stages.splice(i, 1); setDirty('portfolio'); renderPortfolio();
       };
     });
@@ -1363,7 +1389,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         event.stopPropagation();
         var i = Number(button.dataset.delAlbum);
         var album = albums[i];
-        if (!confirm('Удалить альбом «' + (album.title.ru || 'без названия') + '» со всеми фотографиями?')) return;
+        if (needConfirm('album-' + i, { eyebrow: 'Удаление', title: 'Удалить альбом?', text: 'Альбом «' + (album.title.ru || 'Без названия') + '» удалится со всеми фотографиями.', ok: 'Удалить альбом', danger: true }, function () { button.onclick(event); })) return;
         if (openAlbumId === album.id) openAlbumId = null;
         albums.splice(i, 1); setDirty('portfolio'); renderPortfolio();
       };
@@ -1432,7 +1458,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       button.onclick = function () {
         var i = Number(button.dataset.remove);
         var target = album.photos[i];
-        if (!confirm('Удалить фотографию «' + ((target && target.name) || 'без названия') + '»?')) return;
+        if (needConfirm('album-photo-' + i, { eyebrow: 'Удаление', title: 'Удалить фотографию?', text: '«' + ((target && target.name) || 'Без названия') + '» будет убрана из альбома.', ok: 'Удалить', danger: true }, function () { button.onclick(); })) return;
         var removed = album.photos.splice(i, 1)[0];
         if (removed && removed.id === album.previewId) album.previewId = album.photos[0] ? album.photos[0].id : '';
         setDirty('portfolio'); renderPortfolio();
@@ -1558,7 +1584,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         chooseFiles({ multiple: false }, function (images) { card.image = images[0]; setDirty('work'); renderWork(); });
       };
       $('[data-delete-work]', root).onclick = function () {
-        if (!confirm('Удалить карточку «' + (card.title.ru || 'без названия') + '»?')) return;
+        if (needConfirm('work-card-' + cardIndex, { eyebrow: 'Удаление', title: 'Удалить карточку?', text: 'Карточка «' + (card.title.ru || 'Без названия') + '» исчезнет из раздела услуг.', ok: 'Удалить', danger: true }, function () { $('[data-delete-work]', root).onclick(); })) return;
         draft.work.cards.splice(cardIndex, 1); setDirty('work'); renderWork();
       };
     });
@@ -1645,13 +1671,13 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           '<label class="field"><span>' + (c.type === 'phone' ? 'Номер телефона' : 'Ссылка') + '</span><input data-ct-link="' + i + '" value="' + esc(c.type === 'phone' ? c.value : c.href) + '" placeholder="' + (c.type === 'phone' ? '+7 900 000-00-00' : 'https://…') + '"></label></div>';
       }).join('') + '</div>' +
       '<p class="help">Если очистить поле — плашка не будет показываться на сайте.</p></div>' +
-      '<div class="panel"><div class="panel-head"><div><h2>Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
+      '<div class="panel"><div class="panel-head"><div><h2 class="h2-uni">Вопросы и ответы (FAQ)</h2><p>Это реальные вопросы с сайта — отредактируйте или напишите свои. Русские поля слева, английские справа.</p></div><button id="addFaq" class="button button-light" type="button">Добавить вопрос</button></div>' +
       '<div id="faqRows">' + faq.map(function (f, i) {
         return '<div class="faq-admin-item"><div class="faq-admin-head"><span class="faq-head-left"><span class="faq-drag" title="Перетащите, чтобы поменять порядок">⣿</span><b>Вопрос ' + (i + 1) + '</b></span><button type="button" class="text-button" data-faq-del="' + i + '">Удалить</button></div><div class="field-grid">' +
           '<label class="field"><span>Вопрос · Русский</span><textarea data-faq="' + i + '.q.ru">' + esc(f.q.ru) + '</textarea></label>' +
-          '<label class="field"><span>Вопрос · English</span><textarea data-faq="' + i + '.q.en">' + esc(f.q.en) + '</textarea></label>' +
+          '<label class="field" data-plang="en"><span>Вопрос · English</span><textarea data-faq="' + i + '.q.en">' + esc(f.q.en) + '</textarea></label>' +
           '<label class="field"><span>Ответ · Русский</span><textarea data-faq="' + i + '.a.ru">' + esc(f.a.ru) + '</textarea></label>' +
-          '<label class="field"><span>Ответ · English</span><textarea data-faq="' + i + '.a.en">' + esc(f.a.en) + '</textarea></label>' +
+          '<label class="field" data-plang="en"><span>Ответ · English</span><textarea data-faq="' + i + '.a.en">' + esc(f.a.en) + '</textarea></label>' +
           '</div></div>';
       }).join('') + '</div></div>';
     $$('[data-ct-link]', editor).forEach(function (input) {
@@ -1677,7 +1703,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     $$('[data-faq-del]', editor).forEach(function (b) {
       b.onclick = function () {
         var i = Number(b.dataset.faqDel);
-        if (!confirm('Удалить вопрос «' + ((faq[i].q.ru || faq[i].q.en || '') + '').slice(0, 60) + '»?')) return;
+        if (needConfirm('faq-' + i, { eyebrow: 'Удаление', title: 'Удалить вопрос?', text: '«' + ((faq[i].q.ru || faq[i].q.en || 'Без текста') + '').slice(0, 90) + '» больше не будет показываться на сайте.', ok: 'Удалить', danger: true }, function () { b.onclick(); })) return;
         faq.splice(i, 1); setDirty(); renderContacts();
       };
     });
@@ -1811,7 +1837,56 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function openPreview() { renderPreview(); $('#previewModal').classList.remove('is-hidden'); document.body.style.overflow = 'hidden'; }
   function closePreview() { $('#previewModal').classList.add('is-hidden'); document.body.style.overflow = ''; }
-  function askPublish() { closePreview(); $('#confirmModal').classList.remove('is-hidden'); }
+  var confirmResolve = null;
+
+  function askConfirmBox(options) {
+    var o = options || {};
+    var eyebrow = $('#confirmEyebrow');
+    var text = $('#confirmText');
+    if (eyebrow) eyebrow.textContent = o.eyebrow || 'Подтверждение';
+    $('#confirmTitle').textContent = o.title || 'Подтвердите действие';
+    if (text) text.textContent = o.text || '';
+    var ok = $('#confirmPublish');
+    var cancel = $('#cancelPublish');
+    ok.textContent = o.ok || 'Продолжить';
+    ok.disabled = false;
+    ok.classList.toggle('is-danger', !!o.danger);
+    cancel.textContent = o.cancel || 'Отмена';
+    $('#confirmModal').classList.remove('is-hidden');
+    setTimeout(function () { try { ok.focus(); } catch (e) {} }, 30);
+    if (confirmResolve) { var previous = confirmResolve; confirmResolve = null; previous(false); }
+    return new Promise(function (resolve) { confirmResolve = resolve; });
+  }
+
+  function settleConfirm(value) {
+    $('#confirmModal').classList.add('is-hidden');
+    var resolve = confirmResolve;
+    confirmResolve = null;
+    if (resolve) resolve(!!value);
+  }
+
+  var confirmedOnce = {};
+
+  function needConfirm(key, options, rerun) {
+    if (confirmedOnce[key]) { delete confirmedOnce[key]; return false; }
+    askConfirmBox(options).then(function (ok) {
+      if (!ok) return;
+      confirmedOnce[key] = true;
+      try { rerun(); } finally { delete confirmedOnce[key]; }
+    });
+    return true;
+  }
+
+  function askPublish() {
+    closePreview();
+    askConfirmBox({
+      eyebrow: 'Последняя проверка',
+      title: 'Опубликовать изменения?',
+      text: 'Новые фотографии и тексты станут доступны на сайте.',
+      ok: 'Опубликовать',
+      cancel: 'Ещё проверить'
+    }).then(function (ok) { if (ok) publish(); });
+  }
   function closeConfirm() { $('#confirmModal').classList.add('is-hidden'); }
 
   function publish() {
@@ -1923,7 +1998,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       });
       $$('#adminList [data-admin-del]').forEach(function (button) {
         button.onclick = function () {
-          if (!window.confirm('Удалить этого администратора? Он больше не сможет войти в панель.')) return;
+          if (needConfirm('admin-' + button.dataset.adminDel, { eyebrow: 'Удаление', title: 'Удалить администратора?', text: 'Он больше не сможет войти в панель управления.', ok: 'Удалить', danger: true }, function () { button.onclick(); })) return;
           api('admin-del', { method: 'POST', json: { id: button.dataset.adminDel } })
             .then(function () { toast('Администратор удалён'); renderAdminList(); })
             .catch(function (error) { toast(error.message); });
@@ -2023,10 +2098,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   });
   $('#publish').onclick = askPublish;
   $('#publishFromPreview').onclick = askPublish;
-  $('#cancelPublish').onclick = closeConfirm;
-  $('#confirmPublish').onclick = publish;
+  $('#cancelPublish').onclick = function () { settleConfirm(false); };
+  $('#confirmPublish').onclick = function () { settleConfirm(true); };
+  $('#confirmModal').onclick = function (event) { if (event.target === this) settleConfirm(false); };
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') { closePreview(); closeConfirm(); closeSettings(); document.body.classList.remove('menu-open'); }
+    if (event.key === 'Escape') { closePreview(); settleConfirm(false); closeSettings(); document.body.classList.remove('menu-open'); }
   });
   window.addEventListener('beforeunload', function (event) {
     if (!Object.keys(dirtySections).length) return;

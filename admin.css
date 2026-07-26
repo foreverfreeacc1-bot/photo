@@ -851,3 +851,33 @@ body.tr-auto .plate-head b{opacity:.65}
   .pv-controls .device-switch button{flex:1 1 0;padding:8px 4px;font-size:8.5px;letter-spacing:.08em}
   .pv-replay{width:100%;margin-top:8px}
 }
+
+/* ===== правки 36 ===== */
+/* отступы у кнопок добавления */
+.wk-feats{margin-bottom:12px}
+.wk-info .text-button,.plate-body .text-button,.site-plate .text-button{margin-top:8px}
+.wk-info .text-button{margin-bottom:6px}
+.site-plate .add-tile.is-inline,.plate-body .add-tile.is-inline{margin-top:16px}
+.album-editor .divider{margin-top:18px}
+.album-editor [data-cover-menu]{margin:6px 0 6px}
+.album-editor .cover-menu{margin-top:10px}
+.album-editor .upload-grid{margin-top:16px}
+
+/* «Добавить альбом» — такая же полоса, как в услугах */
+.add-tile.is-strip{display:flex;width:100%;margin-top:16px;justify-content:center;align-self:stretch}
+
+/* единый шрифт в заголовке с латиницей */
+.h2-uni{font-family:'CormorantLight',Georgia,serif;letter-spacing:.005em}
+
+/* опасное действие в окне подтверждения */
+.button.is-danger{background:var(--red);border-color:var(--red);color:#fff}
+.button.is-danger:hover{background:#8f3131;border-color:#8f3131}
+
+/* мобильная шапка: «Управление» крупнее и вплотную */
+.mobile-head .mh-brand{gap:4px}
+.mobile-head .brand-name-m{margin-right:-.2em}
+.mobile-head .brand-sub-m{padding:4px 8px;font-size:7.5px;letter-spacing:.2em}
+
+/* иконка автоперевода без зелёной точки: только метка «ON» */
+.mh-flag .mh-flag-mark{right:-4px;bottom:-4px;width:auto;height:auto;min-width:12px;padding:1px 3px;border:1px solid #fff;border-radius:0;background:#111;color:#fff;font-family:var(--sans);font-size:5.5px;font-weight:600;letter-spacing:.06em;line-height:1;font-style:normal;text-align:center;display:none}
+.mh-flag.is-on .mh-flag-mark{display:block;background:#111}

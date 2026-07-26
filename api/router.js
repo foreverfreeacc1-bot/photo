@@ -705,6 +705,20 @@ module.exports = async function handler(req, res) {
       let buf;
       try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
       if (!buf || buf.length < 100 || buf.length > 4.1 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
+      try {
+        const LIMIT_BYTES = 10 * 1024 * 1024 * 1024;
+        const cur = await readContent();
+        let used = 0;
+        (function walk(node) {
+          if (!node || typeof node !== 'object') return;
+          if (Array.isArray(node)) { node.forEach(walk); return; }
+          if (typeof node.url === 'string' && typeof node.size === 'number') used += node.size;
+          for (const key of Object.keys(node)) walk(node[key]);
+        })(cur);
+        if (used + buf.length > LIMIT_BYTES) {
+          return send(res, 413, { error: 'Достигнут лимит 10 ГБ. Удалите часть фотографий, чтобы загрузить новые.' });
+        }
+      } catch (e) { console.error('CMS quota check:', e && e.message); }
       let converted;
       if (!sharp) {
         const kind = sniff(buf);
