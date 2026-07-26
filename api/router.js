@@ -311,6 +311,89 @@ async function r2List(prefix, token) {
   return res.text();
 }
 
+/* список файлов в хранилище: [{ name, size, ts }] */
+async function listStorageObjects() {
+  const out = [];
+  if (LOCAL_STORE) {
+    const dir = pathLocal.join(LOCAL_DIR, 'cms');
+    if (!fsLocal.existsSync(dir)) return out;
+    fsLocal.readdirSync(dir).forEach(function (n) {
+      if (n === 'content.json') return;
+      try {
+        const st = fsLocal.statSync(pathLocal.join(dir, n));
+        if (st.isFile()) out.push({ name: n, size: st.size, ts: st.mtimeMs });
+      } catch (e) {}
+    });
+    return out;
+  }
+  if (USE_R2) {
+    let token = '';
+    let guard = 0;
+    do {
+      const xml = await r2List('cms/', token);
+      const blocks = xml.match(/<Contents>[\s\S]*?<\/Contents>/g) || [];
+      blocks.forEach(function (b) {
+        const key = (b.match(/<Key>([^<]+)<\/Key>/) || [])[1] || '';
+        const size = Number((b.match(/<Size>(\d+)<\/Size>/) || [])[1] || 0);
+        const lm = (b.match(/<LastModified>([^<]+)<\/LastModified>/) || [])[1] || '';
+        const name = key.replace(/^cms\//, '');
+        if (!name || name === 'content.json') return;
+        out.push({ name: name, size: size, ts: lm ? Date.parse(lm) : 0 });
+      });
+      const more = /<IsTruncated>true<\/IsTruncated>/.test(xml);
+      const nt = xml.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/);
+      token = more && nt ? nt[1] : '';
+    } while (token && ++guard < 30);
+    return out;
+  }
+  if (SB_URL && SB_KEY) {
+    const rr = await fetch(SB_URL + '/storage/v1/object/list/' + BUCKET, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + SB_KEY, apikey: SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: 'cms/', limit: 1000, offset: 0 })
+    });
+    if (rr.ok) {
+      const arr = await rr.json();
+      (Array.isArray(arr) ? arr : []).forEach(function (o) {
+        if (!o || !o.name || o.name === 'content.json') return;
+        const sz = o.metadata && Number(o.metadata.size) ? Number(o.metadata.size) : 0;
+        const t = o.updated_at || o.created_at || '';
+        out.push({ name: o.name, size: sz, ts: t ? Date.parse(t) : 0 });
+      });
+    }
+    return out;
+  }
+  return out;
+}
+
+/* файлы, которые больше не используются на сайте (свежие загрузки не трогаем) */
+const GC_KEEP_MS = 60 * 60 * 1000;
+async function findUnusedFiles(content) {
+  const c = content || (await readContent());
+  const used = fileNames(c);
+  const list = await listStorageObjects();
+  const now = Date.now();
+  return list.filter(function (o) {
+    if (used.has(o.name)) return false;
+    if (o.ts && now - o.ts < GC_KEEP_MS) return false;
+    return true;
+  });
+}
+
+async function gcStorage(content) {
+  try {
+    const junk = await findUnusedFiles(content);
+    if (!junk.length) return 0;
+    const slice = junk.slice(0, 200);
+    await Promise.all(slice.map(function (o) { return store('DELETE', 'cms/' + o.name).catch(function () {}); }));
+    console.error('CMS gc removed ' + slice.length + ' file(s)');
+    return slice.length;
+  } catch (e) {
+    console.error('CMS gc:', e && e.message);
+    return 0;
+  }
+}
+
 async function storageUsage() {
   const out = { used: 0, files: 0, source: 'content' };
   if (LOCAL_STORE) {
@@ -378,23 +461,11 @@ async function storageUsage() {
   return out;
 }
 
-/* замена старых ссылок на заблокированный в РФ фотохостинг на локальные файлы проекта */
-function migrateBlockedImgs(raw) {
-  if (typeof raw !== 'string' || raw.indexOf('images.unsplash.com') < 0) return raw;
-  let i = 0;
-  return raw.replace(/https:\/\/images\.unsplash\.com\/[^"'\\\s]+/g, function () {
-    i += 1;
-    const n = ((i - 1) % 12) + 1;
-    return '/img/def/ph' + (n < 10 ? '0' + n : String(n)) + '.jpg';
-  });
-}
-
 async function readContent() {
   try {
     const r = await store('GET', 'cms/content.json');
     if (r.ok) {
       let raw = await r.text();
-      raw = migrateBlockedImgs(raw);
       if (USE_R2 && R2_PUBLIC_BASE_URL) raw = raw.split(R2_PUBLIC_BASE_URL + '/cms/').join('/api/img/');
       const c = Object.assign(defaults(), JSON.parse(raw));
       /* миграция: прежние заглушки панели не должны перекрывать родной анимированный текст сайта */
@@ -695,8 +766,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (p === 'storage' && method === 'GET') {
-      const usage = await storageUsage();
-      return send(res, 200, { used: usage.used, files: usage.files, source: usage.source, limit: 10 * 1024 * 1024 * 1024 });
+      const u = await storageUsage();
+      let unused = 0;
+      try { unused = (await findUnusedFiles()).length; } catch (e) {}
+      return send(res, 200, { used: u.used, files: u.files, source: u.source, unused: unused, limit: 10 * 1024 * 1024 * 1024 });
+    }
+
+    if (p === 'storage-gc' && method === 'POST') {
+      const removed = await gcStorage();
+      return send(res, 200, { ok: true, removed: removed });
     }
 
     if (p === 'admins' && method === 'GET') {
@@ -880,14 +958,11 @@ module.exports = async function handler(req, res) {
     if (p === 'admin-content' && method === 'PUT') {
       const j = await readBody(req);
       const c = await readContent();
-      const oldNames = fileNames(c);
       c.admin = sanitizeAdmin(j);
       await writeContentJson(c);
-      const newNames = fileNames(c);
-      const unused = Array.from(oldNames).filter(function (n) { return !newNames.has(n); });
-      if (unused.length) { await Promise.all(unused.map(function (n) { return store('DELETE', 'cms/' + n).catch(function () {}); })); console.error('CMS gc removed ' + unused.join(',')); }
+      const removed = await gcStorage(c);
       console.error('CMS publish admin-content ip=' + ip);
-      return send(res, 200, { ok: true, content: c.admin });
+      return send(res, 200, { ok: true, content: c.admin, removed: removed });
     }
 
     /* сохранение разделов */

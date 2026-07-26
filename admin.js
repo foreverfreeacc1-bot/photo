@@ -265,10 +265,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function demoContent() {
     var photos = [
-      { id: uid(), url: '/img/def/ph01.jpg', name: 'portrait-01.avif' },
-      { id: uid(), url: '/img/def/ph02.jpg', name: 'portrait-02.avif' },
-      { id: uid(), url: '/img/def/ph03.jpg', name: 'portrait-03.avif' },
-      { id: uid(), url: '/img/def/ph04.jpg', name: 'wedding-01.avif' }
+      { id: uid(), url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=85', name: 'portrait-01.avif' },
+      { id: uid(), url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=85', name: 'portrait-02.avif' },
+      { id: uid(), url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1200&q=85', name: 'portrait-03.avif' },
+      { id: uid(), url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=85', name: 'wedding-01.avif' }
     ];
     return {
       loader: { title: { ru: 'Алиса Митерова', en: 'Alisa Miterova' }, subtitle: { ru: 'Живопись, графика, дизайн и фотография', en: 'Art, design and photography' }, images: photos.slice(0, 3) },
@@ -587,7 +587,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function fmtSize(n) {
     n = Number(n) || 0;
     if (!n) return '';
-    return n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
+    if (n < 1048576) return Math.max(1, Math.round(n / 1024)) + ' КБ';
+    if (n < 1073741824) return (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
+    return (n / 1073741824).toFixed(2).replace('.', ',') + ' ГБ';
   }
   var sizeCache = {};
   function fillSizes(root) {
@@ -2054,6 +2056,18 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     if (b >= 1024) return Math.round(b / 1024) + ' КБ';
     return b + ' Б';
   }
+  function fmtPct(used, limit) {
+    if (!used) return '0%';
+    var p = used / limit * 100;
+    if (p >= 100) return '100%';
+    var text;
+    if (p >= 10) text = p.toFixed(1);
+    else if (p >= 1) text = p.toFixed(2);
+    else if (p >= 0.01) text = p.toFixed(3);
+    else return '<0,01%';
+    text = text.replace(/0+$/, '').replace(/\.$/, '');
+    return text.replace('.', ',') + '%';
+  }
   function paintStorage(used, limit, files) {
     limit = limit || STORAGE_LIMIT;
     var free = Math.max(0, limit - used);
@@ -2061,7 +2075,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     if (pct > 100) pct = 100;
     var fill = $('#stgFill');
     if (fill) fill.style.width = (used > 0 && pct < 1.5 ? 1.5 : pct) + '%';
-    if ($('#stgUsed')) $('#stgUsed').textContent = fmtSize(used) + ' (' + String(pct).replace('.', ',') + '%)';
+    if ($('#stgUsed')) $('#stgUsed').textContent = (used ? fmtSize(used) : '0 КБ') + ' (' + fmtPct(used, limit) + ')';
     if ($('#stgFree')) $('#stgFree').textContent = fmtSize(free);
     if ($('#stgAll')) $('#stgAll').textContent = fmtSize(limit);
     if ($('#stgFiles')) $('#stgFiles').textContent = files === undefined || files === null ? '\u2014' : String(files);
@@ -2070,8 +2084,22 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     paintStorage(usedBytes(), STORAGE_LIMIT, null);
     api('storage').then(function (r) {
       if (r && r.limit) paintStorage(Number(r.used) || 0, Number(r.limit), r.files);
+      if ($('#stgJunk')) {
+        var n = Number(r && r.unused) || 0;
+        $('#stgJunk').textContent = n ? n + ' файл(ов) не используется на сайте' : 'Все файлы используются на сайте';
+      }
+      if ($('#stgClean')) $('#stgClean').disabled = !(Number(r && r.unused) || 0);
     }).catch(function () {});
   }
+  if ($('#stgClean')) $('#stgClean').onclick = function () {
+    var btn = $('#stgClean');
+    btn.disabled = true;
+    api('storage-gc', { method: 'POST' }).then(function (r) {
+      var n = Number(r && r.removed) || 0;
+      toast(n ? 'Удалено неиспользуемых файлов: ' + n : 'Неиспользуемых файлов нет');
+      renderStorage();
+    }).catch(function (e) { toast(e.message); btn.disabled = false; });
+  };
   $$('#setTabs [data-set-tab]').forEach(function (b) {
     b.onclick = function () { setSettingsTab(b.dataset.setTab); if (b.dataset.setTab === 'storage') renderStorage(); };
   });
