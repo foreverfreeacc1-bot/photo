@@ -121,10 +121,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function iconMarkup(key) { return ICON_SET[key] || ICON_SET.camera; }
 
   var NATIVE_ALBUMS = [
-    { title: { ru: 'ПОРТРЕТЫ', en: 'PORTRAITS' }, desc: { ru: '', en: '' } },
-    { title: { ru: 'СВАДЬБЫ', en: 'WEDDINGS' }, desc: { ru: '', en: '' } },
-    { title: { ru: 'КОММЕРЧЕСКАЯ СЪЕМКА', en: 'COMMERCIAL' }, desc: { ru: '', en: '' } },
-    { title: { ru: 'ЛАЙФСТАЙЛ', en: 'LIFESTYLE' }, desc: { ru: '', en: '' } }
+    { title: { ru: 'ПОРТРЕТЫ', en: 'PORTRAITS' }, desc: { ru: 'Камерные истории одного человека. Студия, город, естественный свет — минимум декораций, максимум взгляда и характера.', en: 'Intimate stories of one person. Studio, city, natural light — minimum decorations, maximum gaze and character.' } },
+    { title: { ru: 'СВАДЬБЫ', en: 'WEDDINGS' }, desc: { ru: 'День целиком — от сборов до первого танца. Без постановочной суеты, только живые эмоции.', en: 'The whole day — from getting ready to the first dance. No staged fuss, only real emotions.' } },
+    { title: { ru: 'КОММЕРЧЕСКАЯ СЪЕМКА', en: 'COMMERCIAL' }, desc: { ru: 'Съемки для брендов: лукбуки, кампейны, контент для медиа и соцсетей.', en: 'Shoots for brands: lookbooks, campaigns, content for media and social networks.' } },
+    { title: { ru: 'ЛАЙФСТАЙЛ', en: 'LIFESTYLE' }, desc: { ru: 'Жизнь как она есть: семейные прогулки, путешествия, повседневные кадры.', en: 'Life as it is: family walks, travels, everyday frames.' } }
   ];
 
   var NATIVE_PF_STAGES = [
@@ -1009,6 +1009,58 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     loadNativeCovers();
   }
 
+  var AUTO_TR_KEY = 'cmsAutoTr';
+  var trTimers = new WeakMap();
+  var ceReg = [];
+  function autoTrOn() { try { return localStorage.getItem(AUTO_TR_KEY) === '1'; } catch (e) { return false; } }
+  function setAutoTr(on) { try { localStorage.setItem(AUTO_TR_KEY, on ? '1' : '0'); } catch (e) {} }
+  function translateRu(text) {
+    return api('translate', { method: 'POST', json: { q: String(text || '') } }).then(function (r) { return (r && r.text) || ''; });
+  }
+  function paintEn(target, value) {
+    ceReg = ceReg.filter(function (r) { return document.contains(r.el); });
+    ceReg.forEach(function (r) {
+      if (r.target === target && r.last === 'en' && r.el !== document.activeElement) {
+        r.el.innerHTML = esc(String(value || '')).replace(/\n/g, '<br>');
+      }
+    });
+  }
+  function queueAutoTr(target, section) {
+    if (!autoTrOn() || !target || typeof target.en === 'undefined') return;
+    var prev = trTimers.get(target);
+    if (prev) clearTimeout(prev);
+    trTimers.set(target, setTimeout(function () {
+      trTimers.delete(target);
+      var src = String(target.ru || '');
+      if (!src.trim()) { target.en = ''; paintEn(target, ''); setDirty(section); return; }
+      translateRu(src).then(function (out) {
+        if (!out) return;
+        target.en = out;
+        paintEn(target, out);
+        setDirty(section);
+      }).catch(function (e) { toast((e && e.message) || 'Автоперевод недоступен'); });
+    }, 900));
+  }
+  function translateAll() {
+    var jobs = [];
+    (function walk(node) {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node)) { node.forEach(walk); return; }
+      if (typeof node.ru === 'string' && node.ru.trim() && typeof node.en !== 'undefined') jobs.push(node);
+      Object.keys(node).forEach(function (k) { if (node[k] && typeof node[k] === 'object') walk(node[k]); });
+    })(draft);
+    var i = 0, done = 0;
+    function step() {
+      if (i >= jobs.length) return Promise.resolve(done);
+      var node = jobs[i++];
+      return translateRu(node.ru).then(function (out) {
+        if (out) { node.en = out; done++; }
+        return step();
+      });
+    }
+    return step().then(function (n) { if (n) setDirty(active); return n; });
+  }
+
   function bindPathEditable(root, object, attr, section) {
     $$('[' + attr + ']', root).forEach(function (el) {
       var path = el.getAttribute(attr).split('.');
@@ -1019,6 +1071,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         target = target[path[i]];
       }
       var last = path[path.length - 1];
+      ceReg.push({ el: el, target: target, last: last });
       var value = target[last] == null ? '' : String(target[last]);
       el.setAttribute('contenteditable', 'true');
       el.setAttribute('role', 'textbox');
@@ -1037,6 +1090,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         var next = el.innerText.replace(/\r/g, '');
         target[last] = multiline ? next : next.replace(/\s+/g, ' ').trim();
         setDirty(section);
+        if (last === 'ru') queueAutoTr(target, section);
       });
     });
   }
@@ -1108,6 +1162,14 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function applyNativeMedia() {
     var changed = false;
+    draft.portfolio.albums.forEach(function (album, i) {
+      if (!album.desc) album.desc = { ru: '', en: '' };
+      var nd = NATIVE_ALBUMS[i] && NATIVE_ALBUMS[i].desc;
+      if (nd && !String(album.desc.ru || '').trim() && !String(album.desc.en || '').trim()) {
+        album.desc = { ru: nd.ru, en: nd.en };
+        changed = true;
+      }
+    });
     if (NATIVE_ALBUM_PHOTOS) {
       draft.portfolio.albums.forEach(function (album, i) {
         if (!album.photos.length && NATIVE_ALBUM_PHOTOS[i] && NATIVE_ALBUM_PHOTOS[i].length) {
@@ -1151,7 +1213,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     return '<article class="cover-plate site-plate">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + album.photos.length + ' фото</span></div>' +
       '<div class="plate-body is-album">' +
-      '<div class="ce site-alb-title" data-ace="title.' + lang + '" spellcheck="false"></div>' +
+      '<div class="ce site-alb-title" data-ace="title.' + lang + '" data-multiline spellcheck="false"></div>' +
+      '<span class="alb-lbl">Описание альбома</span>' +
       '<div class="ce site-alb-desc" data-ace="desc.' + lang + '" data-multiline spellcheck="false"></div>' +
       '</div></article>';
   }
@@ -1609,9 +1672,19 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     pvFit();
   }
 
+  function syncPreviewBar() {
+    $$('[data-pvlang]').forEach(function (b) {
+      b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); };
+      b.classList.toggle('is-active', b.getAttribute('data-pvlang') === previewLang);
+    });
+    var rpb = $('#pvReplay');
+    if (rpb) rpb.hidden = active !== 'loader';
+  }
+
   function renderPreview() {
     var frame = $('#previewFrame');
     frame.className = 'preview-frame ' + device;
+    syncPreviewBar();
     var nav = '<div class="pv-nav"><b>Alisa Miterova</b><span>PORTFOLIO&nbsp;&nbsp;&nbsp; WORK&nbsp;&nbsp;&nbsp; КОНТАКТЫ</span></div>';
     if (active === 'loader') {
       frame.innerHTML = '<div class="pv-loading">Загружаем настоящий лоадер…</div>';
@@ -1619,10 +1692,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         if (active !== 'loader' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button><button type="button" data-pvreplay title="Воспроизвести снова" aria-label="Воспроизвести снова">⟳</button></div>' +
-          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe></div>';
-        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
-        $('[data-pvreplay]', frame).onclick = function () { var f = $('.pv-iframe', frame); if (f) f.src = '/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now(); };
+        frame.innerHTML = '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр сайта"></iframe></div>';
+        var rp = $('#pvReplay');
+        if (rp) rp.onclick = function () { var f = $('.pv-iframe', frame); if (f) f.src = '/?cmsPreview=1&cmsLoaderLoop=1&cmsLang=' + previewLang + '&t=' + Date.now(); };
         fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
@@ -1634,9 +1706,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         if (active !== 'home' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
-          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр главной"></iframe></div>';
-        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        frame.innerHTML = '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр главной"></iframe></div>';
         fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
@@ -1648,9 +1718,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         if (active !== 'portfolio' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
-          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=pf&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Портфолио"></iframe></div>';
-        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        frame.innerHTML = '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=pf&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Портфолио"></iframe></div>';
         fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
@@ -1662,9 +1730,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         if (active !== 'work' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
-          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=wk&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Услуги"></iframe></div>';
-        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        frame.innerHTML = '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=wk&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр раздела Услуги"></iframe></div>';
         fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
@@ -1676,9 +1742,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         if (active !== 'contacts' || $('#previewModal').classList.contains('is-hidden')) return;
         try { sessionStorage.setItem('cmsPreviewContent', JSON.stringify(result.content || {})); } catch (e) {}
         frame.classList.add('is-live');
-        frame.innerHTML = '<div class="pv-langbar"><button type="button"' + (previewLang === 'ru' ? ' class="is-on"' : '') + ' data-pvlang="ru">RU</button><button type="button"' + (previewLang === 'en' ? ' class="is-on"' : '') + ' data-pvlang="en">EN</button></div>' +
-          '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=ct&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр контактов"></iframe></div>';
-        $$('[data-pvlang]', frame).forEach(function (b) { b.onclick = function () { previewLang = b.getAttribute('data-pvlang'); renderPreview(); }; });
+        frame.innerHTML = '<div class="pv-scale"><iframe class="pv-iframe" src="/?cmsPreview=1&cmsHome=1&cmsSec=ct&cmsLang=' + previewLang + '&t=' + Date.now() + '" title="Предпросмотр контактов"></iframe></div>';
         fitPreviewScale(frame);
       }).catch(function (error) {
         frame.innerHTML = '<div class="pv-loading">Не удалось открыть предпросмотр: ' + esc(error.message) + '</div>';
@@ -1821,6 +1885,21 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       input.focus();
     };
   });
+  (function () {
+    var cb = $('#autoTr');
+    if (cb) {
+      cb.checked = autoTrOn();
+      cb.onchange = function () { setAutoTr(cb.checked); toast(cb.checked ? 'Автоперевод включен' : 'Автоперевод выключен'); };
+    }
+    var ta = $('#trAll');
+    if (ta) ta.onclick = function () {
+      ta.disabled = true;
+      toast('Переводим…');
+      translateAll().then(function (n) { ta.disabled = false; render(); toast('Переведено полей: ' + n); })
+        .catch(function (e) { ta.disabled = false; toast((e && e.message) || 'Не удалось перевести'); });
+    };
+  })();
+
   $('#openSettings').onclick = function () {
     $('#settingsModal').classList.remove('is-hidden');
     renderAdminList();

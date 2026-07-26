@@ -731,3 +731,19 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .svc-plate .ce:focus{outline:1px solid #111 !important;outline-offset:3px;background:rgba(17,17,17,.06)}
 .wkcap:empty::before{content:'\041D\0430\0437\0432\0430\043D\0438\0435 \0443\0441\043B\0443\0433\0438';color:rgba(17,17,17,.32)}
 .wkprice:empty::before{content:'\0426\0435\043D\0430';color:rgba(17,17,17,.32)}
+
+/* ===== правки 33 ===== */
+.mobile-head{position:relative;justify-content:flex-start}
+.mobile-head .mh-brand{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;white-space:nowrap}
+.mobile-head .brand-name-m{font-family:var(--serif);font-size:15px;line-height:1;letter-spacing:.3em;text-transform:uppercase;color:var(--ink);text-indent:.3em}
+.mobile-head .brand-sub-m{display:inline-block;background:#000;color:#fff;border-radius:0;padding:4px 9px;font-family:var(--sans);font-size:7px;font-weight:500;line-height:1;letter-spacing:.22em;text-transform:uppercase}
+#menuToggle.navicon-m{display:flex;flex-direction:column;justify-content:center;gap:5px;width:34px;height:34px;padding:0;border:0;border-radius:0;background:none;cursor:pointer;position:relative;z-index:2}
+#menuToggle.navicon-m i{display:block;width:22px;height:1px;background:#171716}
+.mobile-head [data-preview]{margin-left:auto;position:relative;z-index:2}
+.preview-actions{flex-wrap:wrap}
+.lang-switch button{min-width:40px;font-family:var(--sans);letter-spacing:.14em}
+.pv-replay{padding:6px 12px;font-size:9px;letter-spacing:.14em}
+.plate-body.is-album .alb-lbl{display:block;margin-top:10px;font-family:var(--sans);font-size:7.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.switch-row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink)}
+.switch-row input{width:16px;height:16px}
+.settings-hint{margin:8px 0 12px;font-size:11px;line-height:1.5;color:var(--muted)}

@@ -8,7 +8,12 @@
    ============================================================ */
 'use strict';
 const crypto = require('crypto');
-const sharp = require('sharp');
+let sharp = null;
+try { sharp = require('sharp'); } catch (e) { sharp = null; }
+const fsLocal = require('fs');
+const pathLocal = require('path');
+const LOCAL_STORE = process.env.CMS_LOCAL === '1';
+const LOCAL_DIR = process.env.CMS_LOCAL_DIR || pathLocal.join(process.cwd(), '.local-cms');
 
 const SB_URL = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
 const SB_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
@@ -26,7 +31,7 @@ const USE_R2 = !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY);
 const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? crypto.createHash('sha256').update('cms.secret.v1.' + PASS_HASH + '.' + (SB_KEY || R2_SECRET_ACCESS_KEY)).digest('hex') : '');
 const TTL = 12 * 60 * 60 * 1000;
 /* Фото отдаются через собственный домен (/api/img/...) — публичный доступ R2 не нужен */
-const PUB_BASE = USE_R2 ? '/api/img/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
+const PUB_BASE = (LOCAL_STORE || USE_R2) ? '/api/img/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
 
 /* ---------- слоты редактируемых текстов (белый список — защита от IDOR) ---------- */
 const SLOTS = [
@@ -248,7 +253,31 @@ async function r2(method, key, body, type) {
 }
 
 /* Единая точка доступа к хранилищу: key вида "cms/имя-файла" */
+function localStore(method, key, body) {
+  const file = pathLocal.join(LOCAL_DIR, key.replace(/[^a-zA-Z0-9._/-]/g, '_'));
+  try {
+    if (method === 'GET') {
+      if (!fsLocal.existsSync(file)) return { ok: false, status: 404, text: async function () { return ''; }, arrayBuffer: async function () { return Buffer.alloc(0); } };
+      const buf = fsLocal.readFileSync(file);
+      return { ok: true, status: 200, text: async function () { return buf.toString('utf8'); }, arrayBuffer: async function () { return buf; } };
+    }
+    if (method === 'PUT' || method === 'POST') {
+      fsLocal.mkdirSync(pathLocal.dirname(file), { recursive: true });
+      fsLocal.writeFileSync(file, Buffer.isBuffer(body) ? body : Buffer.from(String(body), 'utf8'));
+      return { ok: true, status: 200, text: async function () { return ''; }, arrayBuffer: async function () { return Buffer.alloc(0); } };
+    }
+    if (method === 'DELETE') {
+      if (fsLocal.existsSync(file)) fsLocal.unlinkSync(file);
+      return { ok: true, status: 200, text: async function () { return ''; }, arrayBuffer: async function () { return Buffer.alloc(0); } };
+    }
+  } catch (e) {
+    return { ok: false, status: 500, text: async function () { return String(e && e.message); }, arrayBuffer: async function () { return Buffer.alloc(0); } };
+  }
+  return { ok: false, status: 400, text: async function () { return ''; }, arrayBuffer: async function () { return Buffer.alloc(0); } };
+}
+
 async function store(method, key, body, type) {
+  if (LOCAL_STORE) return localStore(method, key, body);
   if (USE_R2) return r2(method === 'POST' ? 'PUT' : method, key, body, type);
   return sb(method === 'PUT' ? 'POST' : method, BUCKET + '/' + key, body, type);
 }
@@ -469,7 +498,7 @@ module.exports = async function handler(req, res) {
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) < 0) return send(res, 404, { error: 'Not found' });
 
     const r2Vars = [['R2_ACCOUNT_ID', R2_ACCOUNT_ID], ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID], ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY]];
-    const storageVars = USE_R2 ? [] : (r2Vars.some(function (x) { return x[1]; }) ? r2Vars : [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY]]);
+    const storageVars = (LOCAL_STORE || USE_R2) ? [] : (r2Vars.some(function (x) { return x[1]; }) ? r2Vars : [['SUPABASE_URL', SB_URL], ['SUPABASE_SERVICE_ROLE_KEY', SB_KEY]]);
     const missEnv = storageVars.concat([['SESSION_SECRET', SECRET], ['ADMIN_PASSWORD_HASH', PASS_HASH], ['ADMIN_USER', ADMIN_USER]]).filter(function (x) { return !x[1]; }).map(function (x) { return x[0]; });
     if (missEnv.length) {
       if (p === 'content') return send(res, 200, { texts: [] });
@@ -569,6 +598,25 @@ module.exports = async function handler(req, res) {
       return send(res, 403, { error: 'Сессия устарела, обновите страницу' });
     }
 
+    /* автоперевод RU -> EN */
+    if (p === 'translate' && method === 'POST') {
+      const jt = await readBody(req);
+      const q = clean(jt && jt.q, 3000);
+      if (!q) return send(res, 200, { text: '' });
+      try {
+        const rr = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=' + encodeURIComponent(q));
+        if (!rr.ok) throw new Error('HTTP ' + rr.status);
+        const data = await rr.json();
+        let out = '';
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          out = data[0].map(function (x) { return (x && x[0]) || ''; }).join('');
+        }
+        return send(res, 200, { text: out });
+      } catch (e) {
+        return send(res, 502, { error: 'Автоперевод недоступен: ' + (e && e.message ? e.message : 'error') });
+      }
+    }
+
     /* генерация magic-ссылки для входа (действует 15 минут) */
     if (p === 'magic' && method === 'POST') {
       const exp = Date.now() + 15 * 60 * 1000;
@@ -658,6 +706,14 @@ module.exports = async function handler(req, res) {
       try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
       if (!buf || buf.length < 100 || buf.length > 4.1 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
       let converted;
+      if (!sharp) {
+        const kind = sniff(buf);
+        if (!kind) return send(res, 400, { error: 'Локальный режим без sharp принимает только JPG, PNG или WebP.' });
+        const rawName = crypto.randomUUID() + '.' + kind;
+        const rawRes = await store('PUT', 'cms/' + rawName, buf, 'image/' + (kind === 'jpg' ? 'jpeg' : kind));
+        if (!rawRes.ok) return send(res, 500, { error: 'Ошибка хранилища (' + rawRes.status + ')' });
+        return send(res, 200, { url: PUB_BASE + rawName, name: rawName, size: buf.length });
+      }
       try {
         converted = await sharp(buf, { animated: false, failOn: 'error', limitInputPixels: 100000000 })
           .rotate()
