@@ -378,11 +378,23 @@ async function storageUsage() {
   return out;
 }
 
+/* замена старых ссылок на заблокированный в РФ фотохостинг на локальные файлы проекта */
+function migrateBlockedImgs(raw) {
+  if (typeof raw !== 'string' || raw.indexOf('images.unsplash.com') < 0) return raw;
+  let i = 0;
+  return raw.replace(/https:\/\/images\.unsplash\.com\/[^"'\\\s]+/g, function () {
+    i += 1;
+    const n = ((i - 1) % 12) + 1;
+    return '/img/def/ph' + (n < 10 ? '0' + n : String(n)) + '.jpg';
+  });
+}
+
 async function readContent() {
   try {
     const r = await store('GET', 'cms/content.json');
     if (r.ok) {
       let raw = await r.text();
+      raw = migrateBlockedImgs(raw);
       if (USE_R2 && R2_PUBLIC_BASE_URL) raw = raw.split(R2_PUBLIC_BASE_URL + '/cms/').join('/api/img/');
       const c = Object.assign(defaults(), JSON.parse(raw));
       /* миграция: прежние заглушки панели не должны перекрывать родной анимированный текст сайта */
