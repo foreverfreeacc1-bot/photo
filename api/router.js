@@ -67,7 +67,7 @@ function defaults() { return { texts: {}, custom: [], rsub: null, title: null, c
 function cleanLangPair(v, max) {
   return { ru: clean(v && v.ru, max), en: clean(v && v.en, max) };
 }
-function validExtImgUrl(h) { return typeof h === 'string' && h.length <= 600 && /^https:\/\/[^\s"'<>]+$/i.test(h); }
+function validExtImgUrl(h) { return typeof h === 'string' && h.length <= 600 && (/^https:\/\/[^\s"'<>]+$/i.test(h) || /^\/img\/[a-zA-Z0-9._\/-]{1,120}\.(jpg|jpeg|png|webp|avif)$/i.test(h)); }
 function cleanImage(v) {
   const u = v ? normUploadUrl(v.url) : null;
   if (!v || !(validUploadUrl(u) || validExtImgUrl(u))) return null;

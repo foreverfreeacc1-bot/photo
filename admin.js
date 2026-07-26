@@ -265,10 +265,10 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function demoContent() {
     var photos = [
-      { id: uid(), url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=85', name: 'portrait-01.avif' },
-      { id: uid(), url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=85', name: 'portrait-02.avif' },
-      { id: uid(), url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1200&q=85', name: 'portrait-03.avif' },
-      { id: uid(), url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=85', name: 'wedding-01.avif' }
+      { id: uid(), url: '/img/def/ph01.jpg', name: 'portrait-01.avif' },
+      { id: uid(), url: '/img/def/ph02.jpg', name: 'portrait-02.avif' },
+      { id: uid(), url: '/img/def/ph03.jpg', name: 'portrait-03.avif' },
+      { id: uid(), url: '/img/def/ph04.jpg', name: 'wedding-01.avif' }
     ];
     return {
       loader: { title: { ru: 'Алиса Митерова', en: 'Alisa Miterova' }, subtitle: { ru: 'Живопись, графика, дизайн и фотография', en: 'Art, design and photography' }, images: photos.slice(0, 3) },
