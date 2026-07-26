@@ -986,3 +986,12 @@ body.tr-auto .svc-list #addWork{grid-column:1 / -1;justify-self:start}
 .switch-row{cursor:pointer}
 /* «Вопросы и ответы (FAQ)» — одним шрифтом */
 .h2-uni{font-family:Georgia,'Times New Roman',serif;letter-spacing:-.01em}
+
+/* ===== правки 40 ===== */
+.svc-tools{align-items:center}
+.wk-file{display:inline-flex;align-items:center;gap:8px;min-width:0;flex:1;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:12px;letter-spacing:.01em;color:var(--muted)}
+.wk-file i{font-style:normal;font-size:11px;color:var(--ink);opacity:.5}
+.wk-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--ink)}
+.wk-file b{margin-left:auto;font-weight:500;color:var(--muted);white-space:nowrap}
+.wk-file.is-empty{color:var(--muted);border-style:dashed}
+@media(max-width:640px){.wk-file{width:100%;flex-basis:100%}.wk-file-name{max-width:none}}

@@ -669,7 +669,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var total = list.length;
     var savedTiles = null;
     function busyTiles(text) {
-      if (!savedTiles) { savedTiles = []; $$('.upload-tile button, [data-home-upload]').forEach(function (b) { savedTiles.push([b, b.innerHTML]); b.disabled = true; }); }
+      if (!savedTiles) { savedTiles = []; $$('.upload-tile button, [data-home-upload], [data-work-image]').forEach(function (b) { savedTiles.push([b, b.innerHTML]); b.disabled = true; }); }
       savedTiles.forEach(function (pair) { pair[0].innerHTML = '<b class="tile-spin">◌</b>' + text; });
     }
     function unbusyTiles() {
@@ -1548,15 +1548,26 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '</div></article>';
   }
 
+  function workFileLine(card) {
+    if (!card.image) return '<span class="wk-file is-empty">Фотография не выбрана</span>';
+    var name = card.image.name || 'Без названия';
+    var weight = Number(card.image.size)
+      ? '<b>' + esc(fmtSize(card.image.size)) + '</b>'
+      : '<b data-lazy-size="' + esc(card.image.url) + '">…</b>';
+    return '<span class="wk-file" title="' + esc(name) + '"><i>◎</i><span class="wk-file-name">' + esc(name) + '</span>' + weight + '</span>';
+  }
+
   function workCard(card, cardIndex) {
     return '<section class="svc-card" data-work="' + cardIndex + '">' +
       '<div class="svc-tools"><button class="button button-light" type="button" data-work-image>' + (card.image ? 'Заменить фотографию' : 'Выбрать фотографию') + '</button>' +
+      workFileLine(card) +
       '<button class="kill-btn" type="button" data-delete-work title="Удалить карточку">\u2715</button></div>' +
       '<div class="svc-pair">' + workPlate(card, cardIndex, 'ru') + workPlate(card, cardIndex, 'en') + '</div>' +
       '</section>';
   }
 
   function bindWorkCards() {
+    try { fillSizes($('#editor')); } catch (e) {}
     $$('.svc-card[data-work]', $('#editor')).forEach(function (root) {
       var cardIndex = Number(root.dataset.work);
       var card = draft.work.cards[cardIndex];
@@ -1588,7 +1599,12 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
         };
       });
       $('[data-work-image]', root).onclick = function () {
-        chooseFiles({ multiple: false }, function (images) { card.image = images[0]; setDirty('work'); renderWork(); });
+        chooseFiles({ multiple: false }, function (images) {
+          card.image = images[0];
+          setDirty('work');
+          renderWork();
+          if (card.image) toast('Фотография «' + (card.image.name || 'без названия') + '» загружена' + (Number(card.image.size) ? ' — ' + fmtSize(card.image.size) : ''));
+        });
       };
       $('[data-delete-work]', root).onclick = function () {
         if (needConfirm('work-card-' + cardIndex, { eyebrow: 'Удаление', title: 'Удалить карточку?', text: 'Карточка «' + (card.title.ru || 'Без названия') + '» исчезнет из раздела услуг.', ok: 'Удалить', danger: true }, function () { $('[data-delete-work]', root).onclick(); })) return;
