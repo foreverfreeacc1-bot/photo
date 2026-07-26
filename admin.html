@@ -120,48 +120,51 @@
         </div>
         <button id="closeSettings" class="icon-button close-button" type="button" aria-label="Закрыть"></button>
       </header>
+      <nav class="set-tabs" id="setTabs">
+        <button type="button" class="is-active" data-set-tab="admins">Администраторы</button>
+        <button type="button" data-set-tab="password">Личный пароль</button>
+        <button type="button" data-set-tab="translate">Автоперевод</button>
+        <button type="button" data-set-tab="storage">Хранилище</button>
+      </nav>
       <div class="settings-body">
-        <section class="set-block">
-          <div class="set-head">
-            <span class="set-num">01</span>
-            <div>
-              <h3>Список администраторов</h3>
-              <p class="set-note">Каждый администратор входит под своим логином и может редактировать сайт. Тег — это подпись рядом с именем: роль или короткая пометка.</p>
-            </div>
-          </div>
+        <section class="set-block is-active" data-set-pane="admins">
+          <h3>Администраторы</h3>
+          <p class="set-note">Каждый администратор входит под своим логином. Префикс — короткая подпись рядом с именем, например «Владелец». Его можно поменять в любой момент.</p>
           <div id="adminList" class="admin-list"></div>
           <details id="addAdminBox" class="admin-add-box">
             <summary>Добавить администратора</summary>
             <div class="admin-add">
-              <label class="set-field"><span>Имя</span><input id="naName" placeholder="Например: Алиса" maxlength="60" autocomplete="off"></label>
-              <label class="set-field"><span>Тег</span><input id="naTag" placeholder="Например: ретушёр" maxlength="40" autocomplete="off"></label>
               <label class="set-field"><span>Логин</span><input id="naUser" placeholder="Латиница и цифры" maxlength="40" autocomplete="off"></label>
               <label class="set-field"><span>Пароль</span><span class="pass-wrap"><input id="naPass" type="password" placeholder="Не короче 8 символов" autocomplete="new-password"><button class="eye" type="button" data-eye="naPass" aria-label="Показать пароль"></button></span></label>
+              <label class="set-field"><span>Префикс</span><input id="naTag" placeholder="Например: Ретушёр" maxlength="40" autocomplete="off"></label>
               <button id="addAdmin" class="button button-dark" type="button">Создать администратора</button>
             </div>
           </details>
         </section>
-        <section class="set-block">
-          <div class="set-head">
-            <span class="set-num">02</span>
-            <div>
-              <h3>Смена личного пароля</h3>
-              <p class="set-note">Новый пароль для аккаунта, под которым вы сейчас вошли.</p>
-            </div>
-          </div>
+        <section class="set-block" data-set-pane="password">
+          <h3>Личный пароль</h3>
+          <p class="set-note">Новый пароль для аккаунта, под которым вы сейчас вошли.</p>
           <div class="admin-add">
             <label class="set-field"><span>Текущий пароль</span><span class="pass-wrap"><input id="cpOld" type="password" placeholder="Введите текущий пароль" autocomplete="current-password"><button class="eye" type="button" data-eye="cpOld" aria-label="Показать пароль"></button></span></label>
             <label class="set-field"><span>Новый пароль</span><span class="pass-wrap"><input id="cpNew" type="password" placeholder="Не короче 8 символов" autocomplete="new-password"><button class="eye" type="button" data-eye="cpNew" aria-label="Показать пароль"></button></span></label>
             <button id="changePass" class="button button-dark" type="button">Поменять пароль</button>
           </div>
         </section>
-        <section class="settings-block">
-          <header class="settings-block-head"><span class="sb-num">03</span><h3>Автоперевод</h3></header>
-          <div class="settings-block-body">
-            <label class="switch-row"><input id="autoTr" type="checkbox"><span>Переводить русский текст на английский автоматически</span></label>
-            <p class="settings-hint">При изменении русского текста английская версия перепишется сама. Перевод можно поправить вручную.</p>
-            <button id="trAll" class="button button-ghost" type="button">Перевести все тексты сейчас</button>
-          </div>
+        <section class="set-block" data-set-pane="translate">
+          <h3>Автоперевод</h3>
+          <p class="set-note">При изменении русского текста английская версия перепишется сама. Перевод можно поправить вручную.</p>
+          <label class="switch-row"><input id="autoTr" type="checkbox"><span>Переводить русский текст на английский автоматически</span></label>
+          <button id="trAll" class="button button-ghost" type="button">Перевести все тексты сейчас</button>
+        </section>
+        <section class="set-block" data-set-pane="storage">
+          <h3>Хранилище</h3>
+          <p class="set-note">Общий лимит — 10 ГБ на все фотографии сайта.</p>
+          <div class="stg-bar"><i id="stgFill"></i></div>
+          <ul class="stg-legend">
+            <li><span>Занято</span><b id="stgUsed">—</b></li>
+            <li><span>Свободно</span><b id="stgFree">—</b></li>
+            <li><span>Всего</span><b>10 ГБ</b></li>
+          </ul>
         </section>
       </div>
     </div>

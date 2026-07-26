@@ -5,6 +5,7 @@
   var csrf = '';
   var saved = null;
   var draft = null;
+  var baseJson = '';
   var active = 'loader';
   var device = 'desktop';
   var screenMode = 'desktop';
@@ -517,6 +518,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function setDirty(section) {
     dirtySections[section || active] = true;
+    if (baseJson && JSON.stringify(draft) === baseJson) { clearDirty(); return; }
     $('#draftState').textContent = 'Есть неопубликованные изменения';
     $('#draftState').classList.add('changed');
     renderNav();
@@ -1058,7 +1060,9 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function syncMobileFlags() {
     var dot = $('#mhDot');
-    if (dot) dot.hidden = !Object.keys(dirtySections).length;
+    if (!dot) return;
+    dot.removeAttribute('hidden');
+    dot.classList.toggle('is-on', !!Object.keys(dirtySections).length);
   }
   function translateRu(text) {
     return api('translate', { method: 'POST', json: { q: String(text || '') } }).then(function (r) { return (r && r.text) || ''; });
@@ -1896,6 +1900,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     api('admin-content', { method: 'PUT', json: draft }).then(function (result) {
       saved = clone(result.content || draft);
       draft = normalize(clone(saved));
+      baseJson = JSON.stringify(draft);
       clearDirty();
       closeConfirm();
       toast('Изменения опубликованы');
@@ -1912,6 +1917,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     csrf = state.csrf || csrf;
     saved = normalize(state.content && state.content.admin ? state.content.admin : state.content);
     draft = clone(saved);
+    baseJson = JSON.stringify(draft);
     $('#login').classList.add('is-hidden');
     $('#adminApp').classList.remove('is-hidden');
     clearDirty();
@@ -1943,7 +1949,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   $('#magicLink').onclick = function () {
     api('magic', { method: 'POST' }).then(function (result) {
       var link = location.origin + location.pathname + '?ml=' + encodeURIComponent(result.token);
-      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(link).then(function () { toast('Ссылка скопирована. Она действует 15 минут.'); });
+      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(link).then(function () { toast('Magic link скопирована — ссылка для входа скопирована. Действует 15 минут.'); });
       window.prompt('Скопируйте ссылку. Она действует 15 минут:', link);
     }).catch(function (error) { toast(error.message); });
   };
@@ -1971,18 +1977,19 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       if (box) box.classList.toggle('is-hidden', !iAmOwner);
       var rows = list.map(function (a) {
         var canDelete = iAmOwner && !a.you && !a.root;
+        var canEdit = iAmOwner || a.you;
         return '<div class="admin-row' + (a.you ? ' is-you' : '') + '">' +
           '<span class="ar-ava">' + esc(initials(a.name || a.user)) + '</span>' +
           '<div class="ar-main">' +
           '<b>' + esc(a.name || a.user) +
-          (a.root ? '<span class="ar-chip is-owner">владелец</span>' : '') +
+          (a.tag ? '<span class="ar-chip is-owner">' + esc(a.tag) + '</span>' : '') +
           (a.you ? '<span class="ar-chip">это вы</span>' : '') + '</b>' +
           '<small>логин: ' + esc(a.user) + '</small>' +
-          '<label class="ar-tag"><span>Тег</span>' +
-          '<input type="text" maxlength="40" placeholder="' + (a.root ? 'Владелец' : 'без тега') + '" value="' + esc(a.tag || '') + '"' +
-          (iAmOwner || a.you ? ' data-admin-tag="' + esc(a.id) + '"' : ' disabled') + '></label>' +
+          '<label class="ar-tag"><span>Префикс</span>' +
+          '<input type="text" maxlength="40" placeholder="' + (a.root ? 'Владелец' : 'без префикса') + '" value="' + esc(a.tag || '') + '"' +
+          (canEdit ? ' data-admin-tag="' + esc(a.id) + '"' : ' disabled') + '></label>' +
           '</div>' +
-          (canDelete ? '<button type="button" class="ar-del" data-admin-del="' + esc(a.id) + '" title="Удалить">Удалить</button>' : '<span class="ar-lock">' + (a.you ? 'Себя удалить нельзя' : (a.root ? 'Защищён' : 'Удаляет только владелец')) + '</span>') +
+          (canDelete ? '<button type="button" class="ar-del" data-admin-del="' + esc(a.id) + '" title="Удалить">Удалить</button>' : '') +
           '</div>';
       }).join('');
       $('#adminList').innerHTML = rows || '<p class="set-note">Пока только владелец.</p>';
@@ -1992,7 +1999,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
           var value = input.value.trim();
           if (value === initial) return;
           api('admin-edit', { method: 'POST', json: { id: input.dataset.adminTag, tag: value } })
-            .then(function () { initial = value; toast('Тег обновлён'); })
+            .then(function () { initial = value; toast('Префикс обновлён'); })
             .catch(function (error) { input.value = initial; toast(error.message); });
         };
         input.onkeydown = function (event) { if (event.key === 'Enter') input.blur(); };
@@ -2036,22 +2043,40 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     };
   })();
 
+  function setSettingsTab(name) {
+    $$('#setTabs [data-set-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.setTab === name); });
+    $$('[data-set-pane]').forEach(function (p) { p.classList.toggle('is-active', p.dataset.setPane === name); });
+  }
+  function renderStorage() {
+    var used = usedBytes();
+    var free = Math.max(0, STORAGE_LIMIT - used);
+    var pct = Math.round(used / STORAGE_LIMIT * 1000) / 10;
+    if (pct > 100) pct = 100;
+    var fill = $('#stgFill');
+    if (fill) fill.style.width = (used > 0 && pct < 1.5 ? 1.5 : pct) + '%';
+    if ($('#stgUsed')) $('#stgUsed').textContent = fmtGb(used) + ' (' + String(pct).replace('.', ',') + '%)';
+    if ($('#stgFree')) $('#stgFree').textContent = fmtGb(free);
+  }
+  $$('#setTabs [data-set-tab]').forEach(function (b) {
+    b.onclick = function () { setSettingsTab(b.dataset.setTab); if (b.dataset.setTab === 'storage') renderStorage(); };
+  });
   $('#openSettings').onclick = function () {
     $('#settingsModal').classList.remove('is-hidden');
+    setSettingsTab('admins');
     renderAdminList();
+    renderStorage();
   };
   $('#closeSettings').onclick = closeSettings;
   $('#settingsModal').onclick = function (event) { if (event.target === this) closeSettings(); };
   $('#addAdmin').onclick = function () {
-    var name = $('#naName').value.trim();
     var tag = $('#naTag') ? $('#naTag').value.trim() : '';
     var user = $('#naUser').value.trim();
     var pass = $('#naPass').value;
     if (!user) { toast('Укажите логин'); return; }
     if (pass.length < 8) { toast('Пароль должен быть не короче 8 символов'); return; }
-    api('admin-add', { method: 'POST', json: { name: name, tag: tag, user: user, password: pass } }).then(function () {
+    api('admin-add', { method: 'POST', json: { name: user, tag: tag, user: user, password: pass } }).then(function () {
       toast('Администратор создан');
-      $('#naName').value = ''; if ($('#naTag')) $('#naTag').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
+      if ($('#naTag')) $('#naTag').value = ''; $('#naUser').value = ''; $('#naPass').value = '';
       if ($('#addAdminBox')) $('#addAdminBox').open = false;
       renderAdminList();
     }).catch(function (error) { toast(error.message); });

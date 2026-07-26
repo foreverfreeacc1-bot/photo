@@ -913,3 +913,49 @@ html{scrollbar-width:thin;scrollbar-color:#c7c1b7 transparent}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#cfc9c0;border-radius:999px;border:2px solid transparent;background-clip:content-box}
 ::-webkit-scrollbar-thumb:hover{background:#171716;background-clip:content-box}
+
+
+/* ===== правки 38 ===== */
+/* «Управление»: небольшой отступ от имени, плашка чуть шире текста */
+.mobile-head .mh-brand{gap:8px;transition:opacity .26s ease,transform .26s ease}
+.mobile-head .brand-name-m{margin-right:0}
+.mobile-head .brand-sub-m{margin-left:0;padding:5px 12px;font-size:7.5px;letter-spacing:.2em}
+/* при открытом меню имя с плашкой плавно исчезает */
+body.menu-open .mobile-head .mh-brand{opacity:0;transform:translateY(-6px);pointer-events:none}
+/* красная точка: плавное появление и исчезновение */
+.mh-dot{opacity:0;transform:scale(.2);animation:none;transition:opacity .3s ease,transform .3s ease}
+.mh-dot.is-on{opacity:1;transform:scale(1);animation:adm-dot-in .34s cubic-bezier(.2,.9,.2,1),adm-pulse 1.8s ease-in-out .34s infinite}
+/* линия прокрутки тоньше */
+html,*{scrollbar-color:#d8d2c8 transparent}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#d3cdc3;border:0;border-radius:999px;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#171716;background-clip:padding-box}
+@media (max-width:900px){.mobile-head .mh-progress{height:1.5px}}
+/* карточки услуг: компактные, как на сайте */
+.svc-plate.wkc{width:100%;max-width:320px}
+@media (max-width:640px){.svc-plate.wkc{max-width:none}}
+/* настройки: анимация и раздельные пункты */
+@keyframes set-pop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes set-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#settingsModal{transition:opacity .24s ease}
+#settingsModal.is-hidden{opacity:0}
+#settingsModal:not(.is-hidden) .settings-card{animation:set-pop .34s cubic-bezier(.16,1,.3,1)}
+.settings-card{grid-template-rows:auto auto 1fr}
+.set-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:14px 20px 0}
+.set-tabs button{padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-size:11.5px;letter-spacing:.06em;color:var(--muted);cursor:pointer;transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+.set-tabs button:hover{color:var(--ink);border-color:#c9c3b8}
+.set-tabs button.is-active{background:#111;border-color:#111;color:#fff}
+.settings-body{padding:18px 20px 24px;gap:0}
+.set-num,.sb-num{display:none}
+.set-block[data-set-pane]{display:none}
+.set-block[data-set-pane].is-active{display:block;animation:set-fade .26s ease}
+.set-block h3{margin:0 0 4px;font-family:var(--serif);font-size:21px;font-weight:400}
+.set-block .set-note{margin:0 0 14px;color:var(--muted);font-size:11.5px;line-height:1.6}
+.set-block .switch-row{margin-bottom:14px}
+.stg-bar{height:10px;border-radius:999px;background:#eae6de;overflow:hidden}
+.stg-bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#171716,#5f584f);transition:width .55s cubic-bezier(.16,1,.3,1)}
+.stg-legend{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stg-legend li{display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.stg-legend span{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stg-legend b{font-size:14px;font-weight:500}
+@media (max-width:640px){.stg-legend{grid-template-columns:1fr}.set-tabs{padding:12px 16px 0}.settings-body{padding:16px}}
