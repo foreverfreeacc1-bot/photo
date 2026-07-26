@@ -771,7 +771,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function loaderPlate(kind, lang) {
     var langLabel = lang === 'ru' ? 'Русский' : 'English';
     var kindLabel = kind === 'phone' ? 'Телефон' : 'Компьютер';
-    return '<article class="cover-plate loader-plate' + (kind === 'phone' ? ' is-phone' : '') + '">' +
+    return '<article class="cover-plate loader-plate' + (kind === 'phone' ? ' is-phone' : '') + '" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + kindLabel + '</b><span>' + langLabel + '</span></div>' +
       '<div class="plate-body">' +
       '<div class="ce ce-loadtitle" data-lce="title.' + lang + '" spellcheck="false"></div>' +
@@ -900,7 +900,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var langLabel = lang === 'ru' ? 'Русский' : 'English';
     var head = '<div class="plate-head"><b>' + (side === 'L' ? 'Portfolio' : 'Work') + '</b><span>' + langLabel + '</span></div>';
     if (side === 'L') {
-      return '<article class="cover-plate">' + head +
+      return '<article class="cover-plate" data-plang="' + lang + '">' + head +
         '<div class="plate-body">' +
         ceBox('tag', t.tagL[lang], 'texts.tagL.' + lang) +
         '<div class="plate-title">PORTFOLIO —</div>' +
@@ -913,7 +913,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       '<span class="psoc"><i class="psoc-star">*</i>' + CONTACT_ICONS.instagram + '</span>' +
       '<span class="psoc">' + CONTACT_ICONS.max + '</span>' +
       '<span class="psoc">' + CONTACT_ICONS.phone + '</span></div>';
-    return '<article class="cover-plate">' + head +
+    return '<article class="cover-plate" data-plang="' + lang + '">' + head +
       '<div class="plate-body">' +
       '<div class="plate-title">WORK</div>' +
       ceBox('sub', t.subR[lang], 'texts.subR.' + lang) +
@@ -1013,7 +1013,8 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   var trTimers = new WeakMap();
   var ceReg = [];
   function autoTrOn() { try { return localStorage.getItem(AUTO_TR_KEY) === '1'; } catch (e) { return false; } }
-  function setAutoTr(on) { try { localStorage.setItem(AUTO_TR_KEY, on ? '1' : '0'); } catch (e) {} }
+  function setAutoTr(on) { try { localStorage.setItem(AUTO_TR_KEY, on ? '1' : '0'); } catch (e) {} syncAutoTrUi(); }
+  function syncAutoTrUi() { document.body.classList.toggle('tr-auto', autoTrOn()); }
   function translateRu(text) {
     return api('translate', { method: 'POST', json: { q: String(text || '') } }).then(function (r) { return (r && r.text) || ''; });
   }
@@ -1210,7 +1211,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   function albumPlate(album, lang) {
-    return '<article class="cover-plate site-plate">' +
+    return '<article class="cover-plate site-plate" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + album.photos.length + ' фото</span></div>' +
       '<div class="plate-body is-album">' +
       '<div class="ce site-alb-title" data-ace="title.' + lang + '" data-multiline spellcheck="false"></div>' +
@@ -1237,7 +1238,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   function pfIntroPlate(data, lang) {
-    return '<article class="cover-plate site-plate is-wide">' +
+    return '<article class="cover-plate site-plate is-wide" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'ПОРТФОЛИО' : 'PORTFOLIO') + '</span></div>' +
       '<div class="plate-body is-intro"><div class="ce ce-pfintro" data-pce="intro.' + lang + '" data-multiline spellcheck="false"></div></div></article>';
   }
@@ -1250,7 +1251,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   function pfAboutBlock(data, lang) {
     var about = data.aboutBlock;
     var last = about.stages.length - 1;
-    return '<article class="cover-plate site-plate">' +
+    return '<article class="cover-plate site-plate" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'Обо мне' : 'About me') + '</span></div>' +
       '<div class="plate-body is-about"><div class="hw-wrap">' +
       '<div class="hw-head">' +
@@ -1442,7 +1443,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function workPlate(card, cardIndex, lang) {
     var list = (card.features && card.features[lang]) || [];
-    return '<article class="svc-plate wkc" data-svc-lang="' + lang + '">' +
+    return '<article class="svc-plate wkc" data-svc-lang="' + lang + '" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'услуга' : 'service') + '</span></div>' +
       '<div class="wkimg" style="' + (card.image ? 'background-image:url(' + esc(card.image.url) + ')' : '') + '">' + (card.image ? '' : '<span class="pane-empty">Фотография не выбрана</span>') + '</div>' +
       '<div class="wk-info">' +
@@ -1506,7 +1507,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
   }
 
   function stagesMock(work, lang) {
-    return '<article class="cover-plate site-plate">' +
+    return '<article class="cover-plate site-plate" data-plang="' + lang + '">' +
       '<div class="plate-head"><b>' + (lang === 'ru' ? 'Русская версия' : 'English') + '</b><span>' + (lang === 'ru' ? 'Этапы съёмки' : 'Shooting stages') + '</span></div>' +
       '<div class="plate-body is-steps">' +
       '<div class="rdm-heading">' +
@@ -1886,10 +1887,11 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     };
   });
   (function () {
+    syncAutoTrUi();
     var cb = $('#autoTr');
     if (cb) {
       cb.checked = autoTrOn();
-      cb.onchange = function () { setAutoTr(cb.checked); toast(cb.checked ? 'Автоперевод включен' : 'Автоперевод выключен'); };
+      cb.onchange = function () { setAutoTr(cb.checked); render(); toast(cb.checked ? 'Автоперевод включен' : 'Автоперевод выключен'); };
     }
     var ta = $('#trAll');
     if (ta) ta.onclick = function () {

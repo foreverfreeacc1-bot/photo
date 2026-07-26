@@ -747,3 +747,32 @@ textarea.field-rich{resize:none;overflow:hidden;font:inherit;display:block;}
 .switch-row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink)}
 .switch-row input{width:16px;height:16px}
 .settings-hint{margin:8px 0 12px;font-size:11px;line-height:1.5;color:var(--muted)}
+
+/* ===== правки 34 ===== */
+.mobile-head .mh-brand{flex-direction:row;align-items:center;gap:9px}
+.mobile-head .brand-name-m{font-family:'CormorantLight',Georgia,serif;font-weight:400;font-size:13px;letter-spacing:.2em;text-indent:.2em;line-height:1}
+.mobile-head .brand-sub-m{padding:4px 7px;font-size:6.5px;letter-spacing:.18em}
+.brand .brand-sub,.brand-sub,.brand-sub-m{border-radius:0}
+.nav button,.nav button.is-active{border-radius:0}
+.preview-actions{display:flex;align-items:flex-end;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+.pv-controls{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.pv-group{display:flex;flex-direction:column;gap:5px}
+.pv-label{font-family:var(--sans);font-size:6.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.pv-controls .device-switch{gap:0;border:1px solid var(--line);background:var(--surface)}
+.pv-controls .device-switch button{border:0;border-radius:0;padding:8px 13px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.pv-controls .device-switch button+button{border-left:1px solid var(--line)}
+.pv-controls .lang-switch button{min-width:44px}
+.pv-replay{align-self:flex-end;padding:8px 12px;border:1px solid var(--line);border-radius:0;background:var(--surface);color:var(--muted);font-family:var(--sans);font-size:9px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.pv-replay:hover{border-color:var(--ink);color:var(--ink)}
+.preview-actions .close-button{align-self:center}
+@media(max-width:640px){
+  .preview-actions{align-items:stretch;justify-content:space-between;width:100%;gap:10px}
+  .pv-controls{width:100%;gap:10px}
+  .pv-group{flex:1 1 auto}
+  .pv-controls .device-switch{width:100%}
+  .pv-controls .device-switch button{flex:1 1 0;padding:8px 6px}
+  .pv-replay{width:100%}
+}
+body.tr-auto [data-plang="en"]{display:none !important}
+body.tr-auto .cover-grid,body.tr-auto .cover-grid.is-stack,body.tr-auto .cover-grid.is-phones,body.tr-auto .svc-pair{grid-template-columns:1fr}
+body.tr-auto .plate-head b{opacity:.65}
