@@ -3,6 +3,7 @@
 
   var API = '/api/';
   var csrf = '';
+  var LIMITS = { direct: false, keepOrig: true, maxUpload: 4 * 1024 * 1024, local: false, storage: '', avifQuality: 90 };
   var saved = null;
   var draft = null;
   var baseJson = '';
@@ -496,7 +497,16 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
       options.headers['Content-Type'] = 'application/json';
       delete options.json;
     }
-    return fetch(API + path, options).then(function (response) {
+    if (options.raw !== undefined) {
+      options.body = options.raw;
+      options.headers['Content-Type'] = options.rawType || 'application/octet-stream';
+      if (options.rawName) options.headers['X-File-Name'] = encodeURIComponent(options.rawName);
+      if (options.rawReady) options.headers['X-Ready'] = '1';
+      delete options.raw; delete options.rawType; delete options.rawName; delete options.rawReady;
+    }
+    return fetch(API + path, options).catch(function () {
+      throw new Error('Запрос оборвался — файл слишком тяжёлый либо связь нестабильна.');
+    }).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (json) {
         if (!response.ok) {
           var error = new Error(json.error || 'Не удалось выполнить действие');
@@ -653,6 +663,152 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     picker.click();
   }
 
+  /* --- адаптивное сжатие: включается ТОЛЬКО если файл не пролезает в запрос --- */
+  var WEBP_OK = (function () {
+    try { return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch (e) { return false; }
+  })();
+  var QSTEPS = [0.94, 0.88, 0.82, 0.74, 0.66, 0.58, 0.50];
+
+  function fmtMB(n) { return (n / 1048576).toFixed(1).replace('.', ',') + ' МБ'; }
+
+  function loadViaImg(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('Не удалось открыть изображение')); };
+      img.src = url;
+    });
+  }
+  function loadBitmap(file) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(function () { return loadViaImg(file); });
+    }
+    return loadViaImg(file);
+  }
+  function encodeCanvas(canvas, type, q) {
+    return new Promise(function (resolve) {
+      if (canvas.toBlob) canvas.toBlob(function (b) { resolve(b); }, type, q);
+      else resolve(null);
+    });
+  }
+  /* Сначала падает только качество при ПОЛНОМ разрешении.
+     Пиксели уменьшаются только если качества не хватило. */
+  function shrinkTo(file, limit, onStep) {
+    return loadBitmap(file).then(function (src) {
+      var w0 = src.width || src.naturalWidth;
+      var h0 = src.height || src.naturalHeight;
+      if (!w0 || !h0) throw new Error('Не удалось прочитать размеры изображения');
+      var type = WEBP_OK ? 'image/webp' : 'image/jpeg';
+      var scale = 1;
+      var round = 0;
+      function attempt() {
+        round++;
+        var w = Math.max(1, Math.round(w0 * scale));
+        var h = Math.max(1, Math.round(h0 * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src, 0, 0, w, h);
+        var qi = 0;
+        function tryQ() {
+          if (qi >= QSTEPS.length) {
+            if (round >= 10) return Promise.resolve(null);
+            scale *= 0.82;
+            return attempt();
+          }
+          var q = QSTEPS[qi++];
+          if (onStep) onStep(w, h);
+          return encodeCanvas(canvas, type, q).then(function (blob) {
+            if (!blob) return null;
+            if (blob.size <= limit) return { blob: blob, width: w, height: h };
+            return tryQ();
+          });
+        }
+        return tryQ();
+      }
+      return attempt();
+    });
+  }
+
+  /* --- прямая загрузка в R2: лимита 4,5 МБ нет, сервер ничего не кодирует --- */
+
+  /* Лёгкая версия для сайта. Разрешение сохраняется полностью:
+     уменьшаем только если кадр не влезает в технический потолок формата (16383 px). */
+  function makeWeb(file) {
+    return loadBitmap(file).then(function (src) {
+      var w0 = src.width || src.naturalWidth;
+      var h0 = src.height || src.naturalHeight;
+      if (!w0 || !h0) throw new Error('Не удалось прочитать размеры изображения');
+      var scale = Math.min(1, 16383 / Math.max(w0, h0));
+      var w = Math.max(1, Math.round(w0 * scale));
+      var h = Math.max(1, Math.round(h0 * scale));
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(src, 0, 0, w, h);
+      var type = WEBP_OK ? 'image/webp' : 'image/jpeg';
+      return encodeCanvas(canvas, type, 0.92).then(function (blob) {
+        if (!blob) throw new Error('Браузер не смог подготовить веб-версию');
+        return { blob: blob, width: w, height: h, type: type, ext: WEBP_OK ? 'webp' : 'jpg' };
+      });
+    });
+  }
+
+  function putSigned(url, blob, type, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', url, true);
+      if (type) xhr.setRequestHeader('Content-Type', type);
+      if (xhr.upload && onProgress) {
+        xhr.upload.onprogress = function (e) { if (e.lengthComputable) onProgress(e.loaded, e.total); };
+      }
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error('Хранилище отклонило файл (код ' + xhr.status + ')'));
+      };
+      xhr.onerror = function () {
+        reject(new Error('Не удалось связаться с хранилищем. Проверьте настройку CORS у бакета R2.'));
+      };
+      xhr.onabort = function () { reject(new Error('Загрузка прервана')); };
+      xhr.send(blob);
+    });
+  }
+
+  function directUpload(file, onNote) {
+    var web = null;
+    onNote('готовлю…');
+    return makeWeb(file).then(function (out) {
+      web = out;
+      return api('sign-upload', {
+        method: 'POST',
+        json: { name: file.name, size: file.size || 0, webSize: out.blob.size, webExt: out.ext }
+      });
+    }).then(function (sig) {
+      if (!sig || !sig.web || !sig.web.put) throw new Error('Сервер не выдал ссылку на загрузку');
+      var keepOrig = !!(sig.orig && sig.orig.put);
+      /* Прогресс считаем по сумме обоих файлов — они идут параллельно. */
+      var totalBytes = web.blob.size + (keepOrig ? (file.size || 0) : 0);
+      var doneWeb = 0, doneOrig = 0;
+      function tick() {
+        if (!totalBytes) return;
+        var pct = Math.min(99, Math.round((doneWeb + doneOrig) / totalBytes * 100));
+        onNote(pct + '%');
+      }
+      var jobs = [putSigned(sig.web.put, web.blob, web.type, function (l) { doneWeb = l; tick(); })];
+      if (keepOrig) {
+        jobs.push(putSigned(sig.orig.put, file, file.type || 'application/octet-stream', function (l) { doneOrig = l; tick(); }));
+      }
+      return Promise.all(jobs).then(function () {
+        return { url: sig.web.url, name: sig.web.name, size: web.blob.size, width: web.width, height: web.height };
+      });
+    });
+  }
+
   function uploadFiles(files, maxFiles) {
     var list = Array.prototype.slice.call(files || []);
     if (maxFiles > 0) list = list.slice(0, maxFiles);
@@ -679,22 +835,69 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
     var chain = Promise.resolve();
     list.forEach(function (file, fi) {
       chain = chain.then(function () {
-        if (file.size > 4 * 1024 * 1024) throw new Error('Файл больше 4 МБ. Выберите версию поменьше.');
-        busyTiles('Конвертирую и загружаю ' + (fi + 1) + ' из ' + total + '…');
+        var lim = Number(LIMITS.maxUpload) || 4 * 1024 * 1024;
         toast('Загружаю «' + file.name + '» — ' + (fi + 1) + ' из ' + total);
-        return new Promise(function (resolve, reject) {
-          var reader = new FileReader();
-          reader.onload = function () { resolve(String(reader.result).split(',')[1] || ''); };
-          reader.onerror = function () { reject(new Error('Не удалось прочитать файл')); };
-          reader.readAsDataURL(file);
-        }).then(function (data) {
-          if (localPreview) {
-            return { url: 'data:' + (file.type || 'image/jpeg') + ';base64,' + data, name: file.name };
+        if (localPreview) {
+          busyTiles('Читаю ' + (fi + 1) + ' из ' + total + '…');
+          return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () { resolve({ url: String(reader.result), name: file.name, size: file.size }); };
+            reader.onerror = function () { reject(new Error('Не удалось прочитать файл')); };
+            reader.readAsDataURL(file);
+          });
+        }
+        /* Главный путь: файл летит в R2 напрямую. Ограничений по размеру нет. */
+        if (LIMITS.direct) {
+          busyTiles('Готовлю ' + (fi + 1) + ' из ' + total + '…');
+          return directUpload(file, function (note) {
+            busyTiles('Загружаю ' + (fi + 1) + ' из ' + total + ' — ' + note);
+          });
+        }
+
+        function postBlob(blob) {
+          return api('upload', {
+            method: 'POST',
+            raw: blob,
+            rawType: blob.type || file.type || 'application/octet-stream',
+            rawName: file.name
+          });
+        }
+        /* Лёгкую веб-версию готовит браузер: разрешение кадра остаётся полным,
+           а вес падает в разы — поэтому потолок сервера больше не мешает.
+           Такой файл сервер уже не перекодирует, значит загрузка идёт быстро. */
+        busyTiles('Готовлю ' + (fi + 1) + ' из ' + total + '…');
+        return makeWeb(file).then(function (web) {
+          return (web && web.blob && web.blob.size <= lim) ? web : null;
+        }, function () { return null; }).then(function (web) {
+          if (web) {
+            toast('Подготовил ' + web.width + '×' + web.height + ', ' + fmtMB(web.blob.size) + ' — загружаю');
+            busyTiles('Загружаю ' + (fi + 1) + ' из ' + total + '…');
+            return api('upload', {
+              method: 'POST',
+              raw: web.blob,
+              rawType: web.type,
+              rawName: file.name,
+              rawReady: true
+            });
           }
-          return api('upload', { method: 'POST', json: { name: file.name, type: file.type, data: data } });
-        }).then(function (result) {
-          results.push({ id: uid(), url: result.url, name: file.name, size: result.size || file.size || 0 });
+          /* Запасной путь: браузер не осилил кадр — отдаём файл серверу по-старому. */
+          if (file.size <= lim) {
+            busyTiles('Конвертирую и загружаю ' + (fi + 1) + ' из ' + total + '…');
+            return postBlob(file);
+          }
+          toast('Файл ' + fmtMB(file.size) + ', сервер принимает до ' + fmtMB(lim) + '. Подбираю сжатие…');
+          busyTiles('Сжимаю ' + (fi + 1) + ' из ' + total + '…');
+          return shrinkTo(file, lim, function (w, h) {
+            busyTiles('Сжимаю ' + (fi + 1) + ' из ' + total + ' — ' + w + '×' + h + '…');
+          }).then(function (out) {
+            if (!out) throw new Error('Не удалось ужать «' + file.name + '» до ' + fmtMB(lim) + '. Сохраните версию полегче.');
+            toast('Ужал до ' + out.width + '×' + out.height + ', ' + fmtMB(out.blob.size) + ' — иначе сервер не пропустит');
+            busyTiles('Конвертирую и загружаю ' + (fi + 1) + ' из ' + total + '…');
+            return postBlob(out.blob);
+          });
         });
+      }).then(function (result) {
+        results.push({ id: uid(), url: result.url, name: file.name, size: result.size || file.size || 0 });
       });
     });
     return chain.then(function () { unbusyTiles(); return results; }, function (e) { unbusyTiles(); throw e; });
@@ -1933,6 +2136,7 @@ var NATIVE_HOME = {"tagL": {"ru": "\u041a\u041e\u041b\u041b\u0415\u041a\u0426\u0
 
   function showApp(state) {
     csrf = state.csrf || csrf;
+    if (state.limits) LIMITS = state.limits;
     saved = normalize(state.content && state.content.admin ? state.content.admin : state.content);
     draft = clone(saved);
     baseJson = JSON.stringify(draft);

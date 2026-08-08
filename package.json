@@ -11,6 +11,7 @@
   },
   "scripts": {
     "check": "node --check api/router.js && node --check admin.js",
-    "dev": "node dev-server.js"
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js"
   }
 }

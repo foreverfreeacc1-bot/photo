@@ -32,6 +32,20 @@ const SECRET = String(process.env.SESSION_SECRET || '').trim() || (PASS_HASH ? c
 const TTL = 12 * 60 * 60 * 1000;
 /* Фото отдаются через собственный домен (/api/img/...) — публичный доступ R2 не нужен */
 const PUB_BASE = (LOCAL_STORE || USE_R2) ? '/api/img/' : SB_URL + '/storage/v1/object/public/' + BUCKET + '/cms/';
+/* Потолок тела запроса. Локально — 2 ГБ (т.е. практически без ограничений),
+   на Vercel — 4 МБ (жёсткий лимит платформы 4,5 МБ, его нельзя поднять). */
+const MAX_UPLOAD = Number(process.env.MAX_UPLOAD_BYTES || (LOCAL_STORE ? 2 * 1024 * 1024 * 1024 : 4 * 1024 * 1024));
+/* Качество AVIF. 90 — визуально неотличимо от оригинала.
+   lossless включается только явно: AVIF_LOSSLESS=1 (готовьтесь к файлам ×7 и минутам кодирования). */
+const AVIF_LOSSLESS = String(process.env.AVIF_LOSSLESS || '') === '1';
+/* При прямой загрузке рядом с веб-версией кладётся нетронутый оригинал.
+   KEEP_ORIGINALS=0 отключает это и экономит место в бакете. */
+const KEEP_ORIG = String(process.env.KEEP_ORIGINALS || '1') !== '0';
+/* Прямая загрузка в R2 требует настройки CORS на бакете, поэтому выключена
+   по умолчанию. Без неё фото идут через сайт и ничего настраивать не нужно. */
+const DIRECT_OK = String(process.env.DIRECT_UPLOAD || '') === '1';
+const AVIF_QUALITY = Math.min(100, Math.max(1, Number(process.env.AVIF_QUALITY || 90)));
+const AVIF_EFFORT = Math.min(9, Math.max(0, Number(process.env.AVIF_EFFORT || 2)));
 
 /* ---------- слоты редактируемых текстов (белый список — защита от IDOR) ---------- */
 const SLOTS = [
@@ -250,6 +264,30 @@ async function r2(method, key, body, type) {
   };
   if (type) out['content-type'] = type;
   return fetch('https://' + host + uri, { method: method, headers: out, body: body });
+}
+
+/* Временная подписанная ссылка в R2: браузер кладёт файл напрямую,
+   минуя функцию Vercel — значит, потолка в 4,5 МБ больше нет.
+   Подпись AWS SigV4 через query-string, тело не хешируется (UNSIGNED-PAYLOAD). */
+function r2Presign(method, key, expires) {
+  const host = R2_ACCOUNT_ID + '.r2.cloudflarestorage.com';
+  const uri = '/' + R2_BUCKET + '/' + key;
+  const amzDate = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const shortDate = amzDate.slice(0, 8);
+  const scope = shortDate + '/auto/s3/aws4_request';
+  const qs = [
+    'X-Amz-Algorithm=AWS4-HMAC-SHA256',
+    'X-Amz-Credential=' + encodeURIComponent(R2_ACCESS_KEY_ID + '/' + scope),
+    'X-Amz-Date=' + amzDate,
+    'X-Amz-Expires=' + (expires || 900),
+    'X-Amz-SignedHeaders=host'
+  ].sort().join('&');
+  const canonical = [method, uri, qs, 'host:' + host + '\n', 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const toSign = ['AWS4-HMAC-SHA256', amzDate, scope, crypto.createHash('sha256').update(canonical, 'utf8').digest('hex')].join('\n');
+  let k = hmacRaw('AWS4' + R2_SECRET_ACCESS_KEY, shortDate);
+  k = hmacRaw(k, 'auto'); k = hmacRaw(k, 's3'); k = hmacRaw(k, 'aws4_request');
+  const signature = crypto.createHmac('sha256', k).update(toSign, 'utf8').digest('hex');
+  return 'https://' + host + uri + '?' + qs + '&X-Amz-Signature=' + signature;
 }
 
 /* Единая точка доступа к хранилищу: key вида "cms/имя-файла" */
@@ -660,10 +698,28 @@ async function readBody(req) {
     req.on('error', function () { resolve({}); });
   });
 }
+/* Чтение сырых байтов без base64 (он раздувал запрос на +33%%). null = превышен потолок. */
+async function readRawBody(req, max) {
+  if (req.body !== undefined && req.body !== null && Buffer.isBuffer(req.body)) {
+    return req.body.length > max ? null : req.body;
+  }
+  return new Promise(function (resolve) {
+    const chunks = [];
+    let total = 0;
+    req.on('data', function (d) {
+      total += d.length;
+      if (total > max) { resolve(null); try { req.destroy(); } catch (e) {} return; }
+      chunks.push(d);
+    });
+    req.on('end', function () { resolve(Buffer.concat(chunks)); });
+    req.on('error', function () { resolve(null); });
+  });
+}
 function sniff(buf) {
   if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
   if (buf.length > 7 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
   if (buf.length > 11 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
+  if (buf.length > 12 && buf.toString('ascii', 4, 8) === 'ftyp' && /^(avif|avis|mif1|msf1|miaf)$/.test(buf.toString('ascii', 8, 12))) return 'avif';
   return null;
 }
 
@@ -689,12 +745,12 @@ module.exports = async function handler(req, res) {
     /* публичный контент для сайта */
     if (p.indexOf('img/') === 0 && (method === 'GET' || method === 'HEAD')) {
       const name = p.slice(4);
-      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 404, { error: 'Not found' });
+      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif|orig)$/.test(name)) return send(res, 404, { error: 'Not found' });
       const r = await store('GET', 'cms/' + name);
       if (!r || !r.ok) return send(res, 404, { error: 'Not found' });
       const buf = Buffer.from(await r.arrayBuffer());
       res.statusCode = 200;
-      res.setHeader('Content-Type', name.slice(-5) === '.avif' ? 'image/avif' : name.slice(-5) === '.webp' ? 'image/webp' : name.slice(-4) === '.png' ? 'image/png' : 'image/jpeg');
+      res.setHeader('Content-Type', name.slice(-5) === '.orig' ? 'application/octet-stream' : name.slice(-5) === '.avif' ? 'image/avif' : name.slice(-5) === '.webp' ? 'image/webp' : name.slice(-4) === '.png' ? 'image/png' : 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
       res.setHeader('Content-Length', buf.length);
       if (method === 'HEAD') return res.end();
@@ -762,7 +818,7 @@ module.exports = async function handler(req, res) {
         if (!meRec) return send(res, 401, { error: 'Не авторизован' });
         me = { user: meRec.user, name: meRec.name || meRec.user, root: false };
       }
-      return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp), me: me });
+      return send(res, 200, { content: await readContent(), slots: SLOTS, csrf: csrfOf(sess.exp), me: me, limits: { direct: (USE_R2 && !LOCAL_STORE && DIRECT_OK), keepOrig: KEEP_ORIG, maxUpload: MAX_UPLOAD, local: LOCAL_STORE, storage: USE_R2 ? 'r2' : (LOCAL_STORE ? 'local' : 'supabase'), avifQuality: AVIF_LOSSLESS ? 0 : AVIF_QUALITY } });
     }
 
     if (p === 'storage' && method === 'GET') {
@@ -890,13 +946,60 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { ok: true });
     }
 
-    /* загрузка фото с автоматической lossless-конвертацией в AVIF */
-    if (p === 'upload' && method === 'POST') {
+    /* загрузка фото → AVIF. Ограничения по разрешению нет (limitInputPixels: false). */
+    /* подпись для прямой загрузки в R2, минуя эту функцию */
+    if (p === 'sign-upload' && method === 'POST') {
+      if (!USE_R2 || LOCAL_STORE || !DIRECT_OK) return send(res, 400, { error: 'Прямая загрузка выключена.' });
       const j = await readBody(req);
-      if (typeof j.data !== 'string' || !j.data || j.data.length > 5.7e6) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
-      let buf;
-      try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
-      if (!buf || buf.length < 100 || buf.length > 4.1 * 1024 * 1024) return send(res, 400, { error: 'Файл слишком большой (до 4 МБ)' });
+      const origSize = Math.max(0, Number(j && j.size) || 0);
+      const webSize = Math.max(0, Number(j && j.webSize) || 0);
+      if (!webSize) return send(res, 400, { error: 'Не указан размер файла' });
+      const adding = webSize + (KEEP_ORIG ? origSize : 0);
+      try {
+        const LIMIT_BYTES = 10 * 1024 * 1024 * 1024;
+        const cur = await readContent();
+        let used = 0;
+        (function walk(node) {
+          if (!node || typeof node !== 'object') return;
+          if (Array.isArray(node)) { node.forEach(walk); return; }
+          if (typeof node.url === 'string' && typeof node.size === 'number') used += node.size;
+          for (const key of Object.keys(node)) walk(node[key]);
+        })(cur);
+        if (used + adding > LIMIT_BYTES) {
+          return send(res, 413, { error: 'Достигнут лимит 10 ГБ. Удалите часть фотографий, чтобы загрузить новые.' });
+        }
+      } catch (e) { console.error('CMS quota check:', e && e.message); }
+      const id = crypto.randomUUID();
+      const ext = String(j && j.webExt) === 'jpg' ? 'jpg' : 'webp';
+      const webName = id + '.' + ext;
+      const out = {
+        web: { put: r2Presign('PUT', 'cms/' + webName, 900), url: PUB_BASE + webName, name: webName }
+      };
+      if (KEEP_ORIG && origSize > 0) {
+        out.orig = { put: r2Presign('PUT', 'cms/' + id + '.orig', 900), url: PUB_BASE + id + '.orig', name: id + '.orig' };
+      }
+      console.error('CMS sign ' + webName + ' web=' + webSize + 'B orig=' + origSize + 'B ip=' + ip);
+      return send(res, 200, out);
+    }
+
+    if (p === 'upload' && method === 'POST') {
+      const ctype = String(req.headers['content-type'] || '').toLowerCase();
+      let buf = null;
+      let srcName = '';
+      if (ctype.indexOf('application/json') === 0) {
+        /* старый путь: JSON + base64 — оставлен для совместимости */
+        const j = await readBody(req);
+        if (typeof j.data !== 'string' || !j.data) return send(res, 400, { error: 'Пустой файл' });
+        try { buf = Buffer.from(j.data, 'base64'); } catch (e) { return send(res, 400, { error: 'Повреждённый файл' }); }
+        srcName = clean(j.name, 100);
+      } else {
+        /* основной путь: сырые байты */
+        try { srcName = clean(decodeURIComponent(String(req.headers['x-file-name'] || '')), 100); } catch (e) { srcName = ''; }
+        buf = await readRawBody(req, MAX_UPLOAD);
+        if (buf === null) return send(res, 413, { error: 'Файл тяжелее ' + Math.round(MAX_UPLOAD / 1048576) + ' МБ — столько не пропускает сервер.' });
+      }
+      if (!buf || buf.length < 100) return send(res, 400, { error: 'Пустой или повреждённый файл' });
+      if (buf.length > MAX_UPLOAD) return send(res, 413, { error: 'Файл тяжелее ' + Math.round(MAX_UPLOAD / 1048576) + ' МБ — столько не пропускает сервер.' });
       try {
         const LIMIT_BYTES = 10 * 1024 * 1024 * 1024;
         const cur = await readContent();
@@ -911,36 +1014,63 @@ module.exports = async function handler(req, res) {
           return send(res, 413, { error: 'Достигнут лимит 10 ГБ. Удалите часть фотографий, чтобы загрузить новые.' });
         }
       } catch (e) { console.error('CMS quota check:', e && e.message); }
+      /* Браузер уже подготовил лёгкую веб-версию — второй раз кодировать нечего.
+         Так уходит десяток секунд работы кодека и риск таймаута функции. */
+      if (String(req.headers['x-ready'] || '') === '1') {
+        const readyKind = sniff(buf);
+        if (readyKind === 'webp' || readyKind === 'avif') {
+          const readyName = crypto.randomUUID() + '.' + readyKind;
+          const readyRes = await store('PUT', 'cms/' + readyName, buf, 'image/' + readyKind);
+          if (!readyRes.ok) {
+            console.error('CMS upload storage ' + readyRes.status);
+            return send(res, 500, { error: USE_R2 ? 'Ошибка хранилища R2 (' + readyRes.status + ').' : 'Ошибка хранилища (' + readyRes.status + ')' });
+          }
+          console.error('CMS upload ' + readyName + ' ' + buf.length + 'B ready ip=' + ip);
+          return send(res, 200, { url: PUB_BASE + readyName, name: readyName, size: buf.length });
+        }
+      }
       let converted;
       if (!sharp) {
         const kind = sniff(buf);
-        if (!kind) return send(res, 400, { error: 'Локальный режим без sharp принимает только JPG, PNG или WebP.' });
+        if (!kind) return send(res, 400, { error: 'Без sharp принимаются только JPG, PNG, WebP или AVIF. Выполните npm install.' });
         const rawName = crypto.randomUUID() + '.' + kind;
         const rawRes = await store('PUT', 'cms/' + rawName, buf, 'image/' + (kind === 'jpg' ? 'jpeg' : kind));
         if (!rawRes.ok) return send(res, 500, { error: 'Ошибка хранилища (' + rawRes.status + ')' });
+        console.error('CMS upload ' + rawName + ' ' + buf.length + 'B raw ip=' + ip);
         return send(res, 200, { url: PUB_BASE + rawName, name: rawName, size: buf.length });
       }
+      const t0 = Date.now();
       try {
-        converted = await sharp(buf, { animated: false, failOn: 'error', limitInputPixels: 100000000 })
-          .rotate()
-          .avif({ lossless: true, effort: 5 })
-          .toBuffer();
+        /* limitInputPixels: false — ограничения по разрешению сняты полностью */
+        const img = sharp(buf, { animated: false, failOn: 'error', limitInputPixels: false }).rotate();
+        const meta = await img.metadata();
+        const mp = ((meta.width || 0) * (meta.height || 0)) / 1e6;
+        /* Цена каждого шага кодека растёт вместе с мегапикселями.
+           Для огромных кадров снижаем старательность — иначе загрузка не закончится никогда.
+           Разрешение при этом НЕ трогается. */
+        const eff = mp > 40 ? 0 : (mp > 20 ? Math.min(AVIF_EFFORT, 1) : AVIF_EFFORT);
+        const enc = AVIF_LOSSLESS
+          ? { lossless: true, effort: eff }
+          : { quality: AVIF_QUALITY, effort: eff, chromaSubsampling: '4:4:4' };
+        converted = await img.avif(enc).toBuffer();
       } catch (e) {
         console.error('CMS image convert:', e && e.message);
-        return send(res, 400, { error: 'Этот формат не удалось открыть. Попробуйте JPG, PNG, WebP, TIFF, GIF или AVIF.' });
+        return send(res, 400, { error: 'Этот файл не удалось открыть как изображение. Подойдут JPG, PNG, WebP, TIFF, GIF, HEIC или AVIF.' });
       }
       const name = crypto.randomUUID() + '.avif';
       const r = await store('PUT', 'cms/' + name, converted, 'image/avif');
       if (!r.ok) { console.error('CMS upload storage ' + r.status); return send(res, 500, { error: USE_R2 ? 'Ошибка хранилища R2 (' + r.status + '). Проверьте R2_* переменные и имя бакета.' : 'Ошибка хранилища Supabase (' + r.status + '). Проверьте SUPABASE_URL, ключ и бакет.' }); }
-      console.error('CMS upload ' + name + ' source=' + clean(j.name, 100) + ' ip=' + ip);
+      console.error('CMS upload ' + name + ' ' + buf.length + 'B -> ' + converted.length + 'B q=' + (AVIF_LOSSLESS ? 'lossless' : AVIF_QUALITY) + ' ' + (Date.now() - t0) + 'ms source=' + srcName + ' ip=' + ip);
       return send(res, 200, { url: PUB_BASE + name, name: name, size: converted.length });
     }
 
     /* удаление фото */
     if (p === 'upload' && method === 'DELETE') {
       const name = String((req.query && req.query.name) || url.searchParams.get('name') || '');
-      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
+      if (!/^[a-f0-9-]{36}\.(jpg|png|webp|avif|orig)$/.test(name)) return send(res, 400, { error: 'Плохое имя файла' });
       await store('DELETE', 'cms/' + name).catch(function () {});
+      /* рядом мог лежать нетронутый оригинал — убираем и его, чтобы не копился мусор */
+      await store('DELETE', 'cms/' + name.replace(/\.[a-z]+$/, '.orig')).catch(function () {});
       console.error('CMS delete ' + name + ' ip=' + ip);
       return send(res, 200, { ok: true });
     }

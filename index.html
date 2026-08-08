@@ -1250,6 +1250,20 @@ function buildCol(d,e){
  var g=urls.map(function(o,j){var L=LAY[j%LAY.length];var st='grid-column:'+L[0]+' / '+L[1]+';aspect-ratio:'+L[2]+';'+(L[3]?'margin-top:'+L[3]+'%;':'');return '<figure class="col-ph" style="'+st+'"><span class="cph" style="background-image:url(&quot;'+o.u+'&quot;);'+o.bp+'"></span><em>'+(j<9?'0':'')+(j+1)+'</em></figure>';}).join('');
  grid.innerHTML='<div class="col-head"><div class="col-bar"><button class="col-back" type="button" aria-label="'+(e?'Back':'Назад')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg><span class="col-back-lbl">'+(e?'BACK':'ВЕРНУТЬСЯ')+'</span></button><span class="col-num col-plq">'+name+'</span><span class="col-num col-plq col-plq-num">0'+(curCol+1)+' / 0'+d.items.length+'</span>'+'<p class="col-sub">'+ds[0]+'</p><button class="col-next" type="button"><span class="col-next-lbl">'+(e?d.items[(curCol+1)%d.items.length][1]:d.items[(curCol+1)%d.items.length][0])+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19"/><path d="M12 5l7 7-7 7"/></svg></button>'+' </div></div>'
  +'<div class="col-gal">'+g+'</div>';
+ /* Пропорцию плитки берём из самой фотографии, а не из шаблона LAY.
+    Раньше форма кадра зависела от позиции в сетке: вертикальное фото,
+    попавшее в слот 3/2 или 21/9, обрезалось background-size:cover до горизонтального. */
+ Array.prototype.forEach.call(grid.querySelectorAll('.col-ph'),function(f){
+  var sp=f.querySelector('.cph');if(!sp)return;
+  var m=(sp.style.backgroundImage||'').match(/url\(["']?([^"')]+)["']?\)/);if(!m)return;
+  var im=new Image();
+  im.onload=function(){
+   if(!im.naturalWidth||!im.naturalHeight)return;
+   f.style.aspectRatio=im.naturalWidth+' / '+im.naturalHeight;
+   f.setAttribute('data-ar',im.naturalWidth>im.naturalHeight?'land':(im.naturalWidth<im.naturalHeight?'port':'sq'));
+  };
+  im.src=m[1];
+ });
  if(window.__ivWatch)window.__ivWatch(grid.querySelectorAll('.col-ph'));
  var cb=grid.querySelector('.col-back');if(cb)cb.addEventListener('click',function(){closeCol();});var cn=grid.querySelector('.col-next');if(cn)cn.addEventListener('click',function(){openCol((curCol+1)%d.items.length);});
  if(info){info.hidden=true;info.innerHTML='';}
